@@ -1,6 +1,6 @@
 {
   "name": "wohoox",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Reactive store by react hooks",
   "main": "dist/react-hook-store.min.js",
   "scripts": {
