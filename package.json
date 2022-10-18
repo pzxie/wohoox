@@ -23,9 +23,9 @@
   "typings": "dist/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "https://github.com/pzxie/woohox.git"
+    "url": "https://github.com/pzxie/wohoox.git"
   },
-  "homepage": "https://github.com/pzxie/woohox.git#readme",
+  "homepage": "https://github.com/pzxie/wohoox.git#readme",
   "author": "pzxie@outlook.com",
   "peerDependencies": {
     "react": ">=16.8.0"
