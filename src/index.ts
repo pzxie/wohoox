@@ -136,8 +136,7 @@ class Store<T extends object, A extends Actions> {
   }
 }
 
-export function useRestore(): any;
-export function useRestore(storeName: string): any;
+export function useRestore(storeName?: string): any;
 export function useRestore<T extends (state: any) => any>(getState?: T, storeName?: string): ReturnType<T>;
 export function useRestore(getState?: any, name?: string): any {
   const storeName = typeof getState === 'string' ? getState : name || defaultStoreName;

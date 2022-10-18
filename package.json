@@ -11,13 +11,15 @@
     "dist",
     ".gitignore",
     "package.json",
-    "tsconfig.json"
+    "tsconfig.json",
+    "README.md"
   ],
   "keywords": [
     "react",
     "store",
     "hooks",
-    "reactive"
+    "reactive",
+    "observer"
   ],
   "types": "dist/index.d.ts",
   "typings": "dist/index.d.ts",

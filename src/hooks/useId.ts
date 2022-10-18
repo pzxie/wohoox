@@ -13,7 +13,5 @@ export default function useId() {
 
   if (!id.current) id.current = guid();
 
-  console.log(id.current);
-
   return id.current;
 }
