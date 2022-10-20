@@ -16,7 +16,7 @@ const config = {
     },
     clean: true,
   },
-  devtool: 'cheap-module-source-map',
+  devtool: 'source-map',
   module: {
     rules: [
       {
@@ -24,6 +24,7 @@ const config = {
         use: [
           {
             loader: "ts-loader",
+
           }
         ],
         exclude: /node_modules/

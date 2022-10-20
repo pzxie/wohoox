@@ -1,5 +1,7 @@
 # wohoox
 
+<img style="width: 100px;" src="./example/public/wohoox.png" alt="wohoox" />
+
 Easy, high performance reactive store by react hooks.
 
 ## Required
@@ -58,7 +60,7 @@ Create a store named 'default'
 /**
  * src/store.ts
  */
-import createStore, { useStore } from 'wohoox';
+import createStore, { useStore as useWohoox } from 'wohoox';
 
 const store = createStore({
   initState: {
@@ -71,7 +73,7 @@ const store = createStore({
   },
 })
 
-export const useStore
+export const useStore = useWohoox
 export const actions = store.actions
 ````
 
@@ -94,7 +96,8 @@ Get state of store by store name and callback
 
 ````typescript
 export declare function useStore(storeName?: string): any;
-export declare function useStore<T extends (state: any) => any>(getState?: T, storeName?: string): ReturnType<T>;
+export declare function useStore<T extends (state: any) => any>(getState?: T): ReturnType<T>;
+export declare function useStore<T extends (state: any) => any>(storeName: string, getState: T): ReturnType<T>;
 ````
 
 #### Typescript
@@ -114,11 +117,12 @@ In order to be able to automatically infer the type based on state, useStore nee
 - export const useStore
 
 + export function useStore(name?: string): DefaultState;
-+ export function useStore<T extends (state: DefaultState) => any>(fn?: T, name?: string): ReturnType<T>;
-+ export function useStore(fn?: any, name?: any) {
-+  const state = useWoHoox(fn, name);
-+
-+  return state;
++ export function useStore<T extends (state: DefaultState) => any>(fn?: T): ReturnType<T>;
++ export function useStore<T extends (state: DefaultState) => any>(name?: string,fn?: T): ReturnType<T>;
++ export function useStore(name?: any, fn?: any) {
++   const state = useWohoox(name, fn);
++ 
++   return state;
 + }
 ````
 
@@ -135,7 +139,7 @@ In order to be able to automatically infer the type based on state, useStore nee
  */
 import { actions } from 'src/store.ts'
 
-function example () {
+function Example () {
   // Default to get 'default' store and return the hole state
   const userState = useStore()
 
@@ -145,7 +149,7 @@ function example () {
     <h2>Version</h2>
     {version}
 
-    <button onclick={() => {actions.updateVersion(version + '_1')}}>click to update version</button>
+    <button onClick={() => {actions.updateVersion(version + '_1')}}>click to update version</button>
   </div>
 }
 
@@ -174,7 +178,7 @@ const userStore = createStore({
   },
   actions: {
     updateName(name: string) {
-      store.state.name = name;
+      userStore.state.name = name;
     },
   },
 })
@@ -202,12 +206,12 @@ const devStore = createStore({
   initState: devInitState,
   actions: {
     updateAddress(address: typeof devInitState['address']) {
-      store.state.name = payload;
+      devStore.state.address = address;
     },
   },
 })
 
-export const userActions = userStore.actions
+export const devActions = devStore.actions
 ````
 
 * Combine multi store  
@@ -218,29 +222,38 @@ You can combine all stores together. In order to be able to automatically infer 
 /**
  * src/multiStore.ts
  */
+import { Actions } from 'wohoox';
+import defaultStore from './store'
 
 const store = {
-  default: store,
+  default: defaultStore,
   department: devStore,
   user: userStore,
 };
 
-export function useStore(): AppState['default']['state'];
-export function useStore<T extends keyof typeof store>(name: T): AppState[T]['state'];
-export function useStore<T extends (state: AppState[N]['state']) => any, N extends keyof typeof store>(
-  fn?: T,
-  name?: N
-): ReturnType<T>;
-export default function useStore(fn?: any, name?: any) {
-  const state = useWoHoox(fn, name);
+type AppStore = typeof store;
+type StoreActions = { [K in keyof AppStore]: AppStore[K]["actions"] };
+
+export function useStore(): AppStore["default"]["state"];
+export function useStore<T extends (state: AppStore["default"]["state"]) => any>(fn: T): ReturnType<T>;
+export function useStore<T extends keyof AppStore>(name: T): AppStore[T]["state"];
+export function useStore<
+  N extends keyof AppStore,
+  T extends (state: AppStore[N]["state"]) => any
+>(name?: N, fn?: T): ReturnType<T>;
+export function useStore(name?: any, fn?: any) {
+  const state = useWohoox(name, fn);
 
   return state;
 }
 
-export const actions = Object.keys(store).reduce<Record<keyof typeof store, Actions>>((pre, current) => {
-  pre[current as keyof typeof store] = store[current as keyof typeof store]['actions'];
+/**
+ * pick up actions
+ */
+export const actions = Object.keys(store).reduce((pre, current) => {
+  pre[current as "default"] = store[current as "default"]["actions"];
   return pre;
-}, {} as Record<keyof typeof store, Actions>);
+}, {} as StoreActions);
 ````
 
 #### usage
@@ -255,8 +268,8 @@ import { actions } from 'src/multiStore.ts'
 
 function example () {
   const defaultState = useStore()
-  const userState = useStore(state => state.name, 'user')
-  const devState = useStore(state => state.address, 'department')
+  const userState = useStore('user', state => state.name)
+  const devState = useStore('department', state => state.address)
 
 
   return <div>
@@ -270,9 +283,9 @@ function example () {
     {devState.province}
     {devState.city} 
 
-    <button onclick={() => {actions.default.updateVersion(version + '_1')}}>click to update version</button>
-    <button onclick={() => {actions.user.updateName(userState + '_1')}}>click to update name</button>
-    <button onclick={() => {actions.department.updateAddress({...devState, city: devState.city + '_1'})}}>click to update version</button>
+    <button onClick={() => {actions.default.updateVersion(version + '_1')}}>click to update version</button>
+    <button onClick={() => {actions.user.updateName(userState + '_1')}}>click to update name</button>
+    <button onClick={() => {actions.department.updateAddress({...devState, city: devState.city + '_1'})}}>click to update address</button>
   </div>
 }
 ````
@@ -287,7 +300,7 @@ In order to make the code style more standardized.
 Actions are the only valid way to modify data
 
 ````typescript
-const Store = createStore({
+const store = createStore({
   initState: {
     version: '1.X',
   },
@@ -319,14 +332,14 @@ function exampleStrictMode () {
     // actions.dispatch()
 
     // OK
-    actions.default.updateVersion(state.version + '_1')
+    actions.updateVersion(state.version + '_1')
   }
 
   return <div>
     <h2>Default Version</h2>
     {state.version}
 
-    <button onclick={updateVersion}>click to update version</button>
+    <button onClick={updateVersion}>click to update version</button>
   </div>
 }
 `````
@@ -339,7 +352,7 @@ Valid ways
 * state expression
 
 ````typescript
-const Store = createStore({
+const store = createStore({
   initState: {
     version: '1.X',
   },
@@ -368,7 +381,7 @@ function exampleStrictMode () {
 
   const updateVersion = () => {
     // OK
-    actions.default.updateVersion(state.version + '_1')
+    actions.updateVersion(state.version + '_1')
 
     // OK
     state.version = state.version + '_1'
@@ -380,14 +393,14 @@ function exampleStrictMode () {
     <h2>Default Version</h2>
     {state.version}
 
-    <button onclick={updateVersion}>click to update version</button>
+    <button onClick={updateVersion}>click to update version</button>
   </div>
 }
 `````
 
 ### Used in js/ts code
 
-`useStore` is used in component. You can also use state in js and ts file, **but only read**
+`useStore` is used in component. You can also use state in js and ts file
 
 ````typescript
 /**
@@ -395,6 +408,7 @@ function exampleStrictMode () {
  */
 
 // export state from store.ts
+// important... do not use it in components, it can not to rerender
 + export const state = store.state
 
 ````
@@ -404,10 +418,22 @@ function exampleStrictMode () {
  * request.ts
  */
 
-import { state } from 'src/store'
+import { state, actions } from 'src/store'
 
 function request () {
   // use state in other js/ts file
   return fetch(`/api/details?version=${state.version}`)
 }
+
+async function getVersion () {
+  const res = await fetch('/api/version')
+  const {version} = await res.json()
+
+  actions.updateVersion(version);
+}
 ````
+
+## Notes
+
+* If you do not use `useStore` to get state, **components will not re-render**.
+* Use strict mode if possible(use actions to modify state).

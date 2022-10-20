@@ -1,11 +1,11 @@
-import { useState, useEffect, useRef } from 'react';
-import useEvent from './hooks/useEvent';
-import useId from './hooks/useId';
-import useUpdate from './hooks/useUpdate';
+import { useState, useEffect, useRef } from "react";
+import useEvent from "./hooks/useEvent";
+import useId from "./hooks/useId";
+import useUpdate from "./hooks/useUpdate";
 
 const storeMap: Map<string, Store<object, Actions>> = new Map();
 
-const defaultStoreName = 'default';
+const defaultStoreName = "default";
 
 export type Actions = {
   [key: string]: ((...args: any) => any) | Actions;
@@ -13,17 +13,23 @@ export type Actions = {
 
 export type Options = { strictMode?: boolean };
 
-function revertActionsToAutoMode<Actions>(actions: Actions, autoModeTask = () => {}): Actions {
+function revertActionsToAutoMode<Actions>(
+  actions: Actions,
+  autoModeTask = () => {}
+): Actions {
   const autoModeActions = {} as Actions;
 
   for (let actionName in actions) {
-    if (typeof actions[actionName] === 'function') {
+    if (typeof actions[actionName] === "function") {
       autoModeActions[actionName] = ((...args: any) => {
         (actions[actionName] as any)(...args);
         autoModeTask();
       }) as any;
     } else {
-      autoModeActions[actionName] = revertActionsToAutoMode(actions[actionName], autoModeTask);
+      autoModeActions[actionName] = revertActionsToAutoMode(
+        actions[actionName],
+        autoModeTask
+      );
     }
   }
 
@@ -39,9 +45,14 @@ function proxyFactory<T extends Record<string, any>>(
     proxyMap?: WeakMap<any, any>;
   }
 ) {
-  const { getCallback = () => {}, setCallback = () => {}, keysStack = [], proxyMap = new WeakMap() } = options || {};
+  const {
+    getCallback = () => {},
+    setCallback = () => {},
+    keysStack = [],
+    proxyMap = new WeakMap(),
+  } = options || {};
 
-  if (typeof source !== 'object') return source;
+  if (typeof source !== "object") return source;
 
   const proxyObj = proxyMap.get(source);
   if (proxyObj) return proxyObj;
@@ -54,7 +65,7 @@ function proxyFactory<T extends Record<string, any>>(
 
       getCallback(value, keys as string[]);
 
-      if (typeof value === 'object' && !proxyValue) {
+      if (typeof value === "object" && !proxyValue) {
         return proxyFactory(value, {
           getCallback,
           setCallback,
@@ -106,7 +117,7 @@ class Store<T extends object, A extends Actions> {
         this.currentProxyGetKeys = keys as string[];
       },
       setCallback: (_, keys) => {
-        this.effectList.add(keys.join('.'));
+        this.effectList.add(keys.join("."));
       },
     });
 
@@ -118,7 +129,7 @@ class Store<T extends object, A extends Actions> {
   }
 
   private applyRender() {
-    this.listeners.forEach(listener => listener());
+    this.listeners.forEach((listener) => listener());
   }
 
   addListener(listener: () => void) {
@@ -137,17 +148,28 @@ class Store<T extends object, A extends Actions> {
 }
 
 export function useStore(storeName?: string): any;
-export function useStore<T extends (state: any) => any>(getState?: T, storeName?: string): ReturnType<T>;
-export function useStore(getState?: any, name?: string): any {
-  const storeName = typeof getState === 'string' ? getState : name || defaultStoreName;
+export function useStore<T extends (state: any) => any>(
+  getState?: T
+): ReturnType<T>;
+export function useStore<T extends (state: any) => any>(
+  storeName: string,
+  getState: T
+): ReturnType<T>;
+export function useStore(name?: any, getState?: any): any {
+  const storeName = typeof name === "string" ? name : defaultStoreName;
 
   const [, update] = useState({});
   const id = useId();
 
-  const getStateFn = useEvent(typeof getState === 'function' ? getState : state => state);
+  const getStateFn = useEvent(
+    typeof name === "function"
+      ? name
+      : typeof getState === "function"
+      ? getState
+      : (state) => state
+  );
 
   const preState = useRef();
-
   const [store, setStore] = useState(() => storeMap.get(storeName));
 
   if (!store) {
@@ -155,15 +177,15 @@ export function useStore(getState?: any, name?: string): any {
 
     if (!storeKeys.length)
       throw new Error(
-        '请检查是否已经正确初始化store \n获取的 store 为：【' +
+        "请检查是否已经正确初始化store \n获取的 store 为：【" +
           storeName +
-          ('】\n实际存在的 store：【' + [...storeMap.keys()] + '】')
+          ("】\n实际存在的 store：【" + [...storeMap.keys()] + "】")
       );
 
     throw new Error(
-      '未获取到正确的store。\n获取的 store 为：【' +
+      "未获取到正确的store。\n获取的 store 为：【" +
         storeName +
-        ('】\n实际存在的 store：【' + [...storeMap.keys()] + '】')
+        ("】\n实际存在的 store：【" + [...storeMap.keys()] + "】")
     );
   }
 
@@ -175,7 +197,7 @@ export function useStore(getState?: any, name?: string): any {
       getCallback(_, keys) {
         try {
           store.currentProxyGetKeys = keys as string[];
-          const key = keys.join('.');
+          const key = keys.join(".");
           if (!store.usedMap[key]) {
             store.usedMap[key] = new Set([id]);
           } else {
@@ -185,9 +207,11 @@ export function useStore(getState?: any, name?: string): any {
       },
       setCallback: (_, keys) => {
         if (store.getOptions().strictMode) {
-          throw new Error('严格模式下，不能直接修改 state，只能通过 actions 进行修改');
+          throw new Error(
+            "严格模式下，不能直接修改 state，只能通过 actions 进行修改"
+          );
         }
-        store.effectList.add(keys.join('.'));
+        store.effectList.add(keys.join("."));
       },
       keysStack: state === store.state ? [] : currentPrefixKeys,
     });

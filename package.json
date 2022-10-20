@@ -12,7 +12,12 @@
     ".gitignore",
     "package.json",
     "tsconfig.json",
-    "README.md"
+    "README.md",
+    "example/src",
+    "example/public",
+    "example/package-lock.json",
+    "example/package.json",
+    "example/tsconfig.json"
   ],
   "keywords": [
     "react",
