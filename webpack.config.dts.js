@@ -6,12 +6,12 @@ const config = {
   mode: 'production',
   entry: './src/index.ts',
   output: {
-    filename: 'react-hook-store.min.js',
+    filename: 'wohoox.min.js',
     path: path.resolve(__dirname, 'dist'),
     globalObject: 'this',
     umdNamedDefine: true,
     library: {
-      name: 'ReactHookStore',
+      name: 'Wohoox',
       type: 'umd',
     },
     clean: true,

@@ -437,3 +437,8 @@ async function getVersion () {
 
 * If you do not use `useStore` to get state, **components will not re-render**.
 * Use strict mode if possible(use actions to modify state).
+
+## TODO
+
+1. unit test
+2. add createMultiStore
