@@ -16,7 +16,6 @@ const config = {
     },
     clean: true,
   },
-  devtool: 'source-map',
   module: {
     rules: [
       {

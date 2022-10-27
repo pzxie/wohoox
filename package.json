@@ -2,7 +2,7 @@
   "name": "wohoox",
   "version": "1.1.0",
   "description": "Reactive store by react hooks",
-  "main": "dist/react-hook-store.min.js",
+  "main": "dist/wohoox.min.js",
   "scripts": {
     "build:dts": "webpack --config webpack.config.dts.js ",
     "build": "webpack"
