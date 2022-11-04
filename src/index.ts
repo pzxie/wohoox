@@ -1,35 +1,54 @@
-import { useState, useEffect, useRef } from "react";
-import useEvent from "./hooks/useEvent";
-import useId from "./hooks/useId";
-import useUpdate from "./hooks/useUpdate";
+import { useState, useEffect, useRef } from 'react';
+import useEvent from './hooks/useEvent';
+import useId from './hooks/useId';
+import useUpdate from './hooks/useUpdate';
 
-const storeMap: Map<string, Store<object, Actions>> = new Map();
+const storeMap: Map<string, Store<object, ActionsDefine<object>>> = new Map();
 
-const defaultStoreName = "default";
+const defaultStoreName = 'default';
 
-export type Actions = {
-  [key: string]: ((...args: any) => any) | Actions;
+let isModifyByAction = false;
+
+type ActionsDefine<S> = {
+  [key: string]: ((state: S, ...args: any) => any) | ActionsDefine<S>;
 };
+
+type ActionDispatch<S, R> = {
+  [K in keyof R]: ExtractDispatcherFromActions<S, R[K]>;
+};
+
+type ExtractDispatcherFromActions<TState, TAction> = TAction extends () => any
+  ? TAction
+  : TAction extends (state: TState, ...args: infer TRest) => any
+  ? TRest extends []
+    ? () => any
+    : (...arg: TRest) => any
+  : TAction extends ActionsDefine<TState>
+  ? ActionDispatch<TState, TAction>
+  : never;
 
 export type Options = { strictMode?: boolean };
 
-function revertActionsToAutoMode<Actions>(
-  actions: Actions,
-  autoModeTask = () => {}
-): Actions {
-  const autoModeActions = {} as Actions;
+function revertActionsToAutoMode<
+  TState,
+  TActions extends ActionsDefine<TState>
+>(state: TState, actions: TActions, autoModeTask = () => {}) {
+  const autoModeActions: ActionDispatch<TState, TActions> = Object.assign({});
 
   for (let actionName in actions) {
-    if (typeof actions[actionName] === "function") {
+    if (typeof actions[actionName] === 'function') {
       autoModeActions[actionName] = ((...args: any) => {
-        (actions[actionName] as any)(...args);
+        isModifyByAction = true;
+        (actions[actionName] as any)(state, ...args);
+        isModifyByAction = false;
         autoModeTask();
       }) as any;
-    } else {
+    } else if (typeof actions[actionName] === 'object') {
       autoModeActions[actionName] = revertActionsToAutoMode(
-        actions[actionName],
+        state,
+        actions[actionName] as any,
         autoModeTask
-      );
+      ) as any;
     }
   }
 
@@ -39,9 +58,12 @@ function revertActionsToAutoMode<Actions>(
 function proxyFactory<T extends Record<string, any>>(
   source: T,
   options?: {
-    getCallback?(value: any, keys: string[]): void;
-    setCallback?(value: any, keys: string[]): boolean | undefined | void;
-    keysStack?: string[];
+    getCallback?(value: any, keys: (string | number | symbol | Symbol)[]): void;
+    setCallback?(
+      value: any,
+      keys: (string | number | symbol | Symbol)[]
+    ): boolean | undefined | void;
+    keysStack?: (string | number | symbol | Symbol)[];
     proxyMap?: WeakMap<any, any>;
   }
 ) {
@@ -52,7 +74,7 @@ function proxyFactory<T extends Record<string, any>>(
     proxyMap = new WeakMap(),
   } = options || {};
 
-  if (typeof source !== "object") return source;
+  if (typeof source !== 'object') return source;
 
   const proxyObj = proxyMap.get(source);
   if (proxyObj) return proxyObj;
@@ -63,13 +85,13 @@ function proxyFactory<T extends Record<string, any>>(
       const proxyValue = proxyMap.get(value);
       const keys = [...keysStack, key];
 
-      getCallback(value, keys as string[]);
+      getCallback(value, keys);
 
-      if (typeof value === "object" && !proxyValue) {
+      if (typeof value === 'object' && !proxyValue) {
         return proxyFactory(value, {
           getCallback,
           setCallback,
-          keysStack: keys as string[],
+          keysStack: keys,
           proxyMap,
         });
       }
@@ -78,7 +100,7 @@ function proxyFactory<T extends Record<string, any>>(
     },
     set(target, key, value, receiver) {
       const keys = [...keysStack, key];
-      const isValid = setCallback(value, keys as string[]);
+      const isValid = setCallback(value, keys);
 
       if (isValid === false) return false;
 
@@ -91,45 +113,57 @@ function proxyFactory<T extends Record<string, any>>(
   return proxy;
 }
 
-class Store<T extends object, A extends Actions> {
+class Store<S extends object, A extends ActionsDefine<S>> {
   private listeners: Array<() => void> = [];
 
   private options = {
     strictMode: true,
   };
 
-  sourceState;
+  public state: S;
 
-  currentProxyGetKeys: string[] = [];
+  // save source state, generate new proxy for every useStore.
+  sourceState: S;
 
+  public actions = {} as ActionDispatch<S, A>;
+
+  // recording every components who used store state field
   usedMap: Record<string, Set<string>> = {};
 
+  // Field order when getting deep fields，effectList source
+  currentProxyGetKeys: (string | number | symbol | Symbol)[] = [];
+
+  // settled state field list
   effectList: Set<string> = new Set();
 
-  public actions = {} as A;
-
-  constructor(name: string, public state: T, actions?: A, options?: Options) {
+  constructor(name: string, state: S, actions?: A, options?: Options) {
     storeMap.set(name, this);
     this.sourceState = state;
     Object.assign(this.options, options);
     this.state = proxyFactory(state, {
       getCallback: (_, keys) => {
-        this.currentProxyGetKeys = keys as string[];
+        this.currentProxyGetKeys = keys;
       },
       setCallback: (_, keys) => {
-        this.effectList.add(keys.join("."));
+        if (!isModifyByAction && this.options.strictMode) {
+          throw new Error(
+            'In the strict mode, state cannot be modified by expression. Only actions are allowed'
+          );
+        }
+
+        this.effectList.add(keys.join('.'));
       },
     });
 
     if (actions)
-      this.actions = revertActionsToAutoMode(actions, () => {
+      this.actions = revertActionsToAutoMode(this.state, actions, () => {
         this.applyRender();
         this.effectList.clear();
       });
   }
 
   private applyRender() {
-    this.listeners.forEach((listener) => listener());
+    this.listeners.forEach(listener => listener());
   }
 
   addListener(listener: () => void) {
@@ -156,17 +190,17 @@ export function useStore<T extends (state: any) => any>(
   getState: T
 ): ReturnType<T>;
 export function useStore(name?: any, getState?: any): any {
-  const storeName = typeof name === "string" ? name : defaultStoreName;
+  const storeName = typeof name === 'string' ? name : defaultStoreName;
 
   const [, update] = useState({});
   const id = useId();
 
   const getStateFn = useEvent(
-    typeof name === "function"
+    typeof name === 'function'
       ? name
-      : typeof getState === "function"
+      : typeof getState === 'function'
       ? getState
-      : (state) => state
+      : (state: any) => state
   );
 
   const preState = useRef();
@@ -177,15 +211,15 @@ export function useStore(name?: any, getState?: any): any {
 
     if (!storeKeys.length)
       throw new Error(
-        "请检查是否已经正确初始化store \n获取的 store 为：【" +
+        'Please check the store has been initialized correctly. \nget store:【' +
           storeName +
-          ("】\n实际存在的 store：【" + [...storeMap.keys()] + "】")
+          ('】\nexist stores:【' + [...storeMap.keys()] + '】')
       );
 
     throw new Error(
-      "未获取到正确的store。\n获取的 store 为：【" +
+      'cannot get the correct store。\nget store:【' +
         storeName +
-        ("】\n实际存在的 store：【" + [...storeMap.keys()] + "】")
+        ('】\nexist stores:【' + [...storeMap.keys()] + '】')
     );
   }
 
@@ -196,8 +230,8 @@ export function useStore(name?: any, getState?: any): any {
     return proxyFactory(getStateFn(store.sourceState), {
       getCallback(_, keys) {
         try {
-          store.currentProxyGetKeys = keys as string[];
-          const key = keys.join(".");
+          store.currentProxyGetKeys = keys;
+          const key = keys.join('.');
           if (!store.usedMap[key]) {
             store.usedMap[key] = new Set([id]);
           } else {
@@ -208,10 +242,10 @@ export function useStore(name?: any, getState?: any): any {
       setCallback: (_, keys) => {
         if (store.getOptions().strictMode) {
           throw new Error(
-            "严格模式下，不能直接修改 state，只能通过 actions 进行修改"
+            'In the strict mode, state cannot be modified by expression. Only actions are allowed'
           );
         }
-        store.effectList.add(keys.join("."));
+        store.effectList.add(keys.join('.'));
       },
       keysStack: state === store.state ? [] : currentPrefixKeys,
     });
@@ -271,14 +305,17 @@ export function useStore(name?: any, getState?: any): any {
   return state;
 }
 
-export default function createStore<T extends object, A extends Actions>({
+export default function createStore<
+  S extends object,
+  A extends ActionsDefine<S>
+>({
   name = defaultStoreName,
   initState,
   actions,
   options,
 }: {
   name?: string;
-  initState: T;
+  initState: S;
   actions?: A;
   options?: Options;
 }) {
