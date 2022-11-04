@@ -8,8 +8,8 @@ const userStore = createStore({
     description: "reactive store",
   },
   actions: {
-    updateName(name: string) {
-      userStore.state.name = name;
+    updateName(state, name: string) {
+      state.name = name;
     },
   },
 });
@@ -26,8 +26,8 @@ const devStore = createStore({
   name: "department",
   initState: devInitState,
   actions: {
-    updateAddress(address: typeof devInitState["address"]) {
-      devStore.state.address = address;
+    updateAddress(state, address: typeof devInitState["address"]) {
+      state.address = address;
     },
   },
 });

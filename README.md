@@ -25,26 +25,6 @@ npm install -S wohoox
 
 It is used to create a store.
 
-```` typescript
-export declare type Actions = {
-    [key: string]: ((...args: any) => any) | Actions;
-};
-export declare type Options = {
-    strictMode?: boolean;
-};
-
-function createStore<T extends object, A extends Actions>({ name, initState, actions, options, }: {
-    name?: string;
-    initState: T;
-    actions?: A;
-    options?: Options;
-}): {
-    name: string;
-    state: T;
-    actions: A;
-};
-````
-
 #### Params explain
 
 * `name:` default as `'default'`. name of store. it is used as an identifier to get store data.
@@ -67,8 +47,8 @@ const store = createStore({
     version: '1.x',
   },
   actions: {
-    updateVersion(version: string) {
-      store.state.version = version;
+    updateVersion(state, version: string) {
+      state.version = version;
     },
   },
 })
@@ -85,7 +65,7 @@ export const actions = store.actions
         version: string;
     };
     actions: {
-        updateVersion(version: string): void;
+        updateVersion(state: { version: string }, version: string): void;
     };
 }
 ````
@@ -177,8 +157,8 @@ const userStore = createStore({
     description: 'reactive store',
   },
   actions: {
-    updateName(name: string) {
-      userStore.state.name = name;
+    updateName(state, name: string) {
+      state.name = name;
     },
   },
 })
@@ -205,8 +185,8 @@ const devStore = createStore({
   name: 'department',
   initState: devInitState,
   actions: {
-    updateAddress(address: typeof devInitState['address']) {
-      devStore.state.address = address;
+    updateAddress(state, address: typeof devInitState['address']) {
+      state.address = address;
     },
   },
 })
@@ -357,8 +337,8 @@ const store = createStore({
     version: '1.X',
   },
   actions: {
-    updateVersion(version: string) {
-      store.state.version = version;
+    updateVersion(state, version: string) {
+      state.version = version;
     },
 +   // rerender component
 +   dispatch (){}

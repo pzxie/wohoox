@@ -5,8 +5,8 @@ const store = createStore({
     version: "1.x",
   },
   actions: {
-    updateVersion(version: string) {
-      store.state.version = version;
+    updateVersion(state, version: string) {
+      state.version = version;
     },
   },
 });
