@@ -2,24 +2,26 @@
 
 ![wohoox](./example/public/wohoox_211x176.png)
 
-Easy and lightweight react store by react hooks.
+基于 react hooks 的简洁、轻量 react store.
+
+## 翻译
 
 [English](./README.md) [中文文档](./README_CN.md)
 
-## Required
+## 兼容要求
 
 * react: ">=16.8.0"
 * browser: only supports browsers with [native ES2015 support](https://caniuse.com/es6)
 
-## Install
+## 安装
 
 ```` bash
 npm install -S wohoox
 ````
 
-## Quick Start
+## 快速上手
 
-1. create a store
+1. 创建store
 
 ````typescript
 /**
@@ -46,7 +48,7 @@ export { useStore } from 'wohoox';
 export const actions = store.actions
 ````
 
-2. use state in component
+2. 在组件中获取并使用 state
 
 ````jsx
 /**
@@ -55,7 +57,7 @@ export const actions = store.actions
 import { actions, useStore } from 'src/store.ts'
 
 function Example () {
-  // Default to get 'default' store and return the hole state
+  // 默认获取名为【default】的 store 中的整个 state
   const userState = useStore()
 
   const version = useStore(state => state.version)
@@ -69,10 +71,10 @@ function Example () {
 }
 ````
 
-3. typescript support
+3. typescript 支持
 
-In order to be able to automatically infer the type based on state, useStore needs to be redefine
-**If you do not use typescript, you can use `useStore` directly**
+为了能够完整使用 typescript 的类型推断, useStore 需要进行重新声明
+**如果你不使用 typescript, 你可以直接使用 wohoox 导出的 `useStore`**
 
 ````jsx
 /**
@@ -130,15 +132,15 @@ export function useStore(name?: any, fn?: any) {
 export const actions = store.actions
 ````
 
-## Advance
+## 更多用法
 
-### Multi Store
+### 多模块整合
 
-> If you want to use multi store by module, you can look here.
+> 如果你想对store按模块进行划分，你可以看这里
 
-#### Create multi store
+#### 创建多个 store
 
-* Create a store named 'user'
+* 创建一个名为【user】的 store
 
 ````typescript
 /**
@@ -161,7 +163,7 @@ const userStore = createStore({
 export const userActions = userStore.actions
 ````
 
-* Create a store named 'department'
+* 创建一个名为【department】的 store
 
 ````typescript
 /**
@@ -189,9 +191,10 @@ const devStore = createStore({
 export const devActions = devStore.actions
 ````
 
-* Combine multi store  
-You can combine all stores together. In order to be able to automatically infer the type based on state, useStore needs to be redefine
-**If you do not use typescript, you can use `useStore` directly**
+* 将多个 store 组合起来
+
+同样的，为了能够完整使用 typescript 的类型推断, useStore，actions 需要进行重新声明
+**如果你不使用 typescript, 你可以直接使用 wohoox 导出的 `useStore` 以及 store 的 actions 属性**
 
 ````typescript
 /**
@@ -222,7 +225,7 @@ export function useStore(fn?: any, name?: any) {
 }
 
 /**
- * pick up actions
+ * 获取所有模块的 actions 属性
  */
 export const actions = Object.keys(store).reduce((pre, current) => {
   pre[current as "default"] = store[current as "default"]["actions"];
@@ -232,7 +235,7 @@ export const actions = Object.keys(store).reduce((pre, current) => {
 
 #### usage
 
-Use multi store is same as single store, just need to point the store name
+多模块的使用方式和单模块的一样，只是需要指明获取 state 的 store 名称
 
 ````jsx
 /**
@@ -264,14 +267,14 @@ function example () {
 }
 ````
 
-### StrictMode
+### 严格模式
 
-In order to make the code style more standardized.
-**Strict mode is on by default. Which means actions is the only way to modify state**.
+为了是代码风格更加统一，以及使代码更加规范
+**默认是开启了严格模式的，这意味着只能通过 actions 才能对 state 进行修改**.
 
-#### Turn on
+#### 开启严格模式
 
-Actions are the only valid way to modify data
+只能通过 actions 才能对 state 进行修改
 
 ````typescript
 const store = createStore({
@@ -291,7 +294,7 @@ const store = createStore({
 })
 ````
 
-Modify data by actions
+通过 actions 修改数据
 
 ````jsx
 import { actions } from 'src/store.ts'
@@ -301,7 +304,7 @@ function exampleStrictMode () {
   const state = useStore()
 
   const updateVersion = () => {
-    // Error when modify by state
+    // 直接修改 state 会报错
     // state.version = state.version + '_1'
     // actions.dispatch()
 
@@ -318,12 +321,12 @@ function exampleStrictMode () {
 }
 `````
 
-#### Turn off
+#### 关闭严格模式
 
-Valid ways
+下面的方式都是被允许的
 
-* Actions
-* state expression
+* 通过 actions 修改数据
+* 通过表达式直接修改数据，但需要额外声明并调用一个空actions
 
 ````typescript
 const store = createStore({
@@ -334,7 +337,7 @@ const store = createStore({
     updateVersion(state, version: string) {
       state.version = version;
     },
-+   // rerender component
++   // 用来触发组件重新渲染
 +   dispatch (){}
   },
   options: {
@@ -344,7 +347,7 @@ const store = createStore({
 })
 ````
 
-Modify data
+修改数据
 
 ````jsx
 import { actions } from 'src/store.ts'
@@ -359,7 +362,7 @@ function exampleStrictMode () {
 
     // OK
     state.version = state.version + '_1'
-    // rerender by an action(it could be an empty function)
+    // 该 actions 将会使组件重新渲染
     actions.dispatch()
   }
 
@@ -372,17 +375,17 @@ function exampleStrictMode () {
 }
 `````
 
-### Used in js/ts code
+### 在纯 js/ts 文件中使用 wohoox
 
-`useStore` is used in component. You can also use state in js and ts file
+`useStore` 只能用在函数式组件中. 你也可以直接导出 state 进行使用
 
 ````typescript
 /**
  * src/store.ts
  */
 
-// export state from store.ts
-// important... do not use it in components, it can not to rerender
+// 导出 state
+// 重要提醒... 不要通过这种方式在组件中使用，该方式不会使组件重新渲染
 + export const state = store.state
 
 ````
@@ -395,7 +398,7 @@ function exampleStrictMode () {
 import { state, actions } from 'src/store'
 
 function request () {
-  // use state in other js/ts file
+  // 在其他文件中使用 state
   return fetch(`/api/details?version=${state.version}`)
 }
 
@@ -414,18 +417,18 @@ async function getVersion () {
 
 ### createStore
 
-It is used to create a store.
+他用来初始化并创建一个 store
 
-#### Params
+#### 参数说明
 
-* `name:` default as `'default'`. name of store. it is used as an identifier to get store data.
-* `initState:` Initial the data and use it as the data structure of the state.
-* `actions:` Dispatch to change data. As the only valid way to modify data in strict mode, then it will caused by page rerender
-* `options.strictMode:` default as `true`. Strict mode switch for store. Once the switch turn on, actions will be the only valid way to modify data, otherwise you can directly modify the data by state. `ex: state.age = 23`  
+* `name:` store名称，默认为`'default'`. 作为 store 的唯一标识符，在多模块的时候，该字段用于区分模块.
+* `initState:` 初始化数据，并使用该数据的数据结构作为 typescript 类型推断
+* `actions:` 修改数据的方式，并促使相关组件进行重新渲染。如果在严格模式下，是作为唯一合法修改数据的方式
+* `options.strictMode:` 严格模式开关。默认 `true`. 严格模式下，actions 是唯一可以修改 state 的方式。非严格模式下，还可以直接修改 state。 `ex: state.age = 23`  
 
-#### Usage
+#### 用法
 
-Create a store named 'default'
+创建一个名叫【default】的 store
 
 ````typescript
 /**
@@ -462,14 +465,14 @@ const store = createStore({
 
 ### useStore
 
-A hooks to get the state of store by store name and callback
+用来获取 state 的 hooks。如果所有参数都不传，将返回名为【default】的 store 的整个 state
 
-#### Params
+#### 参数说明
 
-* `name:` Optional, default as 'default'. Get state from store by name. `Note:` An error will be throw when the name does not exist.
-* `callback:` return a detail state, you can use it as redux reselect, but it would be recalculate every time.
+* `name:` 获取 state 的 store 名称。可选, 默认为 'default'. 如果传入了一个不存在的 store 名称，将会抛出错误.
+* `callback:` 通过该参数返回具体的状态。
 
-#### Usage
+#### 用法
 
 ````jsx
 /**
@@ -478,15 +481,15 @@ A hooks to get the state of store by store name and callback
 import { actions } from 'src/store.ts'
 
 function Example () {
-  // Default to get 'default' store and return the hole state
+  // 默认获取名为【default】的 store 的整个 state
   const defaultStoreState = useStore()
-  // same as useStore()
+  // 和 useStore() 一样
   const defaultStoreState = useStore('default')
 
-  // get the state of store which named user
+  // 获取名为【user】的 store 的整个 state
   const userStoreState = useStore('user')
 
-  // get state field by callback and store name
+  // 通过名称、callback 获取 state 里面的具体字段
   const version = useStore(state => state.version)
   const author = useStore(state => state.details.author)
   const details = useStore('default', state => state.details)
@@ -497,8 +500,8 @@ function Example () {
 
 #### Typescript
 
-In order to be able to automatically infer the type based on state, useStore needs to be redefine
-**If you do not use typescript, you can use `useStore` directly**
+为了能够完整使用 typescript 的类型推断, useStore 需要进行重新声明
+**如果你不使用 typescript, 你可以直接使用 wohoox 导出的 `useStore`**
 
 ````jsx
 /**
@@ -522,9 +525,9 @@ export function useStore(name?: any, fn?: any) {
 
 ## Notes
 
-* If you do not use `useStore` to get state, **components will not re-render**.
-* Use strict mode if possible(use actions to modify state).
+* 在组件中，如果你不使用 `useStore` 获取数据，**数据改变后，组件将不会重新渲染**
+* 尽可能使用严格模式（使用 actions 去修改数据）
 
 ## TODO
 
-1. export a dispatch function from wohoox. Used to replace manually created dispatch
+1. 增加导出一个 dispatch 方法，用来替代在 store 中手动创建的 dispatch
