@@ -7,7 +7,7 @@ import {
   screen,
 } from '@testing-library/react';
 
-import createStore, { useStore } from '../src';
+import createStore, { useStore, dispatch, dispatchAll } from '../src';
 
 const reactLegency = !!process.env.reactLegency;
 
@@ -82,6 +82,56 @@ function initStore(storeName?: string, options?: { strictMode?: boolean }) {
 afterEach(cleanup);
 
 describe('component: getState', () => {
+  it('get state before init store, should be error', () => {
+    let error;
+
+    function Child() {
+      let state;
+      try {
+        state = useStore();
+      } catch(e) {
+        error = e
+      }
+
+      return (
+        <div>
+          <span>{JSON.stringify(state)}</span>
+        </div>
+      );
+    }
+
+    const { container } = render(<Child />, { legacyRoot: reactLegency });
+
+    expect(error).toBeInstanceOf(Error);
+    expect(container.querySelector('span')?.innerHTML).toBeFalsy();
+  });
+
+  it('get state by not exist store name, should be error', () => {
+    let error;
+
+    initStore();
+
+    function Child() {
+      let state;
+      try {
+        state = useStore('notExistStore');
+      } catch(e) {
+        error = e
+      }
+
+      return (
+        <div>
+          <span>{JSON.stringify(state)}</span>
+        </div>
+      );
+    }
+
+    const { container } = render(<Child />, { legacyRoot: reactLegency });
+
+    expect(error).toBeInstanceOf(Error);
+    expect(container.querySelector('span')?.innerHTML).toBeFalsy();
+  });
+
   it('get hold state of store named [default], by no params', () => {
     let { initState } = initStore();
 
@@ -505,9 +555,183 @@ describe('component: update state by actions', () => {
     expect(childName.innerHTML).toBe(initName + '_1');
     expect(parentName.innerHTML).toBe(initName + '_1');
   });
+
+  it('update child param of reference field + update reference self alternately, check component self rerender', () => {
+    let { store } = initStore();
+
+    const initVersion = JSON.parse(JSON.stringify(store.state.version));
+    function Child() {
+      const version = useStore(s => s.version);
+
+      return (
+        <div>
+          <span role="major">{version.major}</span>
+          <span role="minor">{version.minor}</span>
+          <span role="patch">{version.patch}</span>
+          <button
+            role="updatePatchBtn"
+            onClick={() => {
+              store.actions.updatePatch();
+            }}
+          >
+            update patch
+          </button>
+          <button
+            role="updateVersionBtn"
+            onClick={() => {
+              store.actions.updateVersion('2.2.2');
+            }}
+          >
+            update version
+          </button>
+        </div>
+      );
+    }
+
+    render(<Child />, { legacyRoot: reactLegency });
+
+    let major = screen.getByRole('major');
+    let minor = screen.getByRole('minor');
+    let patch = screen.getByRole('patch');
+
+    expect(major?.innerHTML).toBe(initVersion.major.toString());
+    expect(minor?.innerHTML).toBe(initVersion.minor.toString());
+    expect(patch?.innerHTML).toBe(initVersion.patch.toString());
+
+    const updatePatchBtn = screen.getByRole('updatePatchBtn')!;
+    const updateVersionBtn = screen.getByRole('updateVersionBtn')!;
+
+    fireEvent.click(updatePatchBtn);
+    expect(major?.innerHTML).toBe('1');
+    expect(minor?.innerHTML).toBe('1');
+    expect(patch?.innerHTML).toBe('2');
+
+    fireEvent.click(updatePatchBtn);
+    expect(major?.innerHTML).toBe('1');
+    expect(minor?.innerHTML).toBe('1');
+    expect(patch?.innerHTML).toBe('3');
+
+
+    fireEvent.click(updateVersionBtn);
+    expect(major?.innerHTML).toBe('2');
+    expect(minor?.innerHTML).toBe('2');
+    expect(patch?.innerHTML).toBe('2');
+
+    fireEvent.click(updatePatchBtn);
+    expect(major?.innerHTML).toBe('2');
+    expect(minor?.innerHTML).toBe('2');
+    expect(patch?.innerHTML).toBe('3');
+
+    fireEvent.click(updatePatchBtn);
+    expect(major?.innerHTML).toBe('2');
+    expect(minor?.innerHTML).toBe('2');
+    expect(patch?.innerHTML).toBe('4');
+
+    fireEvent.click(updateVersionBtn);
+    expect(major?.innerHTML).toBe('2');
+    expect(minor?.innerHTML).toBe('2');
+    expect(patch?.innerHTML).toBe('2');
+  });  
+
+  it('update child param of reference field + update reference self alternately, check all relate components rerender', () => {
+    let { store } = initStore();
+
+    const initVersion = JSON.parse(JSON.stringify(store.state.version));
+    function Child() {
+      const version = useStore(s => s.version);
+
+      return (
+        <div>
+          <span role="major">{version.major}</span>
+          <span role="minor">{version.minor}</span>
+          <span role="patch">{version.patch}</span>
+          <button
+            role="updatePatchBtn"
+            onClick={() => {
+              store.actions.updatePatch();
+            }}
+          >
+            update patch
+          </button>
+          <button
+            role="updateVersionBtn"
+            onClick={() => {
+              store.actions.updateVersion('2.2.2');
+            }}
+          >
+            update version
+          </button>
+        </div>
+      );
+    }
+
+    function Parent () {
+      const version = useStore(s => s.version);
+
+      return  <div>
+        <span role="parentPatch">{version.patch}</span>
+        <Child />
+        </div>
+    }
+
+    render(<Parent />, { legacyRoot: reactLegency });
+
+    let major = screen.getByRole('major');
+    let minor = screen.getByRole('minor');
+    let patch = screen.getByRole('patch');
+    let parentPatch = screen.getByRole('parentPatch');
+
+    expect(major?.innerHTML).toBe(initVersion.major.toString());
+    expect(minor?.innerHTML).toBe(initVersion.minor.toString());
+    expect(patch?.innerHTML).toBe(initVersion.patch.toString());
+    expect(parentPatch?.innerHTML).toBe(initVersion.patch.toString());
+
+    const updatePatchBtn = screen.getByRole('updatePatchBtn')!;
+    const updateVersionBtn = screen.getByRole('updateVersionBtn')!;
+
+    fireEvent.click(updatePatchBtn);
+    expect(major?.innerHTML).toBe('1');
+    expect(minor?.innerHTML).toBe('1');
+    expect(patch?.innerHTML).toBe('2');
+    expect(parentPatch?.innerHTML).toBe('2');
+
+    fireEvent.click(updatePatchBtn);
+    expect(major?.innerHTML).toBe('1');
+    expect(minor?.innerHTML).toBe('1');
+    expect(patch?.innerHTML).toBe('3');
+    expect(parentPatch?.innerHTML).toBe('3');
+
+
+    fireEvent.click(updateVersionBtn);
+    expect(major?.innerHTML).toBe('2');
+    expect(minor?.innerHTML).toBe('2');
+    expect(patch?.innerHTML).toBe('2');
+    expect(parentPatch?.innerHTML).toBe('2');
+
+
+    fireEvent.click(updatePatchBtn);
+    expect(major?.innerHTML).toBe('2');
+    expect(minor?.innerHTML).toBe('2');
+    expect(patch?.innerHTML).toBe('3');
+    expect(parentPatch?.innerHTML).toBe('3');
+
+
+    fireEvent.click(updatePatchBtn);
+    expect(major?.innerHTML).toBe('2');
+    expect(minor?.innerHTML).toBe('2');
+    expect(patch?.innerHTML).toBe('4');
+    expect(parentPatch?.innerHTML).toBe('4');
+
+    fireEvent.click(updateVersionBtn);
+    expect(major?.innerHTML).toBe('2');
+    expect(minor?.innerHTML).toBe('2');
+    expect(patch?.innerHTML).toBe('2');
+    expect(parentPatch?.innerHTML).toBe('2');
+
+  });  
 });
 
-describe('component: update state by state expression', () => {
+describe('component: update state by state expression + dispatch by actions', () => {
   it('update origin field in strictMode, should throw error', () => {
     let { store } = initStore();
 
@@ -594,6 +818,220 @@ describe('component: update state by state expression', () => {
             onClick={() => {
               version.patch = +version.patch + 1;
               store.actions.dispatch();
+            }}
+          >
+            update
+          </button>
+        </div>
+      );
+    }
+
+    const { container } = render(<Child />, { legacyRoot: reactLegency });
+
+    const updateNameBtn = container.querySelector('button')!;
+    const span = container.querySelector('span')!;
+
+    expect(span.innerHTML).toBe(initPatch + '');
+
+    fireEvent.click(updateNameBtn);
+    expect(span.innerHTML).toBe(+initPatch + 1 + '');
+  });
+});
+
+describe('component: update state by state expression + dispatch by wohoox dispatch', () => {
+  it('update origin field in strictMode, should throw error', () => {
+    initStore();
+
+    let errMessage = '';
+    let renderTime = 0;
+    function Child() {
+      const state = useStore();
+
+      renderTime += 1;
+
+      return (
+        <div>
+          <span>{state.name}</span>
+          <button
+            onClick={() => {
+              try {
+                state.name += '_1';
+                dispatch();
+              } catch (e: any) {
+                errMessage = e;
+              }
+            }}
+          >
+            update
+          </button>
+        </div>
+      );
+    }
+
+    const { container } = render(<Child />, { legacyRoot: reactLegency });
+
+    expect(renderTime).toBe(1);
+
+    const updateNameBtn = container.querySelector('button')!;
+    fireEvent.click(updateNameBtn);
+    expect(renderTime).toBe(1);
+    expect(errMessage).toBeInstanceOf(Error);
+  });
+
+  it('update origin field', () => {
+    let { store } = initStore(undefined, { strictMode: false });
+
+    const initName = store.state.name;
+    function Child() {
+      const state = useStore();
+
+      return (
+        <div>
+          <span>{state.name}</span>
+          <button
+            onClick={() => {
+              state.name += '_1';
+              dispatch();
+            }}
+          >
+            update
+          </button>
+        </div>
+      );
+    }
+
+    const { container } = render(<Child />, { legacyRoot: reactLegency });
+
+    const updateNameBtn = container.querySelector('button')!;
+    const span = container.querySelector('span')!;
+
+    expect(span.innerHTML).toBe(initName);
+
+    fireEvent.click(updateNameBtn);
+    expect(span.innerHTML).toBe(initName + '_1');
+  });
+
+  it('update field of reference object', () => {
+    let { store } = initStore(undefined, { strictMode: false });
+
+    const initPatch = store.state.version.patch;
+    function Child() {
+      const version = useStore(st => st.version);
+
+      return (
+        <div>
+          <span>{version.patch}</span>
+          <button
+            onClick={() => {
+              version.patch = +version.patch + 1;
+              dispatch('default');
+            }}
+          >
+            update
+          </button>
+        </div>
+      );
+    }
+
+    const { container } = render(<Child />, { legacyRoot: reactLegency });
+
+    const updateNameBtn = container.querySelector('button')!;
+    const span = container.querySelector('span')!;
+
+    expect(span.innerHTML).toBe(initPatch + '');
+
+    fireEvent.click(updateNameBtn);
+    expect(span.innerHTML).toBe(+initPatch + 1 + '');
+  });
+});
+
+describe('component: update state by state expression + dispatch by wohoox dispatchAll', () => {
+  it('update origin field in strictMode, should throw error', () => {
+    initStore();
+
+    let errMessage = '';
+    let renderTime = 0;
+    function Child() {
+      const state = useStore();
+
+      renderTime += 1;
+
+      return (
+        <div>
+          <span>{state.name}</span>
+          <button
+            onClick={() => {
+              try {
+                state.name += '_1';
+                dispatchAll();
+              } catch (e: any) {
+                errMessage = e;
+              }
+            }}
+          >
+            update
+          </button>
+        </div>
+      );
+    }
+
+    const { container } = render(<Child />, { legacyRoot: reactLegency });
+
+    expect(renderTime).toBe(1);
+
+    const updateNameBtn = container.querySelector('button')!;
+    fireEvent.click(updateNameBtn);
+    expect(renderTime).toBe(1);
+    expect(errMessage).toBeInstanceOf(Error);
+  });
+
+  it('update origin field', () => {
+    let { store } = initStore(undefined, { strictMode: false });
+
+    const initName = store.state.name;
+    function Child() {
+      const state = useStore();
+
+      return (
+        <div>
+          <span>{state.name}</span>
+          <button
+            onClick={() => {
+              state.name += '_1';
+              dispatchAll();
+            }}
+          >
+            update
+          </button>
+        </div>
+      );
+    }
+
+    const { container } = render(<Child />, { legacyRoot: reactLegency });
+
+    const updateNameBtn = container.querySelector('button')!;
+    const span = container.querySelector('span')!;
+
+    expect(span.innerHTML).toBe(initName);
+
+    fireEvent.click(updateNameBtn);
+    expect(span.innerHTML).toBe(initName + '_1');
+  });
+
+  it('update field of reference object', () => {
+    let { store } = initStore(undefined, { strictMode: false });
+
+    const initPatch = store.state.version.patch;
+    function Child() {
+      const version = useStore(st => st.version);
+
+      return (
+        <div>
+          <span>{version.patch}</span>
+          <button
+            onClick={() => {
+              version.patch = +version.patch + 1;
+              dispatchAll();
             }}
           >
             update

@@ -3,6 +3,10 @@ import createStore, { useStore as useWohoox } from "wohoox";
 const store = createStore({
   initState: {
     version: "1.x",
+    details: {
+      name: 'wohoox',
+      other: 'xxx'
+    }
   },
   actions: {
     updateVersion(state, version: string) {

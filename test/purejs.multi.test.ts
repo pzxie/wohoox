@@ -269,7 +269,7 @@ describe('purejs multi: update by expression', () => {
     expect(errorTime).toBe(3);
   });
 
-  it('failed in strict mode', () => {
+  it('succeed not in strict mode', () => {
     const { store } = initStore({ strictMode: false });
 
     expect(store.default.state.name).toBe('default');

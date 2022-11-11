@@ -13,7 +13,8 @@ module.exports = {
   //     require.resolve('jest-watch-typeahead/testname'),
   // ],
   testPathIgnorePatterns: [
-    "/*purejs.*/"
+    // "<rootDir>/test/purejs*",
+    // "<rootDir>/test/components.mul*",
   ],
   testEnvironmentOptions: {
     "url": "http://localhost"

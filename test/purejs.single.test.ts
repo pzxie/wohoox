@@ -150,7 +150,7 @@ describe('purejs: update by expression', () => {
     expect(errMessage).toBeInstanceOf(Error);
   });
 
-  it('failed in strict mode', () => {
+  it('succeed not in strict mode', () => {
     const {
       store: { state },
     } = initStore(undefined, { strictMode: false });

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { fireEvent, cleanup, render, screen } from '@testing-library/react';
 
-import createStore, { useStore } from '../src';
+import createStore, { useStore, dispatch, dispatchAll } from '../src';
 
 const reactLegency = !!process.env.reactLegency;
 
@@ -145,6 +145,30 @@ describe('multi component: get store name', () => {
 });
 
 describe('multi component: getState', () => {
+  it('update store name, get state of new store', () => {
+    let { userInitState, defaultInitState } = initStore();
+
+    function Child() {
+      const [storeName, setStoreName] = React.useState('default');
+      let state = useStore(storeName);;
+
+      return (
+        <div>
+          <span>{JSON.stringify(state)}</span>
+          <button onClick={() => { setStoreName('user') }}>get user store</button>
+        </div>
+      );
+    }
+
+    const { container } = render(<Child />, { legacyRoot: reactLegency });
+
+    expect(container.querySelector('span')?.innerHTML).toBe(JSON.stringify(defaultInitState));
+
+    fireEvent.click(container.querySelector('button')!);
+
+    expect(container.querySelector('span')?.innerHTML).toBe(JSON.stringify(userInitState));
+  });
+
   it('get hold state by store name and no params', () => {
     let { userInitState, defaultInitState, departmentInitState } = initStore();
 
@@ -828,7 +852,7 @@ describe('multi component: update state by actions', () => {
   });
 });
 
-describe('multi component: update state by state expression', () => {
+describe('multi component: update state by state expression + dispatch by actions', () => {
   it('update origin field in strictMode, should throw error', () => {
     let {
       actions,
@@ -1103,6 +1127,659 @@ describe('multi component: update state by state expression', () => {
             onClick={() => {
               departmentState.owner += '_1';
               actions.department.dispatch();
+            }}
+          >
+            update department
+          </button>
+        </div>
+      );
+    }
+
+    const userInitState = JSON.parse(JSON.stringify(userState));
+    const defaultInitState = JSON.parse(JSON.stringify(defaultState));
+    const departmentInitState = JSON.parse(JSON.stringify(departmentState));
+
+    render(<Child />, { legacyRoot: reactLegency });
+
+    expect(renderTime).toBe(1);
+
+    fireEvent.click(screen.getByRole('defaultBtn'));
+    expect(renderTime).toBe(2);
+    expect(screen.getByRole('defaultText').innerHTML).toBe(
+      defaultInitState.details.author + '_1'
+    );
+    expect(screen.getByRole('userText').innerHTML).toBe(
+      userInitState.details.province
+    );
+    expect(screen.getByRole('departmentText').innerHTML).toBe(
+      departmentInitState.details.owner
+    );
+
+    fireEvent.click(screen.getByRole('userBtn'));
+    expect(renderTime).toBe(3);
+    expect(screen.getByRole('defaultText').innerHTML).toBe(
+      defaultInitState.details.author + '_1'
+    );
+    expect(screen.getByRole('userText').innerHTML).toBe(
+      userInitState.details.province + '_1'
+    );
+    expect(screen.getByRole('departmentText').innerHTML).toBe(
+      departmentInitState.details.owner
+    );
+
+    fireEvent.click(screen.getByRole('departmentBtn'));
+    expect(renderTime).toBe(4);
+    expect(screen.getByRole('defaultText').innerHTML).toBe(
+      defaultInitState.details.author + '_1'
+    );
+    expect(screen.getByRole('userText').innerHTML).toBe(
+      userInitState.details.province + '_1'
+    );
+    expect(screen.getByRole('departmentText').innerHTML).toBe(
+      departmentInitState.details.owner + '_1'
+    );
+  });
+});
+
+
+describe('multi component: update state by state expression + dispatch by wohoox dispatch', () => {
+  it('update origin field in strictMode, should throw error', () => {
+    let {
+      userInitState,
+      defaultInitState,
+      departmentInitState,
+    } = initStore();
+
+    let errMessage = '';
+    let renderTime = 0;
+    let errorTime = 0;
+    function Child() {
+      const defaultState = useStore();
+      const userState = useStore('user');
+      const departmentState = useStore('department');
+
+      renderTime += 1;
+
+      return (
+        <div>
+          <span role="defaultText">{defaultState.name}</span>
+          <span role="userText">{userState.name}</span>
+          <span role="departmentText">{departmentState.name}</span>
+          <button
+            role="defaultBtn"
+            onClick={() => {
+              try {
+                defaultState.name += '_1';
+                dispatch();
+              } catch (e) {
+                errMessage = e as string;
+                errorTime += 1;
+              }
+            }}
+          >
+            update default
+          </button>
+          <button
+            role="userBtn"
+            onClick={() => {
+              try {
+                userState.name += '_1';
+                dispatch('user');
+              } catch (e) {
+                errMessage = e as string;
+                errorTime += 1;
+              }
+            }}
+          >
+            update user
+          </button>
+          <button
+            role="departmentBtn"
+            onClick={() => {
+              try {
+                defaultState.name += '_1';
+                dispatch('department');
+              } catch (e) {
+                errMessage = e as string;
+                errorTime += 1;
+              }
+            }}
+          >
+            update department
+          </button>
+        </div>
+      );
+    }
+
+    render(<Child />, { legacyRoot: reactLegency });
+
+    expect(renderTime).toBe(1);
+
+    fireEvent.click(screen.getByRole('defaultBtn'));
+    expect(renderTime).toBe(1);
+    expect(errMessage).toBeInstanceOf(Error);
+    expect(screen.getByRole('defaultText').innerHTML).toBe(
+      defaultInitState.name
+    );
+    expect(screen.getByRole('userText').innerHTML).toBe(userInitState.name);
+    expect(screen.getByRole('departmentText').innerHTML).toBe(
+      departmentInitState.name
+    );
+    expect(errorTime).toBe(1);
+    errMessage = '';
+
+    fireEvent.click(screen.getByRole('userBtn'));
+    expect(renderTime).toBe(1);
+    expect(errMessage).toBeInstanceOf(Error);
+    expect(screen.getByRole('defaultText').innerHTML).toBe(
+      defaultInitState.name
+    );
+    expect(screen.getByRole('userText').innerHTML).toBe(userInitState.name);
+    expect(screen.getByRole('departmentText').innerHTML).toBe(
+      departmentInitState.name
+    );
+    expect(errorTime).toBe(2);
+    errMessage = '';
+
+    fireEvent.click(screen.getByRole('departmentBtn'));
+    expect(renderTime).toBe(1);
+    expect(errMessage).toBeInstanceOf(Error);
+    expect(screen.getByRole('defaultText').innerHTML).toBe(
+      defaultInitState.name
+    );
+    expect(screen.getByRole('userText').innerHTML).toBe(userInitState.name);
+    expect(screen.getByRole('departmentText').innerHTML).toBe(
+      departmentInitState.name
+    );
+    expect(errorTime).toBe(3);
+    errMessage = '';
+
+    expect(errMessage).toBeFalsy();
+  });
+
+  it('update origin field', () => {
+    let {
+      userInitState,
+      defaultInitState,
+      departmentInitState,
+    } = initStore({ strictMode: false });
+
+    let errMessage = '';
+    let renderTime = 0;
+    let errorTime = 0;
+
+    function Child() {
+      const defaultState = useStore();
+      const userState = useStore('user');
+      const departmentState = useStore('department');
+
+      renderTime += 1;
+
+      return (
+        <div>
+          <span role="defaultText">{defaultState.name}</span>
+          <span role="userText">{userState.name}</span>
+          <span role="departmentText">{departmentState.name}</span>
+          <button
+            role="defaultBtn"
+            onClick={() => {
+              try {
+                defaultState.name += '_1';
+                dispatch('default');
+              } catch (e) {
+                errMessage = e as string;
+                errorTime += 1;
+              }
+            }}
+          >
+            update default
+          </button>
+          <button
+            role="userBtn"
+            onClick={() => {
+              try {
+                userState.name += '_1';
+                dispatch('user');
+              } catch (e) {
+                errMessage = e as string;
+                errorTime += 1;
+              }
+            }}
+          >
+            update user
+          </button>
+          <button
+            role="departmentBtn"
+            onClick={() => {
+              try {
+                departmentState.name += '_1';
+                dispatch('department');
+              } catch (e) {
+                errMessage = e as string;
+                errorTime += 1;
+              }
+            }}
+          >
+            update department
+          </button>
+        </div>
+      );
+    }
+
+    const originDefaultName = defaultInitState.name;
+    const originUserName = userInitState.name;
+    const originDepartmentName = departmentInitState.name;
+
+    render(<Child />, { legacyRoot: reactLegency });
+
+    expect(renderTime).toBe(1);
+
+    fireEvent.click(screen.getByRole('defaultBtn'));
+    expect(renderTime).toBe(2);
+    expect(errMessage).toBeFalsy();
+    expect(screen.getByRole('defaultText').innerHTML).toBe(
+      originDefaultName + '_1'
+    );
+    expect(screen.getByRole('userText').innerHTML).toBe(originUserName);
+    expect(screen.getByRole('departmentText').innerHTML).toBe(
+      originDepartmentName
+    );
+    expect(errorTime).toBe(0);
+
+    fireEvent.click(screen.getByRole('userBtn'));
+    expect(renderTime).toBe(3);
+    expect(errMessage).toBeFalsy();
+    expect(screen.getByRole('defaultText').innerHTML).toBe(
+      originDefaultName + '_1'
+    );
+    expect(screen.getByRole('userText').innerHTML).toBe(originUserName + '_1');
+    expect(screen.getByRole('departmentText').innerHTML).toBe(
+      originDepartmentName
+    );
+    expect(errorTime).toBe(0);
+
+    fireEvent.click(screen.getByRole('departmentBtn'));
+    expect(renderTime).toBe(4);
+    expect(errMessage).toBeFalsy();
+    expect(screen.getByRole('defaultText').innerHTML).toBe(
+      originDefaultName + '_1'
+    );
+    expect(screen.getByRole('userText').innerHTML).toBe(originUserName + '_1');
+    expect(screen.getByRole('departmentText').innerHTML).toBe(
+      originDepartmentName + '_1'
+    );
+    expect(errorTime).toBe(0);
+  });
+
+  it('update field of reference object', () => {
+    let {
+      userInitState: userState,
+      defaultInitState: defaultState,
+      departmentInitState: departmentState,
+    } = initStore({ strictMode: false });
+
+    let renderTime = 0;
+    function Child() {
+      const defaultState = useStore(s => s.details);
+      const userState = useStore('user', s => s.details);
+      const departmentState = useStore('department', s => s.details);
+
+      renderTime += 1;
+
+      return (
+        <div>
+          <span role="defaultText">{defaultState.author}</span>
+          <span role="userText">{userState.province}</span>
+          <span role="departmentText">{departmentState.owner}</span>
+          <button
+            role="defaultBtn"
+            onClick={() => {
+              defaultState.author += '_1';
+              dispatch();
+            }}
+          >
+            update default
+          </button>
+          <button
+            role="userBtn"
+            onClick={() => {
+              userState.province += '_1';
+              dispatch('user');
+            }}
+          >
+            update user
+          </button>
+          <button
+            role="departmentBtn"
+            onClick={() => {
+              departmentState.owner += '_1';
+              dispatch('department');
+            }}
+          >
+            update department
+          </button>
+        </div>
+      );
+    }
+
+    const userInitState = JSON.parse(JSON.stringify(userState));
+    const defaultInitState = JSON.parse(JSON.stringify(defaultState));
+    const departmentInitState = JSON.parse(JSON.stringify(departmentState));
+
+    render(<Child />, { legacyRoot: reactLegency });
+
+    expect(renderTime).toBe(1);
+
+    fireEvent.click(screen.getByRole('defaultBtn'));
+    expect(renderTime).toBe(2);
+    expect(screen.getByRole('defaultText').innerHTML).toBe(
+      defaultInitState.details.author + '_1'
+    );
+    expect(screen.getByRole('userText').innerHTML).toBe(
+      userInitState.details.province
+    );
+    expect(screen.getByRole('departmentText').innerHTML).toBe(
+      departmentInitState.details.owner
+    );
+
+    fireEvent.click(screen.getByRole('userBtn'));
+    expect(renderTime).toBe(3);
+    expect(screen.getByRole('defaultText').innerHTML).toBe(
+      defaultInitState.details.author + '_1'
+    );
+    expect(screen.getByRole('userText').innerHTML).toBe(
+      userInitState.details.province + '_1'
+    );
+    expect(screen.getByRole('departmentText').innerHTML).toBe(
+      departmentInitState.details.owner
+    );
+
+    fireEvent.click(screen.getByRole('departmentBtn'));
+    expect(renderTime).toBe(4);
+    expect(screen.getByRole('defaultText').innerHTML).toBe(
+      defaultInitState.details.author + '_1'
+    );
+    expect(screen.getByRole('userText').innerHTML).toBe(
+      userInitState.details.province + '_1'
+    );
+    expect(screen.getByRole('departmentText').innerHTML).toBe(
+      departmentInitState.details.owner + '_1'
+    );
+  });
+});
+
+describe('multi component: update state by state expression + dispatch by wohoox dispatchAll', () => {
+  it('update origin field in strictMode, should throw error', () => {
+    let {
+      userInitState,
+      defaultInitState,
+      departmentInitState,
+    } = initStore();
+
+    let errMessage = '';
+    let renderTime = 0;
+    let errorTime = 0;
+    function Child() {
+      const defaultState = useStore();
+      const userState = useStore('user');
+      const departmentState = useStore('department');
+
+      renderTime += 1;
+
+      return (
+        <div>
+          <span role="defaultText">{defaultState.name}</span>
+          <span role="userText">{userState.name}</span>
+          <span role="departmentText">{departmentState.name}</span>
+          <button
+            role="defaultBtn"
+            onClick={() => {
+              try {
+                defaultState.name += '_1';
+                dispatchAll();
+              } catch (e) {
+                errMessage = e as string;
+                errorTime += 1;
+              }
+            }}
+          >
+            update default
+          </button>
+          <button
+            role="userBtn"
+            onClick={() => {
+              try {
+                userState.name += '_1';
+                dispatchAll();
+              } catch (e) {
+                errMessage = e as string;
+                errorTime += 1;
+              }
+            }}
+          >
+            update user
+          </button>
+          <button
+            role="departmentBtn"
+            onClick={() => {
+              try {
+                defaultState.name += '_1';
+                dispatchAll();
+              } catch (e) {
+                errMessage = e as string;
+                errorTime += 1;
+              }
+            }}
+          >
+            update department
+          </button>
+        </div>
+      );
+    }
+
+    render(<Child />, { legacyRoot: reactLegency });
+
+    expect(renderTime).toBe(1);
+
+    fireEvent.click(screen.getByRole('defaultBtn'));
+    expect(renderTime).toBe(1);
+    expect(errMessage).toBeInstanceOf(Error);
+    expect(screen.getByRole('defaultText').innerHTML).toBe(
+      defaultInitState.name
+    );
+    expect(screen.getByRole('userText').innerHTML).toBe(userInitState.name);
+    expect(screen.getByRole('departmentText').innerHTML).toBe(
+      departmentInitState.name
+    );
+    expect(errorTime).toBe(1);
+    errMessage = '';
+
+    fireEvent.click(screen.getByRole('userBtn'));
+    expect(renderTime).toBe(1);
+    expect(errMessage).toBeInstanceOf(Error);
+    expect(screen.getByRole('defaultText').innerHTML).toBe(
+      defaultInitState.name
+    );
+    expect(screen.getByRole('userText').innerHTML).toBe(userInitState.name);
+    expect(screen.getByRole('departmentText').innerHTML).toBe(
+      departmentInitState.name
+    );
+    expect(errorTime).toBe(2);
+    errMessage = '';
+
+    fireEvent.click(screen.getByRole('departmentBtn'));
+    expect(renderTime).toBe(1);
+    expect(errMessage).toBeInstanceOf(Error);
+    expect(screen.getByRole('defaultText').innerHTML).toBe(
+      defaultInitState.name
+    );
+    expect(screen.getByRole('userText').innerHTML).toBe(userInitState.name);
+    expect(screen.getByRole('departmentText').innerHTML).toBe(
+      departmentInitState.name
+    );
+    expect(errorTime).toBe(3);
+    errMessage = '';
+
+    expect(errMessage).toBeFalsy();
+  });
+
+  it('update origin field', () => {
+    let {
+      userInitState,
+      defaultInitState,
+      departmentInitState,
+    } = initStore({ strictMode: false });
+
+    let errMessage = '';
+    let renderTime = 0;
+    let errorTime = 0;
+
+    function Child() {
+      const defaultState = useStore();
+      const userState = useStore('user');
+      const departmentState = useStore('department');
+
+      renderTime += 1;
+
+      return (
+        <div>
+          <span role="defaultText">{defaultState.name}</span>
+          <span role="userText">{userState.name}</span>
+          <span role="departmentText">{departmentState.name}</span>
+          <button
+            role="defaultBtn"
+            onClick={() => {
+              try {
+                defaultState.name += '_1';
+                dispatchAll();
+              } catch (e) {
+                errMessage = e as string;
+                errorTime += 1;
+              }
+            }}
+          >
+            update default
+          </button>
+          <button
+            role="userBtn"
+            onClick={() => {
+              try {
+                userState.name += '_1';
+                dispatchAll();
+              } catch (e) {
+                errMessage = e as string;
+                errorTime += 1;
+              }
+            }}
+          >
+            update user
+          </button>
+          <button
+            role="departmentBtn"
+            onClick={() => {
+              try {
+                departmentState.name += '_1';
+                dispatchAll();
+              } catch (e) {
+                errMessage = e as string;
+                errorTime += 1;
+              }
+            }}
+          >
+            update department
+          </button>
+        </div>
+      );
+    }
+
+    const originDefaultName = defaultInitState.name;
+    const originUserName = userInitState.name;
+    const originDepartmentName = departmentInitState.name;
+
+    render(<Child />, { legacyRoot: reactLegency });
+
+    expect(renderTime).toBe(1);
+
+    fireEvent.click(screen.getByRole('defaultBtn'));
+    expect(renderTime).toBe(2);
+    expect(errMessage).toBeFalsy();
+    expect(screen.getByRole('defaultText').innerHTML).toBe(
+      originDefaultName + '_1'
+    );
+    expect(screen.getByRole('userText').innerHTML).toBe(originUserName);
+    expect(screen.getByRole('departmentText').innerHTML).toBe(
+      originDepartmentName
+    );
+    expect(errorTime).toBe(0);
+
+    fireEvent.click(screen.getByRole('userBtn'));
+    expect(renderTime).toBe(3);
+    expect(errMessage).toBeFalsy();
+    expect(screen.getByRole('defaultText').innerHTML).toBe(
+      originDefaultName + '_1'
+    );
+    expect(screen.getByRole('userText').innerHTML).toBe(originUserName + '_1');
+    expect(screen.getByRole('departmentText').innerHTML).toBe(
+      originDepartmentName
+    );
+    expect(errorTime).toBe(0);
+
+    fireEvent.click(screen.getByRole('departmentBtn'));
+    expect(renderTime).toBe(4);
+    expect(errMessage).toBeFalsy();
+    expect(screen.getByRole('defaultText').innerHTML).toBe(
+      originDefaultName + '_1'
+    );
+    expect(screen.getByRole('userText').innerHTML).toBe(originUserName + '_1');
+    expect(screen.getByRole('departmentText').innerHTML).toBe(
+      originDepartmentName + '_1'
+    );
+    expect(errorTime).toBe(0);
+  });
+
+  it('update field of reference object', () => {
+    let {
+      userInitState: userState,
+      defaultInitState: defaultState,
+      departmentInitState: departmentState,
+    } = initStore({ strictMode: false });
+
+    let renderTime = 0;
+    function Child() {
+      const defaultState = useStore(s => s.details);
+      const userState = useStore('user', s => s.details);
+      const departmentState = useStore('department', s => s.details);
+
+      renderTime += 1;
+
+      return (
+        <div>
+          <span role="defaultText">{defaultState.author}</span>
+          <span role="userText">{userState.province}</span>
+          <span role="departmentText">{departmentState.owner}</span>
+          <button
+            role="defaultBtn"
+            onClick={() => {
+              defaultState.author += '_1';
+              dispatchAll();
+            }}
+          >
+            update default
+          </button>
+          <button
+            role="userBtn"
+            onClick={() => {
+              userState.province += '_1';
+              dispatchAll();
+            }}
+          >
+            update user
+          </button>
+          <button
+            role="departmentBtn"
+            onClick={() => {
+              departmentState.owner += '_1';
+              dispatchAll();
             }}
           >
             update department

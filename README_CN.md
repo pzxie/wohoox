@@ -326,9 +326,12 @@ function exampleStrictMode () {
 下面的方式都是被允许的
 
 * 通过 actions 修改数据
-* 通过表达式直接修改数据，但需要额外声明并调用一个空actions
+* 通过表达式直接修改数据 + dispatch
 
 ````typescript
+- import createStore, { useStore as useWohoox } from 'wohoox';
++ import createStore, { useStore as useWohoox, dispatch as wohooxDispatch } from 'wohoox';
+
 const store = createStore({
   initState: {
     version: '1.X',
@@ -337,20 +340,23 @@ const store = createStore({
     updateVersion(state, version: string) {
       state.version = version;
     },
-+   // 用来触发组件重新渲染
-+   dispatch (){}
   },
   options: {
 -   strictMode: true
 +   strictMode: false
   }
 })
+
++ export function dispatch(storName?: keyof AppStore) {
++   wohooxDispatch(storName);
++ }
 ````
 
 修改数据
 
 ````jsx
-import { actions } from 'src/store.ts'
+- import { actions } from 'src/store.ts'
++ import { actions, dispatch } from 'src/store.ts'
 
 
 function exampleStrictMode () {
@@ -362,8 +368,7 @@ function exampleStrictMode () {
 
     // OK
     state.version = state.version + '_1'
-    // 该 actions 将会使组件重新渲染
-    actions.dispatch()
+    dispatch()
   }
 
   return <div>
@@ -414,6 +419,9 @@ async function getVersion () {
 
 * [createStore](#createstore)
 * [useStore](#usestore)
+* [dispatch](#dispatch)
+* [dispatchAll](#dispatchall)
+
 
 ### createStore
 
@@ -522,6 +530,55 @@ export function useStore(name?: any, fn?: any) {
   return state;
 }
 ````
+
+### dispatch
+
+dispatch action for none strict mode. Same as defined in actions, like:
+
+````typescript
+actions: {
+  dispatch(){}
+}
+````
+
+#### Params
+
+* `storeName:` default as 'default'. tell wohoox which store should be update
+
+#### Usage
+
+````typescript
+import { useStore, dispatch } from "../store";
+
+function exampleStrictMode () {
+  const state = useStore()
+
+  const updateVersion = () => {
+    state.version = state.version + '_1'
+    dispatch()
+  }
+
+  return <div>
+    <h2>Default Version</h2>
+    {state.version}
+
+    <button onClick={updateVersion}>click to update version</button>
+  </div>
+}
+````
+
+#### Typescript
+
+In order to be able to automatically infer the type based on store module, useStore needs to be redefine
+**If you do not use typescript, you can use `dispatch` directly**
+
+````typescript
+export function dispatch(storName?: keyof AppStore) {
+  wohooxDispatch(storName);
+}
+````
+
+### dispatchAll
 
 ## Notes
 

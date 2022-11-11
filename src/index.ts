@@ -29,10 +29,11 @@ type ExtractDispatcherFromActions<TState, TAction> = TAction extends () => any
 
 export type Options = { strictMode?: boolean };
 
-function revertActionsToAutoMode<
-  TState,
-  TActions extends ActionsDefine<TState>
->(state: TState, actions: TActions, autoModeTask = () => {}) {
+function revertActionsToAutoMode<TState, TActions extends ActionsDefine<TState>>(
+  state: TState,
+  actions: TActions,
+  autoModeTask = () => {},
+) {
   const autoModeActions: ActionDispatch<TState, TActions> = Object.assign({});
 
   for (let actionName in actions) {
@@ -47,7 +48,7 @@ function revertActionsToAutoMode<
       autoModeActions[actionName] = revertActionsToAutoMode(
         state,
         actions[actionName] as any,
-        autoModeTask
+        autoModeTask,
       ) as any;
     }
   }
@@ -61,11 +62,11 @@ function proxyFactory<T extends Record<string, any>>(
     getCallback?(value: any, keys: (string | number | symbol | Symbol)[]): void;
     setCallback?(
       value: any,
-      keys: (string | number | symbol | Symbol)[]
+      keys: (string | number | symbol | Symbol)[],
     ): boolean | undefined | void;
     keysStack?: (string | number | symbol | Symbol)[];
     proxyMap?: WeakMap<any, any>;
-  }
+  },
 ) {
   const {
     getCallback = () => {},
@@ -136,6 +137,8 @@ class Store<S extends object, A extends ActionsDefine<S>> {
   // settled state field list
   effectList: Set<string> = new Set();
 
+  dispatch = () => {};
+
   constructor(name: string, state: S, actions?: A, options?: Options) {
     storeMap.set(name, this);
     this.sourceState = state;
@@ -147,7 +150,7 @@ class Store<S extends object, A extends ActionsDefine<S>> {
       setCallback: (_, keys) => {
         if (!isModifyByAction && this.options.strictMode) {
           throw new Error(
-            'In the strict mode, state cannot be modified by expression. Only actions are allowed'
+            'In the strict mode, state cannot be modified by expression. Only actions are allowed',
           );
         }
 
@@ -155,11 +158,18 @@ class Store<S extends object, A extends ActionsDefine<S>> {
       },
     });
 
-    if (actions)
-      this.actions = revertActionsToAutoMode(this.state, actions, () => {
+    this.actions = revertActionsToAutoMode(
+      this.state,
+      { ...actions!, __not_safe__dispatch: () => {} },
+      () => {
         this.applyRender();
         this.effectList.clear();
-      });
+      },
+    );
+
+    this.dispatch = this.actions.__not_safe__dispatch as () => any;
+
+    delete this.actions.__not_safe__dispatch;
   }
 
   private applyRender() {
@@ -182,28 +192,16 @@ class Store<S extends object, A extends ActionsDefine<S>> {
 }
 
 export function useStore(storeName?: string): any;
-export function useStore<T extends (state: any) => any>(
-  getState?: T
-): ReturnType<T>;
+export function useStore<T extends (state: any) => any>(getState?: T): ReturnType<T>;
 export function useStore<T extends (state: any) => any>(
   storeName: string,
-  getState: T
+  getState: T,
 ): ReturnType<T>;
 export function useStore(name?: any, getState?: any): any {
   const storeName = typeof name === 'string' ? name : defaultStoreName;
 
   const [, update] = useState({});
   const id = useId();
-
-  const getStateFn = useEvent(
-    typeof name === 'function'
-      ? name
-      : typeof getState === 'function'
-      ? getState
-      : (state: any) => state
-  );
-
-  const preState = useRef();
   const [store, setStore] = useState(() => storeMap.get(storeName));
 
   if (!store) {
@@ -213,15 +211,23 @@ export function useStore(name?: any, getState?: any): any {
       throw new Error(
         'Please check the store has been initialized correctly. \nget store:【' +
           storeName +
-          ('】\nexist stores:【' + [...storeMap.keys()] + '】')
+          ('】\nexist stores:【' + [...storeMap.keys()] + '】'),
       );
 
     throw new Error(
       'cannot get the correct store。\nget store:【' +
         storeName +
-        ('】\nexist stores:【' + [...storeMap.keys()] + '】')
+        ('】\nexist stores:【' + [...storeMap.keys()] + '】'),
     );
   }
+
+  const getStateFn = useEvent(
+    typeof name === 'function'
+      ? name
+      : typeof getState === 'function'
+      ? getState
+      : (state: any) => state,
+  );
 
   const getStateProxy = useEvent(() => {
     const state = getStateFn(store.state);
@@ -242,7 +248,7 @@ export function useStore(name?: any, getState?: any): any {
       setCallback: (_, keys) => {
         if (store.getOptions().strictMode) {
           throw new Error(
-            'In the strict mode, state cannot be modified by expression. Only actions are allowed'
+            'In the strict mode, state cannot be modified by expression. Only actions are allowed',
           );
         }
         store.effectList.add(keys.join('.'));
@@ -251,6 +257,7 @@ export function useStore(name?: any, getState?: any): any {
     });
   });
 
+  const preState = useRef();
   const [state, setState] = useState(getStateProxy);
 
   useUpdate(() => {
@@ -259,8 +266,12 @@ export function useStore(name?: any, getState?: any): any {
     // 主要用于开发环境，
     // 只有开发环境下，才可能手动变更 storeName ，导致 store 变更，需要重新进行数据代理设置
     // 生产环境下，storeName 除非动态获取，否则不会变更
-    setStore(storeMap.get(storeName));
-  }, [storeName]);
+    const newStore = storeMap.get(storeName);
+
+    if (store === newStore) return;
+
+    setStore(newStore);
+  }, [storeName, store]);
 
   useUpdate(() => {
     // 只在 component update 时调用，否则，会造成初始化时。渲染两次的问题
@@ -269,7 +280,14 @@ export function useStore(name?: any, getState?: any): any {
     // 主要用于开发环境，
     // 只有开发环境下，才可能手动变更 storeName ，导致 store 变更，需要重新进行数据代理设置
     // 生产环境下，下面几个都不会变更，也就无作用
-    setState(getStateProxy);
+    // const newState = getStateProxy();
+    // if (state === newState) return;
+    const state = getStateFn(store.state);
+
+    if (preState.current === state) return;
+
+    preState.current = state;
+    setState(typeof state === 'object' ? getStateProxy : state);
   }, [id, getStateFn, store, getStateProxy]);
 
   useEffect(() => {
@@ -283,8 +301,7 @@ export function useStore(name?: any, getState?: any): any {
       // state自身变更，需要重设值
       if (state !== preState.current) {
         preState.current = state;
-        setState(state);
-        // update({});
+        setState(typeof state === 'object' ? getStateProxy : state);
       }
 
       // state子属性变更，只需要触发重新渲染，就能拿到最新值
@@ -300,15 +317,12 @@ export function useStore(name?: any, getState?: any): any {
     return () => {
       store.removeListener(callback);
     };
-  }, [getStateFn, id, store]);
+  }, [getStateFn, id, store, getStateProxy]);
 
   return state;
 }
 
-export default function createStore<
-  S extends object,
-  A extends ActionsDefine<S>
->({
+export default function createStore<S extends object, A extends ActionsDefine<S>>({
   name = defaultStoreName,
   initState,
   actions,
@@ -326,4 +340,12 @@ export default function createStore<
     state: store.state,
     actions: store.actions,
   };
+}
+
+export function dispatch(storeName?: string) {
+  storeMap.get(storeName || defaultStoreName)?.dispatch();
+}
+
+export function dispatchAll() {
+  Array.from(storeMap.values()).forEach(store => store.dispatch());
 }
