@@ -9,18 +9,6 @@
     "test": "cross-env jest --passWithNoTests",
     "test:react-legency": "cross-env reactLegency=true jest --passWithNoTests"
   },
-  "files": [
-    "dist",
-    ".gitignore",
-    "package.json",
-    "tsconfig.json",
-    "README.md",
-    "example/src",
-    "example/public",
-    "example/package-lock.json",
-    "example/package.json",
-    "example/tsconfig.json"
-  ],
   "keywords": [
     "react",
     "store",
