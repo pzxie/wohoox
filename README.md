@@ -527,7 +527,7 @@ export function useStore(name?: any, fn?: any) {
 
 ### dispatch
 
-dispatch action for none strict mode. Same as defined in actions, like:
+dispatch action for non-strict mode. Same as defined in actions, like:
 
 ````typescript
 actions: {
@@ -544,7 +544,7 @@ actions: {
 ````typescript
 import { useStore, dispatch } from "../store";
 
-function exampleStrictMode () {
+function exampleNonStrictMode () {
   const state = useStore()
 
   const updateVersion = () => {
@@ -553,7 +553,7 @@ function exampleStrictMode () {
   }
 
   return <div>
-    <h2>Default Version</h2>
+    <h2>Non-Strict mode</h2>
     {state.version}
 
     <button onClick={updateVersion}>click to update version</button>
@@ -573,6 +573,43 @@ export function dispatch(storName?: keyof AppStore) {
 ````
 
 ### dispatchAll
+
+dispatch all store to rerender
+
+````jsx
+/**
+ * src/pages/multiExample.tsx
+ */
+import { actions } from 'src/multiStore.ts'
+import { dispatchAll } from 'wohoox'
+
+function example () {
+  const defaultState = useStore()
+  const userState = useStore('user', state => state)
+  const devState = useStore('department', state => state.address)
+
+
+  return <div>
+    <h2>Default Version</h2>
+    {defaultState.version}
+
+    <h2>User Name</h2>
+    {userState.name}
+
+    <h2>Dev address</h2>
+    {devState.province}
+    {devState.city} 
+
+    <button onClick={() => {
+      defaultState.version += '_1'
+      devState.city += "_2"
+      userState.name += '_3'
+
+      dispatchAll()
+    }}>click to update all</button>
+  </div>
+}
+````
 
 ## Notes
 

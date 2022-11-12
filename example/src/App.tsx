@@ -6,8 +6,7 @@ import MultiExample from './components/multiExample';
 import { useStore } from './multiStore';
 
 function App() {
-
-  console.log('render app')
+  console.log('render app');
 
   const address = useStore('department', state => state.address);
 
@@ -15,9 +14,11 @@ function App() {
 
   return (
     <div className="App">
-      {address.city}
-      <div className="App-header">
-        {/* <img src='/wohoox.png' className="App-logo" alt="logo" /> */}
+      <div className="App-header" style={{ textAlign: 'left' }}>
+        <img src="/wohoox.png" className="App-logo" alt="logo" />
+        <h2>APP</h2>
+        <div className='text'><span className='title'>address.city: </span>{address.city}</div>
+
         <Example />
         {multi}
       </div>

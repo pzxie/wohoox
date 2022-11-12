@@ -11,7 +11,7 @@
 ## 兼容要求
 
 * react: ">=16.8.0"
-* browser: only supports browsers with [native ES2015 support](https://caniuse.com/es6)
+* browser: 所有支持[native ES2015 support](https://caniuse.com/es6)的浏览器
 
 ## 安装
 
@@ -269,7 +269,7 @@ function example () {
 
 ### 严格模式
 
-为了是代码风格更加统一，以及使代码更加规范
+为了使代码风格更加统一，以及使代码更加规范
 **默认是开启了严格模式的，这意味着只能通过 actions 才能对 state 进行修改**.
 
 #### 开启严格模式
@@ -533,7 +533,7 @@ export function useStore(name?: any, fn?: any) {
 
 ### dispatch
 
-dispatch action for none strict mode. Same as defined in actions, like:
+非严格模式下的更新组件方式。可以间接将其理解为与在 action 里定义的dispatch 差不多。如：
 
 ````typescript
 actions: {
@@ -543,7 +543,7 @@ actions: {
 
 #### Params
 
-* `storeName:` default as 'default'. tell wohoox which store should be update
+* `storeName:` 默认为'default'. 告诉 wohoox 需要更新哪个 store 的组件状态
 
 #### Usage
 
@@ -569,8 +569,8 @@ function exampleStrictMode () {
 
 #### Typescript
 
-In order to be able to automatically infer the type based on store module, useStore needs to be redefine
-**If you do not use typescript, you can use `dispatch` directly**
+为了能够完整使用 typescript 的类型推断, dispatch 需要进行重新声明使用
+**如果你不使用 typescript, 你可以直接使用 wohoox 导出的 `dispatch`**
 
 ````typescript
 export function dispatch(storName?: keyof AppStore) {
@@ -579,6 +579,43 @@ export function dispatch(storName?: keyof AppStore) {
 ````
 
 ### dispatchAll
+
+用于多模块 store 类型。更新所有 store 模块的组件状态，如果只有一个 store, 使用 dispatch 即可
+
+````jsx
+/**
+ * src/pages/multiExample.tsx
+ */
+import { actions } from 'src/multiStore.ts'
+import { dispatchAll } from 'wohoox'
+
+function example () {
+  const defaultState = useStore()
+  const userState = useStore('user', state => state)
+  const devState = useStore('department', state => state.address)
+
+
+  return <div>
+    <h2>Default Version</h2>
+    {defaultState.version}
+
+    <h2>User Name</h2>
+    {userState.name}
+
+    <h2>Dev address</h2>
+    {devState.province}
+    {devState.city} 
+
+    <button onClick={() => {
+      defaultState.version += '_1'
+      devState.city += "_2"
+      userState.name += '_3'
+
+      dispatchAll()
+    }}>click to update all</button>
+  </div>
+}
+````
 
 ## Notes
 

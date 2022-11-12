@@ -13,6 +13,9 @@ const store = createStore({
       state.version = version;
     },
   },
+  options: {
+    strictMode: false
+  }
 });
 
 type DefaultState = typeof store.state;
