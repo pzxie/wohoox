@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.3.0](https://github.com/pzxie/wohoox/compare/v1.2.2...v1.3.0) (2022-11-12)
+
+
+### Features
+
+* add dispatch for non-strict mode ([384bcb3](https://github.com/pzxie/wohoox/commit/384bcb3628c2593df97420e9c913ca2e979c9ba1))
+
 ### [1.2.2](https://github.com/pzxie/wohoox/compare/v1.2.1...v1.2.2) (2022-11-08)
 
 ### [1.2.1](https://github.com/pzxie/wohoox/compare/v1.2.0...v1.2.1) (2022-11-04)
