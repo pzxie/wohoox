@@ -9,7 +9,6 @@ export default function Example() {
     <div>
       <h2 style={{color: 'red'}}>Single store</h2>
       <div className='text'><span className='title'>version: </span>{state.version}</div>
-
       <button
         onClick={() => {
           state.version += '_1';
@@ -18,6 +17,8 @@ export default function Example() {
       >
         dispatch to update version
       </button>
+
+      {/* <div className='text margin-10'><span className='title'>array-object: </span>{state.type.array[3].name}</div> */}
     </div>
   );
 }

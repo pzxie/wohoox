@@ -2,6 +2,8 @@ import { useMemo } from 'react';
 import './App.css';
 import Example from './components/example';
 import MultiExample from './components/multiExample';
+import ArrayType from './components/exampleArray';
+import ExampleObject from './components/exampleObject';
 
 import { useStore } from './multiStore';
 
@@ -20,6 +22,8 @@ function App() {
         <div className='text'><span className='title'>address.city: </span>{address.city}</div>
 
         <Example />
+        <ExampleObject></ExampleObject>
+        <ArrayType></ArrayType>
         {multi}
       </div>
     </div>

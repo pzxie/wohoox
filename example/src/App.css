@@ -33,6 +33,10 @@
   word-break: break-all;
 }
 
+.margin-10 {
+  margin-top: 10px;
+}
+
 h2, h3, h1 {
   margin: 10px 0;
 }
