@@ -9,9 +9,8 @@ export default function ExampleObject() {
     <div>
       <h2 style={{ color: 'red' }}>Object</h2>
 
-      <div className="text"><span className='title'>newKey:</span> {typeObject.reference.newKey}</div>
       <div className="text"><span className='title'>original field:</span> {typeObject.name}</div>
-      <div className="text"><span className='title'>reference field:</span> {JSON.stringify(typeObject.reference.value)}</div>
+      <div className="text"><span className='title'>reference field:</span> {JSON.stringify(typeObject.reference)}</div>
       
      
       <button
@@ -51,11 +50,20 @@ export default function ExampleObject() {
 
       <button
         onClick={() => {
+          delete typeObject.reference.key
+          dispatch();
+        }}
+      >
+        delete exist key: key
+      </button>
+
+      <button
+        onClick={() => {
           delete typeObject.reference.newKey
           dispatch();
         }}
       >
-        delete key: newKey
+        delete new key: newKey
       </button>
     </div>
   );

@@ -5,8 +5,9 @@ import useUpdate from './common/useUpdate';
 import { useStore } from './useStore';
 
 import { observer } from '../core/observer';
-import { isObserverObject } from '../utils';
+import { isObserverObject, getSettleType } from '../utils';
 import { defaultStoreName } from '../global';
+import { EffectType } from '../constant';
 
 export function useWohoox(storeName?: string): any;
 export function useWohoox<T extends (state: any) => any>(getState?: T): ReturnType<T>;
@@ -47,21 +48,26 @@ export function useWohoox(name?: any, getState?: any): any {
           }
         } catch (e) {}
       },
-      setCallback: (_, keys) => {
+      setCallback: (value, keys, target) => {
         if (store.getOptions().strictMode) {
           throw new Error(
             'In the strict mode, state cannot be modified by expression. Only actions are allowed',
           );
         }
-        store.effectList.add(keys.join('.'));
+
+        store.addKeyToEffectList(
+          keys,
+          value,
+          getSettleType(target, [keys[keys.length - 1]], value),
+        );
       },
-      deleteCallback: (_, keys) => {
+      deleteCallback: (target, keys) => {
         if (store.getOptions().strictMode) {
           throw new Error(
-            'In the strict mode, state cannot be modified by expression. Only actions are allowed',
+            'In the strict mode, state cannot be delete by expression. Only actions are allowed',
           );
         }
-        store.effectList.add(keys.join('.'));
+        store.addKeyToEffectList(keys, target, EffectType.delete);
       },
       keysStack: state === store.state ? [] : currentPrefixKeys,
     });
@@ -81,6 +87,13 @@ export function useWohoox(name?: any, getState?: any): any {
 
   if (Array.isArray(getStateFn(store.state))) {
     store.addKeyToUsedMap([...store.currentProxyGetKeys, 'length'].join('.'), id);
+  } else {
+    try {
+      if (store.currentProxyGetKeys.length) {
+        // some key like symbol convert would be throw error. but we can ignore this
+        store.addKeyToUsedMap(store.currentProxyGetKeys.join('.'), id);
+      }
+    } catch (e) {}
   }
 
   // 只在 component update 时调用，否则，会造成初始化时。渲染两次的问题
@@ -98,7 +111,7 @@ export function useWohoox(name?: any, getState?: any): any {
     const callback = () => {
       const state = getStateFn(store.state);
 
-      updateState()
+      updateState();
 
       // state子属性变更，只需要触发重新渲染，就能拿到最新值
       for (let key of store.effectList) {

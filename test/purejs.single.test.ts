@@ -44,6 +44,14 @@ function initStore(storeName?: string, options?: { strictMode?: boolean }) {
           patch: +versionArr[2],
         };
       },
+
+      deleteName(state) {
+        delete (state as any).name;
+      },
+
+      addNewKey(state, key, value){
+        (state as any)[key] = value;
+      }
     },
     options,
   });
@@ -128,10 +136,32 @@ describe('purejs: update by actions', () => {
       [state.version.major, state.version.minor, state.version.patch].join('.')
     ).toBe(version);
   });
+
+  it('delete field', () => {
+    const {
+      store: { actions, state },
+    } = initStore();
+    expect(state.name).toBe('wohoox-default-test');
+
+    actions.deleteName()
+
+    expect(state.name).toBeFalsy();
+  });
+
+  it('add field', () => {
+    const {
+      store: { actions, state },
+    } = initStore();
+    expect(state['newKey']).toBeFalsy();
+
+    actions.addNewKey('newKey', 'newKey')
+
+    expect(state['newKey']).toBe('newKey');
+  });
 });
 
 describe('purejs: update by expression', () => {
-  it('failed in strict mode', () => {
+  it('modify value: failed in strict mode', () => {
     const {
       store: { state },
     } = initStore();
@@ -148,9 +178,8 @@ describe('purejs: update by expression', () => {
 
     expect(state.name).toBe('wohoox-default-test');
     expect(errMessage).toBeInstanceOf(Error);
-  });
-
-  it('succeed not in strict mode', () => {
+  });  
+  it('modify value: succeed not in strict mode', () => {
     const {
       store: { state },
     } = initStore(undefined, { strictMode: false });
@@ -167,5 +196,79 @@ describe('purejs: update by expression', () => {
 
     expect(state.name).toBe('wohoox');
     expect(errMessage).toBe('');
+  });
+  
+  it('delete key: failed in strict mode', () => {
+    const {
+      store: { state },
+    } = initStore();
+
+    let errMessage = '';
+
+    expect(state.name).toBe('wohoox-default-test');
+
+    try {
+      delete (state as any).name
+    } catch (e: any) {
+      errMessage = e;
+    }
+
+    expect(state.name).toBe('wohoox-default-test');
+    expect(errMessage).toBeInstanceOf(Error);
+  });
+  it('delete key: succeed not in strict mode', () => {
+    const {
+      store: { state },
+    } = initStore(undefined, { strictMode: false });
+
+    let errMessage = '';
+
+    expect(state.name).toBe('wohoox-default-test');
+
+    try {
+      delete (state as any).name
+    } catch (e: any) {
+      errMessage = e;
+    }
+
+    expect(state.name).toBeFalsy();
+    expect(errMessage).toBe('');
+  });
+
+  it('add key: failed in strict mode', () => {
+    const {
+      store: { state },
+    } = initStore();
+
+    let errMessage = '';
+
+    expect((state as any).addKey).toBeFalsy();
+
+    try {
+      (state as any).addKey = 'addKey'
+    } catch (e: any) {
+      errMessage = e;
+    }
+
+    expect((state as any).addKey).toBeFalsy();
+    expect(errMessage).toBeInstanceOf(Error);
+  });
+  it('add key: succeed not in strict mode', () => {
+    const {
+      store: { state },
+    } = initStore(undefined, { strictMode: false });
+
+    let errMessage = '';
+
+    expect((state as any).addKey).toBeFalsy();
+
+    try {
+      (state as any).addKey = 'addKey'
+    } catch (e: any) {
+      errMessage = e;
+    }
+
+    expect((state as any).addKey).toBe('addKey');
+    expect(errMessage).toBeFalsy();
   });
 });

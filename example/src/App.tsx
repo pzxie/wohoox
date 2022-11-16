@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import './App.css';
 import Example from './components/example';
 import MultiExample from './components/multiExample';
+import ExampleDataType from './components/exampleDataType';
 import ArrayType from './components/exampleArray';
 import ExampleObject from './components/exampleObject';
 
@@ -21,9 +22,10 @@ function App() {
         <h2>APP</h2>
         <div className='text'><span className='title'>address.city: </span>{address.city}</div>
 
-        <Example />
+        <ExampleDataType></ExampleDataType>
         <ExampleObject></ExampleObject>
         <ArrayType></ArrayType>
+        <Example />
         {multi}
       </div>
     </div>

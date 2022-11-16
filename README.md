@@ -615,7 +615,10 @@ function example () {
 
 * If you do not use `useStore` to get state, **components will not re-render**.
 * Use strict mode if possible(use actions to modify state).
+* Type of Symbol can not to be the key of store
 
 ## TODO
 
-1. export a dispatch function from wohoox. Used to replace manually created dispatch
+1. sync from server
+2. persist
+3. map, set support

@@ -1120,43 +1120,6 @@ describe('component: render times', () => {
     expect(renderTimes).toBe(beforeRenderTimes + 2);
   });
 
-  // it('update multi field by multi actions in different queues, render multi time', () => {
-  //   let { store } = initStore();
-
-  //   let renderTimes = 0;
-  //   function Child() {
-  //     const name = useStore(s => s.name);
-  //     const version = useStore(s => s.version);
-  //     renderTimes += 1;
-
-  //     return (
-  //       <div>
-  //         <span>{name}</span>
-  //         <span>{version.patch}</span>
-  //         <button
-  //           onClick={() => {
-  //             store.actions.updateName(name + '_1');
-  //             Promise.resolve().then(() => store.actions.updatePatch())
-  //           }}
-  //         >
-  //           update
-  //         </button>
-  //       </div>
-  //     );
-  //   }
-
-  //   const { container } = render(<Child />, { legacyRoot: reactLegency });
-
-  //   const button = container.querySelector('button')!;
-  //   const beforeRenderTimes = renderTimes;
-
-  //   fireEvent.click(button);
-  //   expect(renderTimes).toBe(beforeRenderTimes + 2);
-
-  //   fireEvent.click(button);
-  //   expect(renderTimes).toBe(beforeRenderTimes + 4);
-  // });
-
   it('update field by actions, relate components rerender, otherwise not rerender', () => {
     let { store } = initStore();
 

@@ -621,7 +621,10 @@ function example () {
 
 * 在组件中，如果你不使用 `useStore` 获取数据，**数据改变后，组件将不会重新渲染**
 * 尽可能使用严格模式（使用 actions 去修改数据）
+* symbol类型不能作为 store 的 key
 
 ## TODO
 
-1. 增加导出一个 dispatch 方法，用来替代在 store 中手动创建的 dispatch
+1. 增加服务器同步数据的功能
+2. 持久化
+3. map, set 支持

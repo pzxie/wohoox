@@ -1,17 +1,76 @@
 import guid from './uuid';
+import { EffectType } from '../constant';
 
-export function isObserverObject(data) {
+export function isPlainObject(data) {
   const dataType = Object.prototype.toString.call(data);
 
+  return dataType === '[object Object]';
+}
+
+export function isMap(data) {
+  const dataType = Object.prototype.toString.call(data);
+
+  return dataType === '[object WeakMap]' || dataType === '[object Map]';
+}
+
+export function isSet(data) {
+  const dataType = Object.prototype.toString.call(data);
+
+  return dataType === '[object WeakSet]' || dataType === '[object Set]';
+}
+
+export function isObserverObject(data) {
   const isArray = Array.isArray(data);
 
-  const isPlainObject = dataType === '[object Object]';
+  return isArray || isPlainObject(data) || isSet(data) || isMap(data);
+}
 
-  const isSet = dataType === '[object WeakSet]' || dataType === '[object Set]';
+export function isPlainObjectNewKey(obj, keyArr: string[]) {
+  let tempObj = obj;
+  let isNewKey = false;
 
-  const isMap = dataType === '[object WeakMap]' || dataType === '[object Map]';
+  for (let key of keyArr) {
+    if (!tempObj.hasOwnProperty(key)) {
+      isNewKey = true;
+      break;
+    }
 
-  return isArray || isPlainObject || isSet || isMap;
+    tempObj = tempObj[key];
+  }
+
+  return isNewKey;
+}
+
+export function isMapNewKey(mapState: Map<any, any> | WeakMap<any, any>, keyArr: string[]) {
+  let tempMapState = mapState;
+  let isNewKey = false;
+
+  for (let key of keyArr) {
+    if (!tempMapState.has(key)) {
+      isNewKey = true;
+      break;
+    }
+
+    tempMapState = tempMapState[key];
+  }
+
+  return isNewKey;
+}
+
+export function isSetNewValue(setState: Set<any>, value) {
+  if (setState.has(value)) return false;
+
+  return true;
+}
+
+export function getSettleType(target, keyArr: string[], value?: any) {
+  let isNewKey = false;
+
+  if (isPlainObject(target)) isNewKey = isPlainObjectNewKey(target, keyArr);
+  else if (isMap(target)) isNewKey = isMapNewKey(target, keyArr);
+  else if (isSet(target)) isNewKey = isSetNewValue(target, value);
+
+  return isNewKey ? EffectType.add : EffectType.modify;
 }
 
 export { guid };

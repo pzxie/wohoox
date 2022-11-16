@@ -1,6 +1,7 @@
 import { storeMap, getIsModifyByAction, setIsModifyByAction, defaultStoreName } from '../global';
 import { observer } from './observer';
-import { isObserverObject } from '../utils';
+import { getSettleType, isPlainObject } from '../utils';
+import { EffectType } from '../constant';
 
 import type { ActionsDefine, ActionDispatch } from '../types';
 
@@ -21,7 +22,7 @@ function revertActionsToAutoMode<TState, TActions extends ActionsDefine<TState>>
         setIsModifyByAction(false);
         autoModeTask();
       }) as any;
-    } else if (isObserverObject(actions[actionName])) {
+    } else if (isPlainObject(actions[actionName])) {
       autoModeActions[actionName] = revertActionsToAutoMode(
         state,
         actions[actionName] as any,
@@ -51,7 +52,7 @@ export class Store<S extends object, A extends ActionsDefine<S>> {
   usedMap: Record<string, Set<string>> = {};
 
   // Field order when getting deep fields，effectList source
-  currentProxyGetKeys: (string | number | symbol | Symbol)[] = [];
+  currentProxyGetKeys: string[] = [];
 
   // settled state field list
   effectList: Set<string> = new Set();
@@ -62,27 +63,32 @@ export class Store<S extends object, A extends ActionsDefine<S>> {
     storeMap.set(name, this);
     this.sourceState = state;
     Object.assign(this.options, options);
+
     this.state = observer(state, {
       getCallback: (_, keys) => {
         this.currentProxyGetKeys = keys;
       },
-      setCallback: (_, keys) => {
+      setCallback: (value, keys, target) => {
         if (!getIsModifyByAction() && this.options.strictMode) {
           throw new Error(
             'In the strict mode, state cannot be modified by expression. Only actions are allowed',
           );
         }
 
-        this.effectList.add(keys.join('.'));
+        this.addKeyToEffectList(
+          keys,
+          value,
+          getSettleType(target, [keys[keys.length - 1]], value),
+        );
       },
       deleteCallback: (target, keys) => {
         if (!getIsModifyByAction() && this.options.strictMode) {
           throw new Error(
-            'In the strict mode, state cannot be modified by expression. Only actions are allowed',
+            'In the strict mode, state cannot be delete by expression. Only actions are allowed',
           );
         }
 
-        this.effectList.add(keys.join('.'));
+        this.addKeyToEffectList(keys, target, EffectType.delete);
       },
     });
 
@@ -115,10 +121,24 @@ export class Store<S extends object, A extends ActionsDefine<S>> {
   }
 
   addKeyToUsedMap(key: string, componentId: string) {
+    if (!key) return;
+
     if (!this.usedMap[key]) {
       this.usedMap[key] = new Set([componentId]);
     } else {
       this.usedMap[key].add(componentId);
+    }
+  }
+
+  addKeyToEffectList(keys: string[], newValue: any, effectType: EffectType) {
+    if(!keys.length) return;
+
+    this.effectList.add(keys.join('.'));
+
+    if (effectType === EffectType.add) {
+      const parentKeys = keys.slice(0, -1);
+
+      if (parentKeys.length) this.effectList.add(parentKeys.join('.'));
     }
   }
 

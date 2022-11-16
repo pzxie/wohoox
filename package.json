@@ -7,6 +7,7 @@
     "build:dts": "webpack --config webpack.config.dts.js ",
     "build": "webpack",
     "test": "cross-env jest --passWithNoTests",
+    "test:coverage": "cross-env jest --passWithNoTests --coverage",
     "test:react-legency": "cross-env reactLegency=true jest --passWithNoTests"
   },
   "files": [
