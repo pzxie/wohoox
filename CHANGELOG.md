@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.3.1](https://github.com/pzxie/wohoox/compare/v1.3.0...v1.3.1) (2022-11-16)
+
+
+### Bug Fixes
+
+* fix object add key would not rerender, addunit test for object add key and  delete key ([a67f25e](https://github.com/pzxie/wohoox/commit/a67f25e62260a0b4311aee070687da9c71d98cdd))
+
 ## [1.3.0](https://github.com/pzxie/wohoox/compare/v1.2.2...v1.3.0) (2022-11-12)
 
 
