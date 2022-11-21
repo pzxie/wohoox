@@ -627,4 +627,4 @@ function example () {
 
 1. 增加服务器同步数据的功能
 2. 持久化
-3. map, set 支持
+3. set 支持

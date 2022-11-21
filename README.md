@@ -2,7 +2,7 @@
 
 ![wohoox](./example/public/wohoox_211x176.png)
 
-Easy and lightweight react store by react hooks.
+Easy,lightweight and reactive store by react hooks.
 
 [English](./README.md) [中文文档](./README_CN.md)
 
@@ -621,4 +621,4 @@ function example () {
 
 1. sync from server
 2. persist
-3. map, set support
+3. set support
