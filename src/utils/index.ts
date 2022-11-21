@@ -1,5 +1,15 @@
 import guid from './uuid';
 import { EffectType } from '../constant';
+import { getSourceByStringifyKey } from '../core/keyMap';
+
+export function isOriginalType(data) {
+  return (
+    typeof data === 'string' ||
+    typeof data === 'bigint' ||
+    typeof data === 'boolean' ||
+    typeof data === 'symbol'
+  );
+}
 
 export function isPlainObject(data) {
   const dataType = Object.prototype.toString.call(data);
@@ -46,7 +56,12 @@ export function isMapNewKey(mapState: Map<any, any> | WeakMap<any, any>, keyArr:
   let isNewKey = false;
 
   for (let key of keyArr) {
-    if (!tempMapState.has(key)) {
+    const stringifyKeySource = getSourceByStringifyKey(key);
+
+    if (
+      !tempMapState.has(key) &&
+      (stringifyKeySource ? !tempMapState.has(stringifyKeySource) : true)
+    ) {
       isNewKey = true;
       break;
     }

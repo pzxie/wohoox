@@ -21,11 +21,11 @@ const store = createStore({
           key: 'name',
           value: 'wohoox'
         }
-      } as Record<any, any>,
+      },
       array: ['1', true, 3, {name: 'arrayObject'}, [11,22,33]] as [string, boolean, number, {name: string}, Array<number>],
       set: new Set<number>(),
       // weakSet: new WeakSet(),
-      // map: new Map(),
+      map: new Map<any, any>([[{}, {'name': 123}]]),
       weakMap: new WeakMap()
     }
   },

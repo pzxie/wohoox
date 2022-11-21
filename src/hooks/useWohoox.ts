@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import useEvent from './common/useEvent';
 import useId from './common/useId';
-import useUpdate from './common/useUpdate';
 import { useStore } from './useStore';
 
 import { observer } from '../core/observer';
@@ -34,7 +33,7 @@ export function useWohoox(name?: any, getState?: any): any {
     const state = getStateFn(store.state);
     const currentPrefixKeys = [...store.currentProxyGetKeys];
 
-    // use the same target with store state
+    // Use the same target with store state
     return observer(getStateFn(store.sourceState), {
       getCallback(value, keys) {
         try {
@@ -73,14 +72,14 @@ export function useWohoox(name?: any, getState?: any): any {
     });
   });
 
-  const preState = useRef();
+  const preState = useRef(getStateFn(store.state));
   const [state, setState] = useState(getObserverState);
   const updateState = useEvent(() => {
     const state = getStateFn(store.state);
 
     if (state === preState.current) return;
 
-    // state changed, should be set to the new state
+    // State changed, should be set to a new state
     preState.current = state;
     setState(isObserverObject(state) ? getObserverState : state);
   });
@@ -90,30 +89,27 @@ export function useWohoox(name?: any, getState?: any): any {
   } else {
     try {
       if (store.currentProxyGetKeys.length) {
-        // some key like symbol convert would be throw error. but we can ignore this
+        // Some property cannot be converted to strings, ex symbol. We can ignore this
         store.addKeyToUsedMap(store.currentProxyGetKeys.join('.'), id);
       }
     } catch (e) {}
   }
 
-  // 只在 component update 时调用，否则，会造成初始化时。渲染两次的问题
-  // store变更后，重新初始化
-  // 主要用于开发环境，
-  // 只有开发环境下，才可能手动变更 storeName ，导致 store 变更，需要重新进行数据代理设置
-  // 生产环境下，下面几个都不会变更，也就无作用
-  useUpdate(updateState, [id, store]);
+  // For dev environment more，
+  // StoreName would not be changed normally.Unless manually changed in dev
+  // or set dynamic storeName in production
+  useEffect(updateState, [id, store]);
 
   useEffect(() => {
     if (!id) return;
 
-    preState.current = getStateFn(store.state);
-
     const callback = () => {
       const state = getStateFn(store.state);
 
+      // state itself changed, update
       updateState();
 
-      // state子属性变更，只需要触发重新渲染，就能拿到最新值
+      // After the state sub-property is changed, it will be pushed into the effectList
       for (let key of store.effectList) {
         if (store.usedMap[key] && store.usedMap[key].has(id)) {
           preState.current = state;
@@ -128,6 +124,12 @@ export function useWohoox(name?: any, getState?: any): any {
       store.removeListener(callback);
     };
   }, [id, store]);
+
+  useEffect(() => {
+    return () => {
+      // todo removeUsedId from store
+    }
+  }, [id, store])
 
   return state;
 }

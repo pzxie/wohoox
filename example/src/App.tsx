@@ -5,13 +5,17 @@ import MultiExample from './components/multiExample';
 import ExampleDataType from './components/exampleDataType';
 import ArrayType from './components/exampleArray';
 import ExampleObject from './components/exampleObject';
+import ExampleMap from './components/exampleMap';
+import ExampleWeakMap from './components/exampleWeakMap';
 
-import { useStore } from './multiStore';
+import { useStore, dispatchAll } from './multiStore';
 
 function App() {
   console.log('render app');
 
   const address = useStore('department', state => state.address);
+  const type = useStore(state => state.type);
+  const mapObj = useStore(state => state.type.map);
 
   const multi = useMemo(() => <MultiExample />, []);
 
@@ -22,6 +26,15 @@ function App() {
         <h2>APP</h2>
         <div className='text'><span className='title'>address.city: </span>{address.city}</div>
 
+        <div>{mapObj.get('123')}</div>
+
+        <button onClick={() => {
+          type.object.name = Math.random() + '_1';
+          dispatchAll()
+        }}>update default name</button>
+
+        <ExampleMap></ExampleMap>
+        <ExampleWeakMap></ExampleWeakMap>
         <ExampleDataType></ExampleDataType>
         <ExampleObject></ExampleObject>
         <ArrayType></ArrayType>

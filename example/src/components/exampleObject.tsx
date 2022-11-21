@@ -41,7 +41,7 @@ export default function ExampleObject() {
       </button>
       <button
         onClick={() => {
-          typeObject.reference.newKey = 'new value'
+          (typeObject.reference as any).newKey = 'new value'
           dispatch();
         }}
       >
@@ -50,7 +50,7 @@ export default function ExampleObject() {
 
       <button
         onClick={() => {
-          delete typeObject.reference.key
+          delete (typeObject.reference as any).key
           dispatch();
         }}
       >
@@ -59,7 +59,7 @@ export default function ExampleObject() {
 
       <button
         onClick={() => {
-          delete typeObject.reference.newKey
+          delete (typeObject.reference as any).newKey
           dispatch();
         }}
       >

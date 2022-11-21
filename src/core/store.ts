@@ -43,18 +43,19 @@ export class Store<S extends object, A extends ActionsDefine<S>> {
 
   public state: S;
 
-  // save source state, generate new proxy for every useStore.
+  // Save source state to generate new proxy for every useStore.
   sourceState: S;
 
   public actions = {} as ActionDispatch<S, A>;
 
-  // recording every components who used store state field
+  // Recording every components who used the store state property
   usedMap: Record<string, Set<string>> = {};
+  // todo max size? components unmouted, usedMap
 
-  // Field order when getting deep fields，effectList source
+  // Properties stack to record current visited properties，effectList source
   currentProxyGetKeys: string[] = [];
 
-  // settled state field list
+  // settled state property list
   effectList: Set<string> = new Set();
 
   dispatch = () => {};
@@ -75,11 +76,7 @@ export class Store<S extends object, A extends ActionsDefine<S>> {
           );
         }
 
-        this.addKeyToEffectList(
-          keys,
-          value,
-          getSettleType(target, [keys[keys.length - 1]], value),
-        );
+        this.addKeyToEffectList(keys, value, getSettleType(target, [keys[keys.length - 1]], value));
       },
       deleteCallback: (target, keys) => {
         if (!getIsModifyByAction() && this.options.strictMode) {
@@ -130,8 +127,14 @@ export class Store<S extends object, A extends ActionsDefine<S>> {
     }
   }
 
+  removeAllKeysFromUsedMap(componentId: string) {
+    for(let key in this.usedMap) {
+      this.usedMap[key].delete(componentId);
+    }
+  }
+
   addKeyToEffectList(keys: string[], newValue: any, effectType: EffectType) {
-    if(!keys.length) return;
+    if (!keys.length) return;
 
     this.effectList.add(keys.join('.'));
 
