@@ -64,6 +64,98 @@ function initStore(map?: Map<any, any> | WeakMap<any, any>, options?: { strictMo
 afterEach(cleanup);
 
 describe('map single component', () => {
+  describe('size', () => {
+    function checkSize(initMap?: Map<any, any>) {
+      initStore(initMap);
+
+      function Child() {
+        let map: Map<any, any> = useStore(state => state.map);
+
+        return (
+          <div>
+            <div role="size">{map.size}</div>
+
+            <button
+              role="addBtn"
+              onClick={() => {
+                map.set(Math.floor(Math.random() * 1000000000) + '', Math.floor(Math.random() * 1000));
+                dispatch();
+              }}
+            >
+              add
+            </button>
+            <button
+              role="addMapBtn"
+              onClick={() => {
+                map.set('map', Math.floor(Math.random() * 1000));
+                dispatch();
+              }}
+            >
+              add string map
+            </button>
+            <button
+              role="deleteMapBtn"
+              onClick={() => {
+                map.delete('map');
+                dispatch();
+              }}
+            >
+              delete map
+            </button>
+            <button
+              role="clear"
+              onClick={() => {
+                map.clear()
+                dispatch();
+              }}
+            >
+              clear
+            </button>
+          </div>
+        );
+      }
+
+      render(<Child />, { legacyRoot: reactLegency });
+
+      const size = screen.getByRole('size');
+      const addBtn = screen.getByRole('addBtn');
+      const addMapBtn = screen.getByRole('addMapBtn');
+      const deleteMapBtn = screen.getByRole('deleteMapBtn');
+      const clear = screen.getByRole('clear');
+
+      let sizeHtml = initMap?.size || 0;
+      expect(size.innerHTML).toBe(sizeHtml + '');
+
+      for(let i = 0 ; i < 20; i++) {
+        fireEvent.click(addBtn);
+        sizeHtml++
+        expect(size.innerHTML).toBe(sizeHtml + '');
+      }
+
+      fireEvent.click(deleteMapBtn);
+      expect(size.innerHTML).toBe(sizeHtml + '');
+
+      fireEvent.click(addMapBtn);
+      sizeHtml++
+      expect(size.innerHTML).toBe(sizeHtml + '');
+
+      fireEvent.click(deleteMapBtn);
+      sizeHtml--;
+      expect(size.innerHTML).toBe(sizeHtml + '');
+
+      fireEvent.click(clear);
+      sizeHtml = 0;
+      expect(size.innerHTML).toBe(sizeHtml + '');
+    }
+
+    it('no initial', () => {
+      checkSize();
+    }); 
+    it('initial 2 items', () => {
+      checkSize(new Map([['a', 3], ['b', 2]]));
+    });
+  });
+
   describe('add new item', () => {
     function checkToString(key, value) {
       initStore();
@@ -657,6 +749,115 @@ describe('map single component', () => {
 });
 
 describe('map multi component', () => {
+  describe('size', () => {
+    function checkSize(initMap?: Map<any, any>) {
+      initStore(initMap);
+
+      function Child() {
+        let map: Map<any, any> = useStore(state => state.map);
+
+        return (
+          <div>
+            <div role="size">{map.size}</div>
+
+            <button
+              role="addBtn"
+              onClick={() => {
+                map.set(Math.floor(Math.random() * 1000000000) + '', Math.floor(Math.random() * 1000));
+                dispatch();
+              }}
+            >
+              add
+            </button>
+            <button
+              role="addMapBtn"
+              onClick={() => {
+                map.set('map', Math.floor(Math.random() * 1000));
+                dispatch();
+              }}
+            >
+              add string map
+            </button>
+            <button
+              role="deleteMapBtn"
+              onClick={() => {
+                map.delete('map');
+                dispatch();
+              }}
+            >
+              delete map
+            </button>
+            <button
+              role="clear"
+              onClick={() => {
+                map.clear()
+                dispatch();
+              }}
+            >
+              clear
+            </button>
+          </div>
+        );
+      }
+
+      function Parent() {
+        let size: Map<any, any> = useStore(state => state.map.size);
+
+        return <div>
+          <div role='parentSize'>{size}</div>
+          <Child />
+        </div>;
+      }
+
+      render(<Parent />, { legacyRoot: reactLegency });
+
+      const size = screen.getByRole('size');
+      const addBtn = screen.getByRole('addBtn');
+      const addMapBtn = screen.getByRole('addMapBtn');
+      const deleteMapBtn = screen.getByRole('deleteMapBtn');
+      const clear = screen.getByRole('clear');
+
+
+      const parentSize = screen.getByRole('parentSize');
+
+      let sizeHtml = initMap?.size || 0;
+      expect(size.innerHTML).toBe(sizeHtml + '');
+
+      for(let i = 0 ; i < 20; i++) {
+        fireEvent.click(addBtn);
+        sizeHtml++
+        expect(size.innerHTML).toBe(sizeHtml + '');
+        expect(parentSize.innerHTML).toBe(sizeHtml + '');
+      }
+
+      fireEvent.click(deleteMapBtn);
+      expect(size.innerHTML).toBe(sizeHtml + '');
+      expect(parentSize.innerHTML).toBe(sizeHtml + '');
+
+      fireEvent.click(addMapBtn);
+      sizeHtml++
+      expect(size.innerHTML).toBe(sizeHtml + '');
+      expect(parentSize.innerHTML).toBe(sizeHtml + '');
+
+      fireEvent.click(deleteMapBtn);
+      sizeHtml--;
+      expect(size.innerHTML).toBe(sizeHtml + '');
+      expect(parentSize.innerHTML).toBe(sizeHtml + '');
+
+      fireEvent.click(clear);
+      sizeHtml = 0;
+      expect(size.innerHTML).toBe(sizeHtml + '');
+      expect(parentSize.innerHTML).toBe(sizeHtml + '');
+    }
+
+    it('no initial', () => {
+      checkSize();
+    }); 
+    it('initial 3 items', () => {
+      checkSize(new Map([['a', 3], ['b', 2], ['c', 3]]));
+    });
+  })
+
   describe('add new item', () => {
     function checkType(key, value) {
       initStore(new Map());
@@ -1342,4 +1543,153 @@ describe('weakMap multi component', () => {
       expect(parentText.innerHTML).toBeFalsy();
     });
   });
+});
+
+it('same object key for multi map', () => {
+  const key = { same: true };
+
+  createStore({
+    initState: {
+      map: new Map([[key, 'map']]),
+      weakMap: new WeakMap([[key, 'weakMap']]),
+    },
+    options: { strictMode: false },
+  });
+
+  function Child() {
+    let map: Map<any, any> = useStore(state => state.map);
+
+    const type = map.get(key);
+
+    return (
+      <div>
+        <span role="childText">{type}</span>
+
+        <button
+          role="childChangeBtn"
+          onClick={() => {
+            map.set(key, type ? type + '_1' : 'map_changed');
+            dispatch();
+          }}
+        >
+          change
+        </button>
+        <button
+          role="childDeleteBtn"
+          onClick={() => {
+            map.delete(key);
+            dispatch();
+          }}
+        >
+          delete
+        </button>
+        <button
+          role="childAddBtn"
+          onClick={() => {
+            map.set(key, 'map');
+            dispatch();
+          }}
+        >
+          add
+        </button>
+      </div>
+    );
+  }
+
+  function Parent() {
+    let map: Map<any, any> = useStore(state => state.weakMap);
+    const type = map.get(key);
+
+    return (
+      <div>
+        <div role="parentText">{type}</div>
+        <button
+          role="parentChangeBtn"
+          onClick={() => {
+            map.set(key, type ? type + '_1' : 'weakMap_changed');
+            dispatch();
+          }}
+        >
+          change
+        </button>
+        <button
+          role="parentDeleteBtn"
+          onClick={() => {
+            map.delete(key);
+            dispatch();
+          }}
+        >
+          delete
+        </button>
+        <button
+          role="parentAddBtn"
+          onClick={() => {
+            map.set(key, 'weakMap');
+            dispatch();
+          }}
+        >
+          add
+        </button>
+        <Child></Child>
+      </div>
+    );
+  }
+
+  render(<Parent />, { legacyRoot: reactLegency });
+
+  const childText = screen.getByRole('childText');
+  const parentText = screen.getByRole('parentText');
+  const childChangeBtn = screen.getByRole('childChangeBtn');
+  const childDeleteBtn = screen.getByRole('childDeleteBtn');
+  const childAddBtn = screen.getByRole('childAddBtn');
+  const parentChangeBtn = screen.getByRole('parentChangeBtn');
+  const parentDeleteBtn = screen.getByRole('parentDeleteBtn');
+  const parentAddBtn = screen.getByRole('parentAddBtn');
+
+  expect(childText.innerHTML).toBe('map');
+  expect(parentText.innerHTML).toBe('weakMap');
+
+  fireEvent.click(childChangeBtn);
+  expect(childText.innerHTML).toBe('map_1');
+  expect(parentText.innerHTML).toBe('weakMap');
+
+  fireEvent.click(parentChangeBtn);
+  expect(childText.innerHTML).toBe('map_1');
+  expect(parentText.innerHTML).toBe('weakMap_1');
+
+  fireEvent.click(childDeleteBtn);
+  expect(childText.innerHTML).toBeFalsy();
+  expect(parentText.innerHTML).toBe('weakMap_1');
+
+  fireEvent.click(parentChangeBtn);
+  expect(childText.innerHTML).toBeFalsy();
+  expect(parentText.innerHTML).toBe('weakMap_1_1');
+
+  fireEvent.click(childAddBtn);
+  expect(childText.innerHTML).toBe('map');
+  expect(parentText.innerHTML).toBe('weakMap_1_1');
+
+  fireEvent.click(parentChangeBtn);
+  expect(childText.innerHTML).toBe('map');
+  expect(parentText.innerHTML).toBe('weakMap_1_1_1');
+
+  fireEvent.click(parentDeleteBtn);
+  expect(childText.innerHTML).toBe('map');
+  expect(parentText.innerHTML).toBeFalsy();
+
+  fireEvent.click(childChangeBtn);
+  expect(childText.innerHTML).toBe('map_1');
+  expect(parentText.innerHTML).toBeFalsy();
+
+  fireEvent.click(parentAddBtn);
+  expect(childText.innerHTML).toBe('map_1');
+  expect(parentText.innerHTML).toBe('weakMap');
+
+  fireEvent.click(parentChangeBtn);
+  expect(childText.innerHTML).toBe('map_1');
+  expect(parentText.innerHTML).toBe('weakMap_1');
+
+  fireEvent.click(childChangeBtn);
+  expect(childText.innerHTML).toBe('map_1_1');
+  expect(parentText.innerHTML).toBe('weakMap_1');
 });
