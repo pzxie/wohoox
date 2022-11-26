@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.5.0](https://github.com/pzxie/wohoox/compare/v1.4.0...v1.5.0) (2022-11-26)
+
+
+### Features
+
+* map,set data proxy surpport ([ae1230f](https://github.com/pzxie/wohoox/commit/ae1230f098b843e21c835051df2fc23f2a193c93))
+
 ## [1.4.0](https://github.com/pzxie/wohoox/compare/v1.3.1...v1.4.0) (2022-11-21)
 
 

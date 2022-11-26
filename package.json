@@ -1,6 +1,6 @@
 {
   "name": "wohoox",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "Easy,lightweight and reactive store by react hooks",
   "main": "dist/wohoox.min.js",
   "scripts": {
