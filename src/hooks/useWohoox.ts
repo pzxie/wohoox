@@ -32,6 +32,7 @@ export function useWohoox(name?: any, getState?: any): any {
   const getObserverState = useEvent(() => {
     const state = getStateFn(store.state);
     const currentPrefixKeys = [...store.currentProxyGetKeys];
+    const storeOptions = store.getOptions()
 
     // Use the same target with store state
     return observer(getStateFn(store.sourceState), {
@@ -48,7 +49,7 @@ export function useWohoox(name?: any, getState?: any): any {
         } catch (e) {}
       },
       setCallback: (value, keys, target) => {
-        if (store.getOptions().strictMode) {
+        if (storeOptions.strictMode) {
           throw new Error(
             'In the strict mode, state cannot be modified by expression. Only actions are allowed',
           );
@@ -61,7 +62,7 @@ export function useWohoox(name?: any, getState?: any): any {
         );
       },
       deleteCallback: (target, keys) => {
-        if (store.getOptions().strictMode) {
+        if (storeOptions.strictMode) {
           throw new Error(
             'In the strict mode, state cannot be delete by expression. Only actions are allowed',
           );
@@ -69,6 +70,7 @@ export function useWohoox(name?: any, getState?: any): any {
         store.addKeyToEffectList(keys, target, EffectType.delete);
       },
       keysStack: state === store.state ? [] : currentPrefixKeys,
+      proxySetDeep: storeOptions.proxySetDeep
     });
   });
 
@@ -84,16 +86,23 @@ export function useWohoox(name?: any, getState?: any): any {
     setState(isObserverObject(state) ? getObserverState : state);
   });
 
-  if (Array.isArray(getStateFn(store.state))) {
-    store.addKeyToUsedMap([...store.currentProxyGetKeys, 'length'].join('.'), id);
-  } else {
-    try {
-      if (store.currentProxyGetKeys.length) {
-        // Some property cannot be converted to strings, ex symbol. We can ignore this
-        store.addKeyToUsedMap(store.currentProxyGetKeys.join('.'), id);
-      }
-    } catch (e) {}
-  }
+  const onEveryRender = () => {
+    const tempState = getStateFn(store.state);
+    const keys = store.currentProxyGetKeys;
+
+    if (Array.isArray(tempState)) {
+      store.addKeyToUsedMap([...keys, 'length'].join('.'), id);
+    } else {
+      try {
+        if (keys.length) {
+          // Some property cannot be converted to strings, ex symbol. We can ignore this
+          store.addKeyToUsedMap(keys.join('.'), id);
+        }
+      } catch (e) {}
+    }
+  };
+
+  onEveryRender();
 
   // For dev environment more，
   // StoreName would not be changed normally.Unless manually changed in dev
@@ -128,8 +137,8 @@ export function useWohoox(name?: any, getState?: any): any {
   useEffect(() => {
     return () => {
       // todo removeUsedId from store
-    }
-  }, [id, store])
+    };
+  }, [id, store]);
 
   return state;
 }

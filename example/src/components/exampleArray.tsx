@@ -57,7 +57,7 @@ export default function ExampleArray() {
       </button>
       <button
         onClick={() => {
-          innerArray.push(1);
+          innerArray.push(Math.floor(Math.random() * 100));
           dispatch();
         }}
       >

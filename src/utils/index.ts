@@ -1,5 +1,5 @@
 import guid from './uuid';
-import { EffectType } from '../constant';
+import { EffectType, MapSetSizeKey } from '../constant';
 import { getSourceByStringifyKey } from '../core/keyMap';
 
 export function isOriginalType(data) {
@@ -35,6 +35,10 @@ export function isObserverObject(data) {
   return isArray || isPlainObject(data) || isSet(data) || isMap(data);
 }
 
+export function isArrayNewKey (array, keyArr: string[]) {
+  return !(keyArr[0] in array);
+}
+
 export function isPlainObjectNewKey(obj, keyArr: string[]) {
   let tempObj = obj;
   let isNewKey = false;
@@ -66,7 +70,7 @@ export function isMapNewKey(mapState: Map<any, any> | WeakMap<any, any>, keyArr:
       break;
     }
 
-    tempMapState = tempMapState[key];
+    tempMapState = tempMapState.get(key);
   }
 
   return isNewKey;
@@ -82,8 +86,10 @@ export function getSettleType(target, keyArr: string[], value?: any) {
   let isNewKey = false;
 
   if (isPlainObject(target)) isNewKey = isPlainObjectNewKey(target, keyArr);
+  else if (Array.isArray(target)) isNewKey = isArrayNewKey(target, keyArr);
   else if (isMap(target)) isNewKey = isMapNewKey(target, keyArr);
-  else if (isSet(target)) isNewKey = isSetNewValue(target, value);
+  else if (isSet(target))
+    isNewKey = keyArr.length === 1 && keyArr[0] === MapSetSizeKey ? true : isSetNewValue(target, value);
 
   return isNewKey ? EffectType.add : EffectType.modify;
 }

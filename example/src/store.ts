@@ -23,9 +23,9 @@ const store = createStore({
         }
       },
       array: ['1', true, 3, {name: 'arrayObject'}, [11,22,33]] as [string, boolean, number, {name: string}, Array<number>],
-      set: new Set<number>(),
-      // weakSet: new WeakSet(),
-      map: new Map<any, any>([[{}, {'name': 123}]]),
+      set: new Set<any>(),
+      weakSet: new WeakSet(),
+      map: new Map<any, any>([[{type: 'map'}, {'name': 123}]]),
       weakMap: new WeakMap()
     }
   },
@@ -35,7 +35,8 @@ const store = createStore({
     },
   },
   options: {
-    strictMode: false
+    strictMode: false,
+    proxySetDeep: true
   }
 });
 

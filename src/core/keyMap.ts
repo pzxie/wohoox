@@ -1,30 +1,39 @@
 import { guid } from '../utils';
 
-const keyMap = new Map();
+const originKeyMap = new Map();
+const objectMap = new WeakMap();
+
+const stringifiedKeySourceMap = new Map();
+const keyJoinSymbol = '__$$__';
 // todo max size?
 
-export function getStringifyKey(key: any): string {
+export function getStringifyKey(obj: any, key: any): string {
   if (typeof key === 'string') return key;
 
-  const revertedKey = keyMap.get(key);
-  if (revertedKey) return revertedKey;
+  let keyId = originKeyMap.get(key);
+  if (!keyId) {
+    keyId = guid();
+    originKeyMap.set(key, keyId);
+  }
 
-  const id = guid();
-  keyMap.set(key, id);
-  keyMap.set(id, key);
+  let objId = objectMap.get(obj);
+  if (!objId) {
+    objId = guid();
+    objectMap.set(obj, objId);
+  }
+
+  const id = objId + keyJoinSymbol + keyId;
+  if (!stringifiedKeySourceMap.has(id)) stringifiedKeySourceMap.set(id, key);
 
   return id;
 }
 
 export function getSourceByStringifyKey(stringifyKey: string) {
-  return keyMap.get(stringifyKey);
+  return stringifiedKeySourceMap.get(stringifyKey);
 }
 
-export function removeStringifyKey(key: string): void {
-  keyMap.delete(keyMap.get(key));
-  keyMap.delete(key);
-}
+export function removeStringifyKey(key: string, target?: any): void {
+  const stringifyKey = target ? getStringifyKey(target, key) : key;
 
-export function isStringifyMapKey(key: string) {
-  return keyMap.has(key);
+  stringifiedKeySourceMap.delete(stringifyKey);
 }

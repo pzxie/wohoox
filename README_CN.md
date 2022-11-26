@@ -433,6 +433,7 @@ async function getVersion () {
 * `initState:` 初始化数据，并使用该数据的数据结构作为 typescript 类型推断
 * `actions:` 修改数据的方式，并促使相关组件进行重新渲染。如果在严格模式下，是作为唯一合法修改数据的方式
 * `options.strictMode:` 严格模式开关。默认 `true`. 严格模式下，actions 是唯一可以修改 state 的方式。非严格模式下，还可以直接修改 state。 `ex: state.age = 23`  
+* `options.strictMode:` 严格模式开关。默认 `true`. Set 类型的数据不会对将其子节点进行 proxy 处理。因其没有获取数据的情形，对其子节点进行 proxy 处理没有太大必要。不过如果你确定需要，你可以将其设置为true
 
 #### 用法
 
@@ -627,4 +628,3 @@ function example () {
 
 1. 增加服务器同步数据的功能
 2. 持久化
-3. set 支持

@@ -3,3 +3,5 @@ export enum EffectType {
   delete,
   modify
 }
+
+export const MapSetSizeKey = '__size';

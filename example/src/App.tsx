@@ -7,6 +7,8 @@ import ArrayType from './components/exampleArray';
 import ExampleObject from './components/exampleObject';
 import ExampleMap from './components/exampleMap';
 import ExampleWeakMap from './components/exampleWeakMap';
+import ExampleSet from './components/exampleSet';
+import ExampleWeakSet from './components/exampleWeakSet';
 
 import { useStore, dispatchAll } from './multiStore';
 
@@ -26,13 +28,15 @@ function App() {
         <h2>APP</h2>
         <div className='text'><span className='title'>address.city: </span>{address.city}</div>
 
-        <div>{mapObj.get('123')}</div>
+        <div>{mapObj.size}</div>
 
         <button onClick={() => {
           type.object.name = Math.random() + '_1';
           dispatchAll()
         }}>update default name</button>
 
+        <ExampleWeakSet />
+        {<ExampleSet></ExampleSet>}
         <ExampleMap></ExampleMap>
         <ExampleWeakMap></ExampleWeakMap>
         <ExampleDataType></ExampleDataType>

@@ -427,6 +427,7 @@ It is used to create a store.
 * `initState:` Initial the data and use it as the data structure of the state.
 * `actions:` Dispatch to change data. As the only valid way to modify data in strict mode, then it will caused by page rerender
 * `options.strictMode:` default as `true`. Strict mode switch for store. Once the switch turn on, actions will be the only valid way to modify data, otherwise you can directly modify the data by state. `ex: state.age = 23`  
+* `options.proxySetDeep:` default as `false`. Type data of set will not be proxy for its child item. Cause there is no method to get item, child proxy is is not necessary to proxy. But if you want to proxy anyway, you can set it to true.
 
 #### Usage
 
@@ -621,4 +622,3 @@ function example () {
 
 1. sync from server
 2. persist
-3. set support

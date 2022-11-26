@@ -6,6 +6,8 @@ const objectKey = { type: 'objectKey' };
 const setKey = new Set(['set']);
 const mapKey = new Map([['key', 'value']]);
 
+const same = {}
+
 export default function ExampleMap() {
   console.log('render ExampleMap');
   const mapObj = useStore(state => state.type.map);
@@ -14,7 +16,10 @@ export default function ExampleMap() {
     <div>
       <h2 style={{ color: 'red' }}>Map</h2>
 
-      <h3>Map entries</h3>
+      <h3>Map size</h3>
+      {mapObj.size}
+
+      {/* <h3>Map entries</h3>
       {[...mapObj.entries()].map(([key, value]) => (
         <div className="text margin-10">
           <span className="title">{JSON.stringify(key)}: </span>
@@ -28,9 +33,25 @@ export default function ExampleMap() {
           <span className="title">{JSON.stringify(key)}: </span>
           {JSON.stringify(value)}
         </div>
-      ))}
+      ))} */}
 
       <h3>add</h3>
+      <button
+        onClick={() => {
+          mapObj.set(same, 456);
+          dispatch();
+        }}
+      >
+        add same:456
+      </button>
+      <button
+        onClick={() => {
+          mapObj.set(same, 789);
+          dispatch();
+        }}
+      >
+        change same:789
+      </button>
       <button
         onClick={() => {
           mapObj.set('undefined', undefined);

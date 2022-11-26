@@ -5,7 +5,7 @@ import { EffectType } from '../constant';
 
 import type { ActionsDefine, ActionDispatch } from '../types';
 
-export type Options = { strictMode?: boolean };
+export type Options = { strictMode?: boolean; proxySetDeep?: boolean; };
 
 function revertActionsToAutoMode<TState, TActions extends ActionsDefine<TState>>(
   state: TState,
@@ -39,6 +39,7 @@ export class Store<S extends object, A extends ActionsDefine<S>> {
 
   private options = {
     strictMode: true,
+    proxySetDeep: false,
   };
 
   public state: S;
@@ -87,6 +88,7 @@ export class Store<S extends object, A extends ActionsDefine<S>> {
 
         this.addKeyToEffectList(keys, target, EffectType.delete);
       },
+      proxySetDeep: this.options.proxySetDeep
     });
 
     this.actions = revertActionsToAutoMode(
@@ -146,7 +148,7 @@ export class Store<S extends object, A extends ActionsDefine<S>> {
   }
 
   getOptions() {
-    return this.options;
+    return { ...this.options };
   }
 }
 

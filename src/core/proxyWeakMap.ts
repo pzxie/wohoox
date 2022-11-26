@@ -1,4 +1,4 @@
-type WeakMapProxyActions<T> = {
+type ProxyWeakMapActions<T> = {
   get(source: T, key: any): any;
   set(source: T, key: any, value: any): void;
   deleteProperty(source: T, key: any): boolean;
@@ -6,15 +6,15 @@ type WeakMapProxyActions<T> = {
 
 
 // todo JSON.stringify is not same as source
-export default class WeakMapProxy<T extends WeakMap<any, any>> extends WeakMap {
+export default class ProxyWeakMap<T extends WeakMap<any, any>> extends WeakMap {
   private source: T;
-  private interceptor: WeakMapProxyActions<T> = {
+  private interceptor: ProxyWeakMapActions<T> = {
     get: () => {},
     set: () => {},
     deleteProperty: () => true,
   };
 
-  constructor(source: T, interceptor: Partial<WeakMapProxyActions<T>>) {
+  constructor(source: T, interceptor: Partial<ProxyWeakMapActions<T>>) {
     super();
     this.source = source;
     this.interceptor = { ...this.interceptor, ...interceptor };
