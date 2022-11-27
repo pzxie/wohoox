@@ -29,7 +29,7 @@ function observerObject({
     get(target, key: string, receiver) {
       let value = Reflect.get(target, key, receiver);
       const proxyValue = proxyMap.get(value);
-      const keys = [...keysStack, key];
+      const keys = [...keysStack, getStringifyKey(target, key)];
 
       getCallback(value, keys);
 
@@ -47,7 +47,7 @@ function observerObject({
       return proxyValue || value;
     },
     set(target, key: string, value, receiver) {
-      const keys = [...keysStack, key];
+      const keys = [...keysStack, getStringifyKey(target, key)];
 
       if (value !== Reflect.get(target, key) || (Array.isArray(target) && key === 'length')) {
         setCallback(value, keys, target);
@@ -56,7 +56,7 @@ function observerObject({
       return Reflect.set(target, key, value, receiver);
     },
     deleteProperty(target: Record<string, any>, key: string) {
-      const keys = [...keysStack, key];
+      const keys = [...keysStack, getStringifyKey(target, key)];
       deleteCallback(target, keys);
 
       return Reflect.deleteProperty(target, key);

@@ -2,11 +2,11 @@
 
 ![wohoox](./example/public/wohoox_211x176.png)
 
-基于 react hooks 的简洁、轻量 react store.
+基于 react hooks 开发的简洁、轻量、响应式的 react store.
 
 ## 翻译
 
-[English](./README.md) [中文文档](./README_CN.md)
+[English](./README.md) [中文](./README_CN.md)
 
 ## 兼容要求
 
@@ -433,7 +433,7 @@ async function getVersion () {
 * `initState:` 初始化数据，并使用该数据的数据结构作为 typescript 类型推断
 * `actions:` 修改数据的方式，并促使相关组件进行重新渲染。如果在严格模式下，是作为唯一合法修改数据的方式
 * `options.strictMode:` 严格模式开关。默认 `true`. 严格模式下，actions 是唯一可以修改 state 的方式。非严格模式下，还可以直接修改 state。 `ex: state.age = 23`  
-* `options.strictMode:` 严格模式开关。默认 `true`. Set 类型的数据不会对将其子节点进行 proxy 处理。因其没有获取数据的情形，对其子节点进行 proxy 处理没有太大必要。不过如果你确定需要，你可以将其设置为true
+* `options.proxySetDeep:` 严格模式开关。默认 `true`. Set 类型的数据不会对将其子节点进行 proxy 处理。因其没有获取数据的情形，对其子节点进行 proxy 处理没有太大必要。不过如果你确定需要，你可以将其设置为true
 
 #### 用法
 
@@ -622,7 +622,9 @@ function example () {
 
 * 在组件中，如果你不使用 `useStore` 获取数据，**数据改变后，组件将不会重新渲染**
 * 尽可能使用严格模式（使用 actions 去修改数据）
-* symbol类型不能作为 store 的 key
+* Set 类型的数据，默认不会对子数据做代理。如果改变 set 子数据时也想重新渲染：
+  * 更改后可以先删除一个子数据，再把删除的添加进去
+  * 或者设置 `proxySetDeep: true`
 
 ## TODO
 

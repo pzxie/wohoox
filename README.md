@@ -4,7 +4,7 @@
 
 Easy,lightweight and reactive store by react hooks.
 
-[English](./README.md) [中文文档](./README_CN.md)
+[English](./README.md) [中文](./README_CN.md)
 
 ## Required
 
@@ -616,7 +616,9 @@ function example () {
 
 * If you do not use `useStore` to get state, **components will not re-render**.
 * Use strict mode if possible(use actions to modify state).
-* Type of Symbol can not to be the key of store
+* Type data of Set will not be proxy for its child item。If you want to rerender when changed the child items properties, you can：
+  * Delete the last item of Set and add it into Set again
+  * Or set options `proxySetDeep: true`
 
 ## TODO
 

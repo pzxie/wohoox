@@ -5,12 +5,15 @@ import createStore, { useStore, dispatch } from '../src';
 
 const reactLegency = !!process.env.reactLegency;
 
+const initSymbol = Symbol('symbol')
+
 function initStore(storeName?: string, options?: { strictMode?: boolean }) {
   const initState = {
     type: {
       object: {
         name: 'object',
         author: 'pzxie',
+        [initSymbol]: 'initSymbol'
       },
     },
   };
@@ -44,6 +47,7 @@ describe('single component: plain object', () => {
         <div>
           <span role="object">{JSON.stringify(state.type.object)}</span>
           <span role="field">{state.type.object.name}</span>
+          <span role="symbol">{state.type.object[initSymbol]}</span>
           <button
             role="updateObjectBtn"
             onClick={() => {
@@ -65,6 +69,16 @@ describe('single component: plain object', () => {
           >
             update field
           </button>
+
+          <button
+            role="updateSymbolBtn"
+            onClick={() => {
+              state.type.object[initSymbol] += '_1';
+              dispatch();
+            }}
+          >
+            update symbol
+          </button>
         </div>
       );
     }
@@ -73,41 +87,55 @@ describe('single component: plain object', () => {
 
     const objectText = screen.getByRole('object');
     const fieldText = screen.getByRole('field');
+    const symbolText = screen.getByRole('symbol');
     const updateObjectBtn = screen.getByRole('updateObjectBtn');
     const updateFieldBtn = screen.getByRole('updateFieldBtn');
+    const updateSymbolBtn = screen.getByRole('updateSymbolBtn');
 
     expect(objectText.innerHTML).toBe(JSON.stringify(initData));
     expect(fieldText.innerHTML).toBe(initData.name);
-
-    fireEvent.click(updateObjectBtn);
-    initData.name += '_object';
-    expect(objectText.innerHTML).toBe(JSON.stringify(initData));
-    expect(fieldText.innerHTML).toBe(initData.name);
-
-    fireEvent.click(updateFieldBtn);
-    initData.name += '_field';
-    expect(objectText.innerHTML).toBe(JSON.stringify(initData));
-    expect(fieldText.innerHTML).toBe(initData.name);
-
-    fireEvent.click(updateFieldBtn);
-    initData.name += '_field';
-    expect(objectText.innerHTML).toBe(JSON.stringify(initData));
-    expect(fieldText.innerHTML).toBe(initData.name);
+    expect(symbolText.innerHTML).toBe('initSymbol');
 
     fireEvent.click(updateObjectBtn);
     initData.name += '_object';
     expect(objectText.innerHTML).toBe(JSON.stringify(initData));
     expect(fieldText.innerHTML).toBe(initData.name);
-
-    fireEvent.click(updateObjectBtn);
-    initData.name += '_object';
-    expect(objectText.innerHTML).toBe(JSON.stringify(initData));
-    expect(fieldText.innerHTML).toBe(initData.name);
+    expect(symbolText.innerHTML).toBe('initSymbol');
 
     fireEvent.click(updateFieldBtn);
     initData.name += '_field';
     expect(objectText.innerHTML).toBe(JSON.stringify(initData));
     expect(fieldText.innerHTML).toBe(initData.name);
+    expect(symbolText.innerHTML).toBe('initSymbol');
+
+    fireEvent.click(updateFieldBtn);
+    initData.name += '_field';
+    expect(objectText.innerHTML).toBe(JSON.stringify(initData));
+    expect(fieldText.innerHTML).toBe(initData.name);
+    expect(symbolText.innerHTML).toBe('initSymbol');
+
+    fireEvent.click(updateSymbolBtn);
+    expect(objectText.innerHTML).toBe(JSON.stringify(initData));
+    expect(fieldText.innerHTML).toBe(initData.name);
+    expect(symbolText.innerHTML).toBe('initSymbol_1');
+
+    fireEvent.click(updateObjectBtn);
+    initData.name += '_object';
+    expect(objectText.innerHTML).toBe(JSON.stringify(initData));
+    expect(fieldText.innerHTML).toBe(initData.name);
+    expect(symbolText.innerHTML).toBe('initSymbol_1');
+
+    fireEvent.click(updateObjectBtn);
+    initData.name += '_object';
+    expect(objectText.innerHTML).toBe(JSON.stringify(initData));
+    expect(fieldText.innerHTML).toBe(initData.name);
+    expect(symbolText.innerHTML).toBe('initSymbol_1');
+
+    fireEvent.click(updateFieldBtn);
+    initData.name += '_field';
+    expect(objectText.innerHTML).toBe(JSON.stringify(initData));
+    expect(fieldText.innerHTML).toBe(initData.name);
+    expect(symbolText.innerHTML).toBe('initSymbol_1');
   });
 
   it('delete key', () => {
@@ -121,6 +149,7 @@ describe('single component: plain object', () => {
         <div>
           <span role="object">{JSON.stringify(state.type.object)}</span>
           <span role="field">{state.type.object?.name}</span>
+          <span role="symbol">{state.type.object?.[initSymbol]}</span>
           <button
             role="deleteFieldBtn"
             onClick={() => {
@@ -139,57 +168,14 @@ describe('single component: plain object', () => {
           >
             delete object
           </button>
-        </div>
-      );
-    }
-
-    render(<Child />, { legacyRoot: reactLegency });
-
-    const objectText = screen.getByRole('object');
-    const fieldText = screen.getByRole('field');
-    const deleteFieldBtn = screen.getByRole('deleteFieldBtn');
-    const deleteObjectBtn = screen.getByRole('deleteObjectBtn');
-
-    expect(objectText.innerHTML).toBe(JSON.stringify(initData));
-    expect(fieldText.innerHTML).toBe(initData.name);
-
-    fireEvent.click(deleteFieldBtn);
-    delete initData.name;
-    expect(objectText.innerHTML).toBe(JSON.stringify(initData));
-    expect(fieldText.innerHTML).toBeFalsy();
-
-    fireEvent.click(deleteFieldBtn);
-    expect(objectText.innerHTML).toBe(JSON.stringify(initData));
-    expect(fieldText.innerHTML).toBeFalsy();
-
-    fireEvent.click(deleteObjectBtn);
-    expect(objectText.innerHTML).toBeFalsy();
-    expect(fieldText.innerHTML).toBeFalsy();
-
-    fireEvent.click(deleteObjectBtn);
-    expect(objectText.innerHTML).toBeFalsy();
-    expect(fieldText.innerHTML).toBeFalsy();
-  });
-
-  it('add new key', () => {
-    const { initState } = initStore();
-
-    const initData = JSON.parse(JSON.stringify(initState.type.object));
-    function Child() {
-      let state = useStore();
-
-      return (
-        <div>
-          <span role="object">{JSON.stringify(state.type.object)}</span>
-          <span role="field">{state.type.object.name}</span>
           <button
-            role="addNewKey"
+            role="deleteSymbol"
             onClick={() => {
-              state.type.object.newKey = 'newKey';
+              delete state.type.object[initSymbol];
               dispatch();
             }}
           >
-            add new key
+            delete symbol
           </button>
         </div>
       );
@@ -199,10 +185,89 @@ describe('single component: plain object', () => {
 
     const objectText = screen.getByRole('object');
     const fieldText = screen.getByRole('field');
-    const addNewKey = screen.getByRole('addNewKey');
+    const symbolText = screen.getByRole('symbol');
+    const deleteFieldBtn = screen.getByRole('deleteFieldBtn');
+    const deleteObjectBtn = screen.getByRole('deleteObjectBtn');
+    const deleteSymbolBtn = screen.getByRole('deleteSymbol');
 
     expect(objectText.innerHTML).toBe(JSON.stringify(initData));
     expect(fieldText.innerHTML).toBe(initData.name);
+    expect(symbolText.innerHTML).toBe('initSymbol');
+
+    fireEvent.click(deleteFieldBtn);
+    delete initData.name;
+    expect(objectText.innerHTML).toBe(JSON.stringify(initData));
+    expect(fieldText.innerHTML).toBeFalsy();
+    expect(symbolText.innerHTML).toBe('initSymbol');
+
+
+    fireEvent.click(deleteFieldBtn);
+    expect(objectText.innerHTML).toBe(JSON.stringify(initData));
+    expect(fieldText.innerHTML).toBeFalsy();
+    expect(symbolText.innerHTML).toBe('initSymbol');
+
+    fireEvent.click(deleteSymbolBtn);
+    expect(objectText.innerHTML).toBe(JSON.stringify(initData));
+    expect(fieldText.innerHTML).toBeFalsy();
+    expect(symbolText.innerHTML).toBeFalsy();
+
+    fireEvent.click(deleteObjectBtn);
+    expect(objectText.innerHTML).toBeFalsy();
+    expect(fieldText.innerHTML).toBeFalsy();
+    expect(symbolText.innerHTML).toBeFalsy();
+
+    fireEvent.click(deleteObjectBtn);
+    expect(objectText.innerHTML).toBeFalsy();
+    expect(fieldText.innerHTML).toBeFalsy();
+    expect(symbolText.innerHTML).toBeFalsy();
+  });
+
+  it('add new key', () => {
+    const { initState } = initStore();
+    const symbolKey = Symbol(123);
+
+    const initData = JSON.parse(JSON.stringify(initState.type.object));
+    function Child() {
+      let state = useStore();
+
+      return (
+        <div>
+          <span role="object">{JSON.stringify(state.type.object)}</span>
+          <span role="field">{state.type.object.name}</span>
+          <span role="symbol">{state.type.object[symbolKey]}</span>
+          <button
+            role="addNewKey"
+            onClick={() => {
+              state.type.object.newKey = 'newKey';
+              dispatch();
+            }}
+          >
+            add new key
+          </button>
+          <button
+            role="addSymbol"
+            onClick={() => {
+              state.type.object[symbolKey] = 'symbol';
+              dispatch();
+            }}
+          >
+            add symbol
+          </button>
+        </div>
+      );
+    }
+
+    render(<Child />, { legacyRoot: reactLegency });
+
+    const objectText = screen.getByRole('object');
+    const fieldText = screen.getByRole('field');
+    const symbolText = screen.getByRole('symbol');
+    const addNewKey = screen.getByRole('addNewKey');
+    const addSymbol = screen.getByRole('addSymbol');
+
+    expect(objectText.innerHTML).toBe(JSON.stringify(initData));
+    expect(fieldText.innerHTML).toBe(initData.name);
+    expect(symbolText.innerHTML).toBeFalsy();
 
     fireEvent.click(addNewKey);
     initData.newKey = 'newKey';
@@ -212,6 +277,11 @@ describe('single component: plain object', () => {
     fireEvent.click(addNewKey);
     expect(objectText.innerHTML).toBe(JSON.stringify(initData));
     expect(fieldText.innerHTML).toBe(initData.name);
+
+    fireEvent.click(addSymbol);
+    expect(objectText.innerHTML).toBe(JSON.stringify(initData));
+    expect(fieldText.innerHTML).toBe(initData.name);
+    expect(symbolText.innerHTML).toBe('symbol');
   });
 });
 
@@ -227,6 +297,7 @@ describe('multi components: plain object', () => {
         <div>
           <span role="object">{JSON.stringify(state.type.object)}</span>
           <span role="field">{state.type.object.name}</span>
+          <span role="symbol">{state.type.object[initSymbol]}</span>
           <button
             role="updateObjectBtn"
             onClick={() => {
@@ -248,16 +319,27 @@ describe('multi components: plain object', () => {
           >
             update field
           </button>
+          <button
+            role="updateSymbolBtn"
+            onClick={() => {
+              state.type.object[initSymbol] += '_1';
+              dispatch();
+            }}
+          >
+            update field
+          </button>
         </div>
       );
     }
 
     function Siblings() {
       let name = useStore(state => state.type.object.name);
+      let symbol = useStore(state => state.type.object[initSymbol]);
 
       return (
         <div>
           <span role="siblingsText">{name}</span>
+          <span role="siblingsSymbolText">{symbol}</span>
         </div>
       );
     }
@@ -278,10 +360,13 @@ describe('multi components: plain object', () => {
 
     const objectText = screen.getByRole('object');
     const fieldText = screen.getByRole('field');
+    const symbolText = screen.getByRole('symbol');
     const siblingsText = screen.getByRole('siblingsText');
+    const siblingsSymbolText = screen.getByRole('siblingsSymbolText');
     const parentText = screen.getByRole('parentText');
     const updateObjectBtn = screen.getByRole('updateObjectBtn');
     const updateFieldBtn = screen.getByRole('updateFieldBtn');
+    const updateSymbolBtn = screen.getByRole('updateSymbolBtn');
 
     expect(objectText.innerHTML).toBe(JSON.stringify(initData));
     expect(fieldText.innerHTML).toBe(initData.name);
@@ -294,6 +379,8 @@ describe('multi components: plain object', () => {
     expect(fieldText.innerHTML).toBe(initData.name);
     expect(siblingsText.innerHTML).toBe(initData.name);
     expect(parentText.innerHTML).toBe(JSON.stringify(initData));
+    expect(symbolText.innerHTML).toBe('initSymbol');
+    expect(siblingsSymbolText.innerHTML).toBe('initSymbol');
 
     fireEvent.click(updateFieldBtn);
     initData.name += '_field';
@@ -301,6 +388,8 @@ describe('multi components: plain object', () => {
     expect(fieldText.innerHTML).toBe(initData.name);
     expect(siblingsText.innerHTML).toBe(initData.name);
     expect(parentText.innerHTML).toBe(JSON.stringify(initData));
+    expect(symbolText.innerHTML).toBe('initSymbol');
+    expect(siblingsSymbolText.innerHTML).toBe('initSymbol');
 
     fireEvent.click(updateFieldBtn);
     initData.name += '_field';
@@ -308,6 +397,16 @@ describe('multi components: plain object', () => {
     expect(fieldText.innerHTML).toBe(initData.name);
     expect(siblingsText.innerHTML).toBe(initData.name);
     expect(parentText.innerHTML).toBe(JSON.stringify(initData));
+    expect(symbolText.innerHTML).toBe('initSymbol');
+    expect(siblingsSymbolText.innerHTML).toBe('initSymbol');
+
+    fireEvent.click(updateSymbolBtn);
+    expect(objectText.innerHTML).toBe(JSON.stringify(initData));
+    expect(fieldText.innerHTML).toBe(initData.name);
+    expect(siblingsText.innerHTML).toBe(initData.name);
+    expect(parentText.innerHTML).toBe(JSON.stringify(initData));
+    expect(symbolText.innerHTML).toBe('initSymbol_1');
+    expect(siblingsSymbolText.innerHTML).toBe('initSymbol_1');
 
     fireEvent.click(updateObjectBtn);
     initData.name += '_object';
@@ -315,6 +414,8 @@ describe('multi components: plain object', () => {
     expect(fieldText.innerHTML).toBe(initData.name);
     expect(siblingsText.innerHTML).toBe(initData.name);
     expect(parentText.innerHTML).toBe(JSON.stringify(initData));
+    expect(symbolText.innerHTML).toBe('initSymbol_1');
+    expect(siblingsSymbolText.innerHTML).toBe('initSymbol_1');
 
     fireEvent.click(updateObjectBtn);
     initData.name += '_object';
@@ -322,6 +423,8 @@ describe('multi components: plain object', () => {
     expect(fieldText.innerHTML).toBe(initData.name);
     expect(siblingsText.innerHTML).toBe(initData.name);
     expect(parentText.innerHTML).toBe(JSON.stringify(initData));
+    expect(symbolText.innerHTML).toBe('initSymbol_1');
+    expect(siblingsSymbolText.innerHTML).toBe('initSymbol_1');
 
     fireEvent.click(updateFieldBtn);
     initData.name += '_field';
@@ -329,6 +432,8 @@ describe('multi components: plain object', () => {
     expect(fieldText.innerHTML).toBe(initData.name);
     expect(siblingsText.innerHTML).toBe(initData.name);
     expect(parentText.innerHTML).toBe(JSON.stringify(initData));
+    expect(symbolText.innerHTML).toBe('initSymbol_1');
+    expect(siblingsSymbolText.innerHTML).toBe('initSymbol_1');
   });
   it('delete key', () => {
     const { initState } = initStore();
@@ -341,6 +446,7 @@ describe('multi components: plain object', () => {
         <div>
           <span role="object">{JSON.stringify(state.type.object)}</span>
           <span role="field">{state.type.object?.name}</span>
+          <span role="symbol">{state.type.object?.[initSymbol]}</span>
           <button
             role="deleteOriginField"
             onClick={() => {
@@ -359,15 +465,26 @@ describe('multi components: plain object', () => {
           >
             deleteObjectField
           </button>
+          <button
+            role="deleteSymbolField"
+            onClick={() => {
+              delete state.type.object[initSymbol];
+              dispatch();
+            }}
+          >
+            delete symbol
+          </button>
         </div>
       );
     }
 
     function Siblings() {
       let name = useStore(state => state.type.object?.name);
+      let symbol = useStore(state => state.type.object?.[initSymbol]);
 
       return (
         <div>
+          <span role="siblingsSymbolText">{symbol}</span>
           <span role="siblingsText">{name}</span>
         </div>
       );
@@ -389,15 +506,20 @@ describe('multi components: plain object', () => {
 
     const objectText = screen.getByRole('object');
     const fieldText = screen.getByRole('field');
+    const symbolText = screen.getByRole('symbol');
     const siblingsText = screen.getByRole('siblingsText');
+    const siblingsSymbolText = screen.getByRole('siblingsSymbolText');
     const parentText = screen.getByRole('parentText');
     const deleteOriginField = screen.getByRole('deleteOriginField');
     const deleteObjectField = screen.getByRole('deleteObjectField');
+    const deleteSymbolField = screen.getByRole('deleteSymbolField');
 
     expect(objectText.innerHTML).toBe(JSON.stringify(initData));
     expect(fieldText.innerHTML).toBe(initData.name);
     expect(siblingsText.innerHTML).toBe(initData.name);
     expect(parentText.innerHTML).toBe(JSON.stringify(initData));
+    expect(symbolText.innerHTML).toBe('initSymbol');
+    expect(siblingsSymbolText.innerHTML).toBe('initSymbol');
 
     fireEvent.click(deleteOriginField);
     delete initData.name;
@@ -405,27 +527,45 @@ describe('multi components: plain object', () => {
     expect(fieldText.innerHTML).toBeFalsy();
     expect(siblingsText.innerHTML).toBeFalsy();
     expect(parentText.innerHTML).toBe(JSON.stringify(initData));
+    expect(symbolText.innerHTML).toBe('initSymbol');
+    expect(siblingsSymbolText.innerHTML).toBe('initSymbol');
 
     fireEvent.click(deleteOriginField);
     expect(objectText.innerHTML).toBe(JSON.stringify(initData));
     expect(fieldText.innerHTML).toBeFalsy();
     expect(siblingsText.innerHTML).toBeFalsy();
     expect(parentText.innerHTML).toBe(JSON.stringify(initData));
+    expect(symbolText.innerHTML).toBe('initSymbol');
+    expect(siblingsSymbolText.innerHTML).toBe('initSymbol');
+
+    fireEvent.click(deleteSymbolField);
+    expect(objectText.innerHTML).toBe(JSON.stringify(initData));
+    expect(fieldText.innerHTML).toBeFalsy();
+    expect(siblingsText.innerHTML).toBeFalsy();
+    expect(parentText.innerHTML).toBe(JSON.stringify(initData));
+    expect(symbolText.innerHTML).toBeFalsy();
+    expect(siblingsSymbolText.innerHTML).toBeFalsy();
 
     fireEvent.click(deleteObjectField);
     expect(objectText.innerHTML).toBeFalsy();
     expect(fieldText.innerHTML).toBeFalsy();
     expect(siblingsText.innerHTML).toBeFalsy();
     expect(parentText.innerHTML).toBeFalsy();
+    expect(symbolText.innerHTML).toBeFalsy();
+    expect(siblingsSymbolText.innerHTML).toBeFalsy();
 
     fireEvent.click(deleteObjectField);
     expect(objectText.innerHTML).toBeFalsy();
     expect(fieldText.innerHTML).toBeFalsy();
     expect(siblingsText.innerHTML).toBeFalsy();
     expect(parentText.innerHTML).toBeFalsy();
+    expect(symbolText.innerHTML).toBeFalsy();
+    expect(siblingsSymbolText.innerHTML).toBeFalsy();
   });
   it('add new key', () => {
     const { initState } = initStore();
+
+    const symbolKey = Symbol(123)
 
     const initData = JSON.parse(JSON.stringify(initState.type.object));
     const initTypeData = JSON.parse(JSON.stringify(initState.type));
@@ -436,6 +576,7 @@ describe('multi components: plain object', () => {
         <div>
           <span role="object">{JSON.stringify(state.type.object)}</span>
           <span role="grandpa">{JSON.stringify(state.type)}</span>
+          <span role="symbol">{state.type.object[symbolKey]}</span>
           <button
             role="addNewKeyBtn"
             onClick={() => {
@@ -445,15 +586,26 @@ describe('multi components: plain object', () => {
           >
             add new key
           </button>
+          <button
+            role="addSymbolBtn"
+            onClick={() => {
+              state.type.object[symbolKey] = 'symbol';
+              dispatch();
+            }}
+          >
+            add symbol
+          </button>
         </div>
       );
     }
 
     function Siblings() {
       let name = useStore(state => state.type.object.name);
+      let symbol = useStore(state => state.type.object[symbolKey]);
 
       return (
         <div>
+          <span role="siblingsSymbolText">{symbol}</span>
           <span role="siblingsText">{name}</span>
         </div>
       );
@@ -475,14 +627,19 @@ describe('multi components: plain object', () => {
 
     const objectText = screen.getByRole('object');
     const grandpaText = screen.getByRole('grandpa');
+    const symbolText = screen.getByRole('symbol');
     const siblingsText = screen.getByRole('siblingsText');
+    const siblingsSymbolText = screen.getByRole('siblingsSymbolText');
     const parentText = screen.getByRole('parentText');
     const addNewKeyBtn = screen.getByRole('addNewKeyBtn');
+    const addSymbolBtn = screen.getByRole('addSymbolBtn');
 
     expect(objectText.innerHTML).toBe(JSON.stringify(initData));
     expect(grandpaText.innerHTML).toBe(JSON.stringify(initTypeData));
     expect(siblingsText.innerHTML).toBe(initData.name);
     expect(parentText.innerHTML).toBe(JSON.stringify(initData));
+    expect(symbolText.innerHTML).toBeFalsy();
+    expect(siblingsSymbolText.innerHTML).toBeFalsy();
 
     fireEvent.click(addNewKeyBtn);
     initData.newKey = 'newKey';
@@ -492,11 +649,23 @@ describe('multi components: plain object', () => {
     expect(grandpaText.innerHTML).toBe(JSON.stringify(initTypeData));
     expect(siblingsText.innerHTML).toBe(initData.name);
     expect(parentText.innerHTML).toBe(JSON.stringify(initData));
+    expect(symbolText.innerHTML).toBeFalsy();
+    expect(siblingsSymbolText.innerHTML).toBeFalsy();
+
+    fireEvent.click(addSymbolBtn);
+    expect(objectText.innerHTML).toBe(JSON.stringify(initData));
+    expect(grandpaText.innerHTML).toBe(JSON.stringify(initTypeData));
+    expect(siblingsText.innerHTML).toBe(initData.name);
+    expect(parentText.innerHTML).toBe(JSON.stringify(initData));
+    expect(symbolText.innerHTML).toBe('symbol');
+    expect(siblingsSymbolText.innerHTML).toBe('symbol');
 
     fireEvent.click(addNewKeyBtn);
     expect(objectText.innerHTML).toBe(JSON.stringify(initData));
     expect(grandpaText.innerHTML).toBe(JSON.stringify(initTypeData));
     expect(siblingsText.innerHTML).toBe(initData.name);
     expect(parentText.innerHTML).toBe(JSON.stringify(initData));
+    expect(symbolText.innerHTML).toBe('symbol');
+    expect(siblingsSymbolText.innerHTML).toBe('symbol');
   });
 });
