@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.5.1](https://github.com/pzxie/wohoox/compare/v1.5.0...v1.5.1) (2022-11-27)
+
+
+### Features
+
+* symbol key support in object ([8720a5f](https://github.com/pzxie/wohoox/commit/8720a5f18db86ca4e24e372312150b8e5363c868))
+
 ## [1.5.0](https://github.com/pzxie/wohoox/compare/v1.4.0...v1.5.0) (2022-11-26)
 
 
