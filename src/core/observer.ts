@@ -1,5 +1,5 @@
 import { isObserverObject, isMap, isSet } from '../utils';
-import { getStringifyKey, removeStringifyKey } from './keyMap';
+import { getStringifyKey, removeStringifyKey } from './keyStore';
 import ProxyMap from './proxyMap';
 import ProxyWeakMap from './proxyWeakMap';
 import ProxySet from './proxySet';

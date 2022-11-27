@@ -1,6 +1,6 @@
 import guid from './uuid';
 import { EffectType, MapSetSizeKey } from '../constant';
-import { getSourceByStringifyKey } from '../core/keyMap';
+import { getSourceByStringifyKey } from '../core/keyStore';
 
 export function isOriginalType(data) {
   return (
