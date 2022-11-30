@@ -136,7 +136,7 @@ export function useWohoox(name?: any, getState?: any): any {
 
   useEffect(() => {
     return () => {
-      // todo removeUsedId from store
+      store.removeAllKeysFromUsedMap(id);
     };
   }, [id, store]);
 

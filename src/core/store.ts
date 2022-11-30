@@ -51,7 +51,6 @@ export class Store<S extends object, A extends ActionsDefine<S>> {
 
   // Recording every components who used the store state property
   usedMap: Record<string, Set<string>> = {};
-  // todo max size? components unmouted, usedMap
 
   // Properties stack to record current visited properties，effectList source
   currentProxyGetKeys: string[] = [];
@@ -130,9 +129,16 @@ export class Store<S extends object, A extends ActionsDefine<S>> {
   }
 
   removeAllKeysFromUsedMap(componentId: string) {
+    const trashList: string[] = [];
+
     for(let key in this.usedMap) {
-      this.usedMap[key].delete(componentId);
+      const keySet =  this.usedMap[key];
+
+      keySet.delete(componentId);
+      if (keySet.size === 0) trashList.push(key);
     }
+
+    trashList.forEach(key => delete this.usedMap[key])
   }
 
   addKeyToEffectList(keys: string[], newValue: any, effectType: EffectType) {
