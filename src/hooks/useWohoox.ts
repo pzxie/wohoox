@@ -122,8 +122,8 @@ export function useWohoox(name?: any, getState?: any): any {
       for (let key of store.effectList) {
         if (store.usedMap[key] && store.usedMap[key].has(id)) {
           preState.current = state;
-          update({});
           store.usedMap[key].delete(id);
+          update({});
         }
       }
     };
