@@ -8,7 +8,6 @@ type ProxyMapActions<T> = {
   clear(source: T): void;
 };
 
-// todo JSON.stringify is not same as source
 export default class ProxyMap<T extends Map<any, any>> extends Map {
   get size () {
     const  value = this.source.size;
@@ -31,6 +30,8 @@ export default class ProxyMap<T extends Map<any, any>> extends Map {
     super();
     this.source = source;
     this.interceptor = { ...this.interceptor, ...interceptor };
+    Object.defineProperty(this, 'source' ,{ enumerable: false });
+    Object.defineProperty(this, 'interceptor' ,{ enumerable: false });
   }
 
   get(key) {

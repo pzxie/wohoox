@@ -78,7 +78,10 @@ describe('map single component', () => {
             <button
               role="addBtn"
               onClick={() => {
-                map.set(Math.floor(Math.random() * 1000000000) + '', Math.floor(Math.random() * 1000));
+                map.set(
+                  Math.floor(Math.random() * 1000000000) + '',
+                  Math.floor(Math.random() * 1000),
+                );
                 dispatch();
               }}
             >
@@ -105,7 +108,7 @@ describe('map single component', () => {
             <button
               role="clear"
               onClick={() => {
-                map.clear()
+                map.clear();
                 dispatch();
               }}
             >
@@ -126,9 +129,9 @@ describe('map single component', () => {
       let sizeHtml = initMap?.size || 0;
       expect(size.innerHTML).toBe(sizeHtml + '');
 
-      for(let i = 0 ; i < 20; i++) {
+      for (let i = 0; i < 20; i++) {
         fireEvent.click(addBtn);
-        sizeHtml++
+        sizeHtml++;
         expect(size.innerHTML).toBe(sizeHtml + '');
       }
 
@@ -136,7 +139,7 @@ describe('map single component', () => {
       expect(size.innerHTML).toBe(sizeHtml + '');
 
       fireEvent.click(addMapBtn);
-      sizeHtml++
+      sizeHtml++;
       expect(size.innerHTML).toBe(sizeHtml + '');
 
       fireEvent.click(deleteMapBtn);
@@ -150,9 +153,14 @@ describe('map single component', () => {
 
     it('no initial', () => {
       checkSize();
-    }); 
+    });
     it('initial 2 items', () => {
-      checkSize(new Map([['a', 3], ['b', 2]]));
+      checkSize(
+        new Map([
+          ['a', 3],
+          ['b', 2],
+        ]),
+      );
     });
   });
 
@@ -427,6 +435,7 @@ describe('map single component', () => {
           <div>
             <span role="obj">{obj?.size}</span>
             <span role="propertyType">{obj?.get('type')}</span>
+            <span role="stringify">{JSON.stringify(obj)}</span>
 
             <button
               role="addBtn"
@@ -454,23 +463,27 @@ describe('map single component', () => {
 
       let objText = screen.getByRole('obj');
       let propertyTypeText = screen.getByRole('propertyType');
+      let stringifyText = screen.getByRole('stringify');
       const addBtn = screen.getByRole('addBtn');
       const editBtn = screen.getByRole('editBtn');
 
       expect(length).toBe(0);
       expect(objText.innerHTML).toBeFalsy();
       expect(propertyTypeText.innerHTML).toBeFalsy();
+      expect(stringifyText.innerHTML).toBeFalsy();
 
       fireEvent.click(addBtn);
       expect(length).toBe(1);
       expect(objText.innerHTML).toBe('0');
       expect(propertyTypeText.innerHTML).toBeFalsy();
+      expect(stringifyText.innerHTML).toBe(JSON.stringify(value));
 
       fireEvent.click(editBtn);
       expect(length).toBe(1);
       expect(objText.innerHTML).toBe('1');
       expect(propertyTypeText.innerHTML).toBe('map - map');
       expect(value.get('type')).toBe('map - map');
+      expect(stringifyText.innerHTML).toBe(JSON.stringify(value));
     });
 
     it('all type', () => {
@@ -629,13 +642,6 @@ describe('map single component', () => {
         currentKey = item[0];
         const originItem = item[1];
 
-        // todo type set check
-        if (
-          typeof originItem === 'object' &&
-          originItem !== null &&
-          originItem.toString().indexOf('Set') > -1
-        )
-          continue;
 
         let itemRenderText: any = renderItem(originItem);
 
@@ -763,7 +769,10 @@ describe('map multi component', () => {
             <button
               role="addBtn"
               onClick={() => {
-                map.set(Math.floor(Math.random() * 1000000000) + '', Math.floor(Math.random() * 1000));
+                map.set(
+                  Math.floor(Math.random() * 1000000000) + '',
+                  Math.floor(Math.random() * 1000),
+                );
                 dispatch();
               }}
             >
@@ -790,7 +799,7 @@ describe('map multi component', () => {
             <button
               role="clear"
               onClick={() => {
-                map.clear()
+                map.clear();
                 dispatch();
               }}
             >
@@ -803,10 +812,12 @@ describe('map multi component', () => {
       function Parent() {
         let size: Map<any, any> = useStore(state => state.map.size);
 
-        return <div>
-          <div role='parentSize'>{size}</div>
-          <Child />
-        </div>;
+        return (
+          <div>
+            <div role="parentSize">{size}</div>
+            <Child />
+          </div>
+        );
       }
 
       render(<Parent />, { legacyRoot: reactLegency });
@@ -817,15 +828,14 @@ describe('map multi component', () => {
       const deleteMapBtn = screen.getByRole('deleteMapBtn');
       const clear = screen.getByRole('clear');
 
-
       const parentSize = screen.getByRole('parentSize');
 
       let sizeHtml = initMap?.size || 0;
       expect(size.innerHTML).toBe(sizeHtml + '');
 
-      for(let i = 0 ; i < 20; i++) {
+      for (let i = 0; i < 20; i++) {
         fireEvent.click(addBtn);
-        sizeHtml++
+        sizeHtml++;
         expect(size.innerHTML).toBe(sizeHtml + '');
         expect(parentSize.innerHTML).toBe(sizeHtml + '');
       }
@@ -835,7 +845,7 @@ describe('map multi component', () => {
       expect(parentSize.innerHTML).toBe(sizeHtml + '');
 
       fireEvent.click(addMapBtn);
-      sizeHtml++
+      sizeHtml++;
       expect(size.innerHTML).toBe(sizeHtml + '');
       expect(parentSize.innerHTML).toBe(sizeHtml + '');
 
@@ -852,11 +862,17 @@ describe('map multi component', () => {
 
     it('no initial', () => {
       checkSize();
-    }); 
-    it('initial 3 items', () => {
-      checkSize(new Map([['a', 3], ['b', 2], ['c', 3]]));
     });
-  })
+    it('initial 3 items', () => {
+      checkSize(
+        new Map([
+          ['a', 3],
+          ['b', 2],
+          ['c', 3],
+        ]),
+      );
+    });
+  });
 
   describe('add new item', () => {
     function checkType(key, value) {
@@ -1182,6 +1198,7 @@ describe('weakMap single component', () => {
         return (
           <div>
             <span role="propertyType">{obj?.get('type')}</span>
+            <span role="stringify">{JSON.stringify(obj)}</span>
 
             <button
               role="addBtn"
@@ -1208,17 +1225,21 @@ describe('weakMap single component', () => {
       render(<Child />, { legacyRoot: reactLegency });
 
       let propertyTypeText = screen.getByRole('propertyType');
+      let stringifyText = screen.getByRole('stringify');
       const addBtn = screen.getByRole('addBtn');
       const editBtn = screen.getByRole('editBtn');
 
       expect(propertyTypeText.innerHTML).toBeFalsy();
+      expect(stringifyText.innerHTML).toBeFalsy();
 
       fireEvent.click(addBtn);
       expect(propertyTypeText.innerHTML).toBeFalsy();
+      expect(stringifyText.innerHTML).toBe(JSON.stringify(value));
 
       fireEvent.click(editBtn);
       expect(propertyTypeText.innerHTML).toBe('map - map');
       expect(value.get('type')).toBe('map - map');
+      expect(stringifyText.innerHTML).toBe(JSON.stringify(value));
     });
   });
 
@@ -1692,4 +1713,31 @@ it('same object key for multi map', () => {
   fireEvent.click(childChangeBtn);
   expect(childText.innerHTML).toBe('map_1_1');
   expect(parentText.innerHTML).toBe('weakMap_1');
+});
+
+it('JSON.stringify: Map', () => {
+  const initState = { map: new Map() };
+  const { state } = createStore({
+    initState,
+    options: { strictMode: false }
+  });
+
+  expect(JSON.stringify(initState.map)).toBe(JSON.stringify(state.map))
+
+  state.map.set('name', 123);
+  expect(JSON.stringify(initState.map)).toBe(JSON.stringify(state.map))
+});
+
+it('JSON.stringify: WeakMap', () => {
+  const objectKey = {type: 'weakMap'}
+  const initState = { map: new WeakMap([[objectKey, 123]]) };
+  const { state } = createStore({
+    initState,
+    options: { strictMode: false }
+  });
+
+  expect(JSON.stringify(initState.map)).toBe(JSON.stringify(state.map))
+
+  state.map.delete(objectKey);
+  expect(JSON.stringify(initState.map)).toBe(JSON.stringify(state.map))
 });

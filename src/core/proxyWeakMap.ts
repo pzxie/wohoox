@@ -5,7 +5,6 @@ type ProxyWeakMapActions<T> = {
 };
 
 
-// todo JSON.stringify is not same as source
 export default class ProxyWeakMap<T extends WeakMap<any, any>> extends WeakMap {
   private source: T;
   private interceptor: ProxyWeakMapActions<T> = {
@@ -18,6 +17,8 @@ export default class ProxyWeakMap<T extends WeakMap<any, any>> extends WeakMap {
     super();
     this.source = source;
     this.interceptor = { ...this.interceptor, ...interceptor };
+    Object.defineProperty(this, 'source' ,{ enumerable: false });
+    Object.defineProperty(this, 'interceptor' ,{ enumerable: false });
   }
 
   get(key) {

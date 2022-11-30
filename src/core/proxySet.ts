@@ -10,7 +10,6 @@ type ProxySetActions<T> = {
 
 type Options = { deep?: boolean };
 
-// todo JSON.stringify is not same as source
 export default class ProxySet<T extends Set<any>> extends Set {
   get size() {
     const  value = this.source.size;
@@ -36,6 +35,9 @@ export default class ProxySet<T extends Set<any>> extends Set {
     this.source = source;
     this.interceptor = { ...this.interceptor, ...interceptor };
     this.options = Object.assign(this.options, options);
+    Object.defineProperty(this, 'source' ,{ enumerable: false });
+    Object.defineProperty(this, 'interceptor' ,{ enumerable: false });
+    Object.defineProperty(this, 'options' ,{ enumerable: false });
   }
 
   add(value) {

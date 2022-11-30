@@ -5,7 +5,6 @@ const objectMap = new WeakMap();
 
 const stringifiedKeySourceMap = new Map();
 const keyJoinSymbol = '__$$__';
-// todo max size?
 
 export function getStringifyKey(obj: any, key: any): string {
   if (typeof key === 'string') return key;

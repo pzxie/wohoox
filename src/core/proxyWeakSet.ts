@@ -5,7 +5,6 @@ type ProxyWeakSetActions<T> = {
 };
 
 
-// todo JSON.stringify is not same as source
 export default class ProxyWeakSet<T extends WeakSet<any>> extends WeakSet {
   private source: T;
   private interceptor: ProxyWeakSetActions<T> = {
@@ -18,6 +17,8 @@ export default class ProxyWeakSet<T extends WeakSet<any>> extends WeakSet {
     super();
     this.source = source;
     this.interceptor = { ...this.interceptor, ...interceptor };
+    Object.defineProperty(this, 'source' ,{ enumerable: false });
+    Object.defineProperty(this, 'interceptor' ,{ enumerable: false });
   }
 
   add(value) {

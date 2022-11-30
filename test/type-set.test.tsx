@@ -290,11 +290,11 @@ describe('set single component', () => {
       const obj = { name: 'obj' };
       const arr = [1, 2];
       const map = new Map();
-      const set = new Set();
+      const originSet = new Set();
       const weakMap = new WeakMap([[obj, 123]]);
       const weakSet = new WeakSet();
 
-      initStore(new Set<any>([obj, arr, map, weakMap, set, weakSet]), {
+      initStore(new Set<any>([obj, arr, map, weakMap, originSet, weakSet]), {
         strictMode: false,
         proxySetDeep: true,
       });
@@ -413,7 +413,7 @@ describe('set single component', () => {
       fireEvent.click(weakMapBtn);
       expect(weakMapText.innerHTML).toBe('changed');
 
-      const setTemp = [...set];
+      const setTemp = [...originSet];
       expect(setText.innerHTML).toBe(renderItem(setTemp));
       fireEvent.click(setBtn);
       setTemp.push('changed');
@@ -817,7 +817,7 @@ describe('set multi component', () => {
       for (let index = 0; index < allLength; index++) {
         currentIndex = index;
         fireEvent.click(deleteBtn);
-        const newLength = allLength - index - 1
+        const newLength = allLength - index - 1;
         if (newLength > 0) {
           expect(screen.getAllByRole('item').length).toBe(newLength);
         }
@@ -1350,4 +1350,31 @@ it('same object key for multi map', () => {
   fireEvent.click(parentDeleteBtn);
   expect(childText.innerHTML).toBe('false');
   expect(parentText.innerHTML).toBe('false');
+});
+
+it('JSON.stringify: Set', () => {
+  const initState = { set: new Set() };
+  const { state } = createStore({
+    initState,
+    options: { strictMode: false },
+  });
+
+  expect(JSON.stringify(initState.set)).toBe(JSON.stringify(state.set));
+
+  state.set.add('set');
+  expect(JSON.stringify(initState.set)).toBe(JSON.stringify(state.set));
+});
+
+it('JSON.stringify: WeakSet', () => {
+  const objectKey = { type: 'weakSet' };
+  const initState = { set: new WeakSet([objectKey]) };
+  const { state } = createStore({
+    initState,
+    options: { strictMode: false },
+  });
+
+  expect(JSON.stringify(initState.set)).toBe(JSON.stringify(state.set));
+
+  state.set.delete(objectKey);
+  expect(JSON.stringify(initState.set)).toBe(JSON.stringify(state.set));
 });
