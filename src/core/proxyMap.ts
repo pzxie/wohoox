@@ -82,6 +82,8 @@ export default class ProxyMap<T extends Map<any, any>> extends Map {
   }
 
   keys(): IterableIterator<any> {
+    this.interceptor.get(this.source, MapSetSizeKey)
+
     return this.source.keys();
   }
 

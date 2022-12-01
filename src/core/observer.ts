@@ -11,7 +11,8 @@ type ObserverParams<T> = {
   proxyMap: WeakMap<Record<any, any> | Map<any, any> | Set<any>, any>;
   keysStack: string[];
   getCallback(value: any, keys: string[]): void;
-  setCallback(value: any, keys: string[], source?: any): boolean | undefined | void;
+  setCallback(value: any, keys: string[], source?: any, oldValue?: any): boolean | undefined | void;
+  addCallback(value: any, keys: string[], source?: any);
   deleteCallback(targe, key: string[]): void;
   proxySetDeep?: boolean;
 };
@@ -22,8 +23,9 @@ function observerObject({
   keysStack,
   getCallback,
   setCallback,
+  addCallback,
   deleteCallback,
-  proxySetDeep
+  proxySetDeep,
 }: ObserverParams<object>) {
   const proxy = new Proxy(source, {
     get(target, key: string, receiver) {
@@ -37,10 +39,11 @@ function observerObject({
         return observer(value, {
           getCallback,
           setCallback,
+          addCallback,
           deleteCallback,
           keysStack: keys,
           proxyMap,
-          proxySetDeep
+          proxySetDeep,
         });
       }
 
@@ -49,15 +52,22 @@ function observerObject({
     set(target, key: string, value, receiver) {
       const keys = [...keysStack, getStringifyKey(target, key)];
 
-      if (value !== Reflect.get(target, key) || (Array.isArray(target) && key === 'length')) {
-        setCallback(value, keys, target);
+      const oldValue = Reflect.get(target, key);
+
+      if (!Reflect.has(target, key)) {
+        addCallback(value, keys, target);
+      } else if (value !== oldValue || (Array.isArray(target) && key === 'length')) {
+        setCallback(value, keys, target, oldValue);
       }
 
       return Reflect.set(target, key, value, receiver);
     },
     deleteProperty(target: Record<string, any>, key: string) {
-      const keys = [...keysStack, getStringifyKey(target, key)];
+      const mapKey = getStringifyKey(target, key);
+
+      const keys = [...keysStack, mapKey];
       deleteCallback(target, keys);
+      removeStringifyKey(mapKey);
 
       return Reflect.deleteProperty(target, key);
     },
@@ -72,8 +82,9 @@ function observerMap({
   keysStack,
   getCallback,
   setCallback,
+  addCallback,
   deleteCallback,
-  proxySetDeep
+  proxySetDeep,
 }: ObserverParams<Map<any, any>>) {
   const commonActions = {
     get(target, key) {
@@ -87,10 +98,11 @@ function observerMap({
         return observer(value, {
           getCallback,
           setCallback,
+          addCallback,
           deleteCallback,
           keysStack: keys,
           proxyMap,
-          proxySetDeep
+          proxySetDeep,
         });
       }
 
@@ -98,9 +110,13 @@ function observerMap({
     },
     set(target, key, value) {
       const keys = [...keysStack, getStringifyKey(target, key)];
-      if (target.has(key) && target.get(key) === value) return target;
+      const oldValue = target.get(key);
 
-      setCallback(value, keys, target);
+      if (!target.has(key)) {
+        addCallback(value, keys, target);
+      } else if (target.get(key) !== value) {
+        setCallback(value, keys, target, oldValue);
+      }
 
       return target.set(key, value);
     },
@@ -132,7 +148,7 @@ function observerMap({
       const keys = [...keysStack, MapSetSizeKey];
       if (oldValue === newValue) return;
 
-      setCallback(newValue, keys, target);
+      setCallback(newValue, keys, target, oldValue);
     },
   });
 }
@@ -143,8 +159,9 @@ function observerSet({
   keysStack,
   getCallback,
   setCallback,
+  addCallback,
   deleteCallback,
-  proxySetDeep
+  proxySetDeep,
 }: ObserverParams<Map<any, any>>) {
   const commonActions = {
     get(target, key) {
@@ -154,14 +171,17 @@ function observerSet({
 
       getCallback(value, keys);
 
+      if (!proxySetDeep) return value;
+
       if (isObserverObject(value) && !proxyValue) {
         return observer(value, {
           getCallback,
           setCallback,
+          addCallback,
           deleteCallback,
           keysStack: keys,
           proxyMap,
-          proxySetDeep
+          proxySetDeep,
         });
       }
 
@@ -169,9 +189,10 @@ function observerSet({
     },
     add(target, key, value) {
       const keys = [...keysStack, getStringifyKey(target, key)];
+
       if (target.has(key)) return target;
 
-      setCallback(value, keys, target);
+      addCallback(value, keys, target);
 
       return target.add(value);
     },
@@ -204,7 +225,7 @@ function observerSet({
         const keys = [...keysStack, MapSetSizeKey];
         if (oldValue === newValue) return;
 
-        setCallback(newValue, keys, target);
+        setCallback(newValue, keys, target, oldValue);
       },
     },
     { deep: proxySetDeep || false },
@@ -215,7 +236,13 @@ export function observer(
   source,
   options?: {
     getCallback?(value: any, keys: string[]): void;
-    setCallback?(value: any, keys: string[], source?: any): boolean | undefined | void;
+    setCallback?(
+      value: any,
+      keys: string[],
+      source?: any,
+      oldValue?: any,
+    ): boolean | undefined | void;
+    addCallback?(value: any, keys: string[], source?: any): boolean | undefined | void;
     deleteCallback?(targe, key: string[]): void;
     keysStack?: string[];
     proxyMap?: WeakMap<any, any>;
@@ -225,6 +252,7 @@ export function observer(
   const {
     getCallback = () => {},
     setCallback = () => {},
+    addCallback = () => {},
     deleteCallback = () => {},
     keysStack = [],
     proxyMap = new WeakMap<Record<string, any> | Map<any, any> | Set<any>>(),
@@ -242,6 +270,7 @@ export function observer(
     keysStack,
     getCallback,
     setCallback,
+    addCallback,
     deleteCallback,
     proxySetDeep,
   });

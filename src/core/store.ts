@@ -1,6 +1,6 @@
 import { storeMap, getIsModifyByAction, setIsModifyByAction, defaultStoreName } from '../global';
 import { observer } from './observer';
-import { getSettleType, isPlainObject } from '../utils';
+import { isPlainObject } from '../utils';
 import { EffectType } from '../constant';
 
 import type { ActionsDefine, ActionDispatch } from '../types';
@@ -69,14 +69,23 @@ export class Store<S extends object, A extends ActionsDefine<S>> {
       getCallback: (_, keys) => {
         this.currentProxyGetKeys = keys;
       },
-      setCallback: (value, keys, target) => {
+      setCallback: (value, keys, target, oldValue) => {
         if (!getIsModifyByAction() && this.options.strictMode) {
           throw new Error(
             'In the strict mode, state cannot be modified by expression. Only actions are allowed',
           );
         }
 
-        this.addKeyToEffectList(keys, value, getSettleType(target, [keys[keys.length - 1]], value));
+        this.addKeyToEffectList(keys, value, EffectType.modify);
+      },
+      addCallback: (value, keys, target) => {
+        if (!getIsModifyByAction() && this.options.strictMode) {
+          throw new Error(
+            'In the strict mode, state cannot be modified by expression. Only actions are allowed',
+          );
+        }
+
+        this.addKeyToEffectList(keys, value, EffectType.add);
       },
       deleteCallback: (target, keys) => {
         if (!getIsModifyByAction() && this.options.strictMode) {

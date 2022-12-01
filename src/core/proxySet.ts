@@ -1,7 +1,7 @@
 import { MapSetSizeKey } from '../constant'
 
 type ProxySetActions<T> = {
-  get(source: T, key: any, value: any): any;
+  get(source: T, key: any): any;
   add(source: T, key: any, value: any): void;
   size(source: T, oldValue: number, newValue: number): void;
   deleteProperty(source: T, key: any): boolean;
@@ -14,7 +14,7 @@ export default class ProxySet<T extends Set<any>> extends Set {
   get size() {
     const  value = this.source.size;
 
-    this.interceptor.get(this.source, MapSetSizeKey, value)
+    this.interceptor.get(this.source, MapSetSizeKey)
 
     return value;
   };
@@ -72,21 +72,24 @@ export default class ProxySet<T extends Set<any>> extends Set {
 
   forEach(callbackfn: (value: any, key: any, set: Set<any>) => void, thisArg?: any): void {
     this.source.forEach((value: any, key: any, set: Set<any>) => {
-      this.interceptor.get(this.source, key, value);
+      this.interceptor.get(this.source, key);
       callbackfn(value, key, set);
     });
   }
 
   has(key: any): boolean {
-    this.interceptor.get(this.source, key, key);
+    this.interceptor.get(this.source, key);
     return this.source.has(key);
   }
 
   keys(): IterableIterator<any> {
-    if (!this.options.deep) return this.source.keys();
+    if (!this.options.deep) {
+      this.interceptor.get(this.source, MapSetSizeKey)
+      return this.source.keys();
+    }
 
     const proxyItems = [...this.source.keys()].map(item => {
-      return this.interceptor.get(this.source, item, item) || item;
+      return this.interceptor.get(this.source, item) || item;
     });
 
     return new Set(proxyItems).keys();
@@ -97,10 +100,13 @@ export default class ProxySet<T extends Set<any>> extends Set {
   }
 
   entries(): IterableIterator<[any, any]> {
-    if (!this.options.deep) return this.source.entries();
+    if (!this.options.deep) {
+      this.interceptor.get(this.source, MapSetSizeKey)
+      return this.source.entries();
+    }
 
     const proxyItems = [...this.source.entries()].map(([item, _]) => {
-      const proxyValue = this.interceptor.get(this.source, item, item) || item;
+      const proxyValue = this.interceptor.get(this.source, item) || item;
       return proxyValue;
     });
 

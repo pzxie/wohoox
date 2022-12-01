@@ -4,7 +4,7 @@ import useId from './common/useId';
 import { useStore } from './useStore';
 
 import { observer } from '../core/observer';
-import { isObserverObject, getSettleType } from '../utils';
+import { isObserverObject } from '../utils';
 import { defaultStoreName } from '../global';
 import { EffectType } from '../constant';
 
@@ -32,7 +32,7 @@ export function useWohoox(name?: any, getState?: any): any {
   const getObserverState = useEvent(() => {
     const state = getStateFn(store.state);
     const currentPrefixKeys = [...store.currentProxyGetKeys];
-    const storeOptions = store.getOptions()
+    const storeOptions = store.getOptions();
 
     // Use the same target with store state
     return observer(getStateFn(store.sourceState), {
@@ -55,11 +55,16 @@ export function useWohoox(name?: any, getState?: any): any {
           );
         }
 
-        store.addKeyToEffectList(
-          keys,
-          value,
-          getSettleType(target, [keys[keys.length - 1]], value),
-        );
+        store.addKeyToEffectList(keys, value, EffectType.modify);
+      },
+      addCallback: (value, keys, target) => {
+        if (storeOptions.strictMode) {
+          throw new Error(
+            'In the strict mode, state cannot be modified by expression. Only actions are allowed',
+          );
+        }
+
+        store.addKeyToEffectList(keys, value, EffectType.add);
       },
       deleteCallback: (target, keys) => {
         if (storeOptions.strictMode) {
@@ -70,7 +75,7 @@ export function useWohoox(name?: any, getState?: any): any {
         store.addKeyToEffectList(keys, target, EffectType.delete);
       },
       keysStack: state === store.state ? [] : currentPrefixKeys,
-      proxySetDeep: storeOptions.proxySetDeep
+      proxySetDeep: storeOptions.proxySetDeep,
     });
   });
 
