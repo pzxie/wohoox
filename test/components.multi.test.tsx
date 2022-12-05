@@ -1,9 +1,12 @@
 import * as React from 'react';
-import { fireEvent, cleanup, render, screen } from '@testing-library/react';
+import { fireEvent, cleanup, render, screen, waitFor } from '@testing-library/react';
 
 import createStore, { useStore, dispatch, dispatchAll } from '../src';
 
 const reactLegency = !!process.env.reactLegency;
+
+const symbolStringKey = Symbol('symbol:string');
+const symbolObjectKey = Symbol('symbol:object');
 
 function initStore(options?: { strictMode?: boolean }) {
   const defaultInitState = {
@@ -18,6 +21,11 @@ function initStore(options?: { strictMode?: boolean }) {
       province: 'sc',
       city: 'cd',
     },
+    [symbolStringKey]: 'string',
+    [symbolObjectKey]: {
+      key: 'symbol',
+      value: 'object'
+    }
   };
   const departmentInitState = {
     name: 'department',
@@ -76,7 +84,13 @@ function initStore(options?: { strictMode?: boolean }) {
         state.details.city = city;
       },
       updateDetail(state, details) {
-        state.details = details;
+        state.details = { ...state.details, ...details };
+      },
+      updateSymbolString(state, string) {
+        state[symbolStringKey] = string
+      },
+      updateSymbolObject(state, object) {
+        state[symbolObjectKey] = {...state[symbolObjectKey], ...object}
       },
       dispatch() {},
     },
@@ -1181,7 +1195,6 @@ describe('multi component: update state by state expression + dispatch by action
   });
 });
 
-
 describe('multi component: update state by state expression + dispatch by wohoox dispatch', () => {
   it('update origin field in strictMode, should throw error', () => {
     let {
@@ -1834,7 +1847,7 @@ describe('multi component: update state by state expression + dispatch by wohoox
   });
 });
 
-describe('component: render times', () => {
+describe('multi component: render times', () => {
   it('update origin field by 1 action, render 1 time', () => {
     let { actions } = initStore();
 
@@ -2021,4 +2034,228 @@ describe('component: render times', () => {
     expect(childUserDetailRenderTimes).toBe(3);
     expect(childUserProvinceRenderTimes).toBe(2);
   });
+});
+
+it('update field by multi actions in one queue, components rerender check', async () => {
+  let { actions } = initStore();
+
+  const fn = jest.fn();
+  let childNameRenderTimes = 0;
+  let childUserDetailRenderTimes = 0;
+  let childUserProvinceRenderTimes = 0;
+  function ChildUserDetail() {
+    const details = useStore('user', s => s.details);
+    const symbolString = useStore('user', s => s[symbolStringKey]);
+    const symbolObject = useStore('user', s => s[symbolObjectKey]);
+
+    childUserDetailRenderTimes += 1;
+
+    return (
+      <div>
+        <span role="province">{details.province}</span>
+        <span role="city">{details.city}</span>
+        <span role="symbolString">{symbolString}</span>
+        <span role="symbolObject">{JSON.stringify(symbolObject)}</span>
+        <button
+          role="updateDetailsBtn"
+          onClick={() => {
+            setTimeout(() => {
+              actions.user.updateDetail({
+                province: 'updated',
+                city: 'updated',
+              });
+              fn();
+              actions.user.updateDetail({
+                province: 'updated_2',
+                city: 'updated_2',
+              });
+              fn();
+              actions.user.updateDetail({
+                province: 'updated_3',
+                city: 'updated_3',
+              });
+              fn();
+            }, 5);
+          }}
+        >
+          update
+        </button>
+        <button
+          role="updateDetailsCityBtn"
+          onClick={() => {
+            actions.user.updateDetailField('updated_city');
+            actions.user.updateDetailField('updated_city_2');
+            actions.user.updateDetailField('updated_city_3');
+          }}
+        >
+          update
+        </button>
+        <button
+          role="updateSymbolString"
+          onClick={() => {
+            actions.user.updateSymbolString('updated_symbol_string');
+            actions.user.updateSymbolString('updated_symbol_string_2');
+            actions.user.updateSymbolString('updated_symbol_string_3');
+          }}
+        >
+          updateSymbolString
+        </button>
+        <button
+          role="updateSymbolObject"
+          onClick={() => {
+            actions.user.updateSymbolObject({value: 'updateSymbolObject'});
+            actions.user.updateSymbolObject({value: 'updateSymbolObject_2'});
+            actions.user.updateSymbolObject({value: 'updateSymbolObject_3'});
+          }}
+        >
+          updateSymbolObject
+        </button>
+        
+
+      </div>
+    );
+  }
+
+  function ChildUserProvince() {
+    const province = useStore('user', s => s.details.province);
+    const symbolString = useStore('user', s => s[symbolStringKey]);
+    const symbolObject = useStore('user', s => s[symbolObjectKey]);
+
+    childUserProvinceRenderTimes += 1;
+
+    return (
+      <div>
+        <span role="patch">{province}</span>
+        <span role="patchSymbolString">{symbolString}</span>
+        <span role="patchSymbolObject">{symbolObject.value}</span>
+      </div>
+    );
+  }
+
+  function ChildName() {
+    const name = useStore(s => s.name);
+
+    childNameRenderTimes += 1;
+
+    return (
+      <div>
+        <span role="name">{name}</span>
+        <button
+          role="updateDefaultNameBtn"
+          onClick={() => {
+            actions.default.updateName(name + '_1');
+            actions.default.updateName(name + '_2');
+            actions.default.updateName(name + '_3');
+          }}
+        >
+          update name
+        </button>
+      </div>
+    );
+  }
+
+  function Parent() {
+    return (
+      <div>
+        <ChildName />
+        <ChildUserProvince />
+        <ChildUserDetail />
+      </div>
+    );
+  }
+
+  render(<Parent />, { legacyRoot: reactLegency });
+
+  const userProvinceText = screen.getByRole('province');
+  const userCityText = screen.getByRole('city');
+  const userPatchProvinceText = screen.getByRole('patch');
+  const defaultNameText = screen.getByRole('name');
+  const symbolStringText = screen.getByRole('symbolString');
+  const symbolObjectText = screen.getByRole('symbolObject');
+  const patchSymbolStringText = screen.getByRole('patchSymbolString');
+  const patchSymbolObjectText = screen.getByRole('patchSymbolObject');
+
+  expect(childNameRenderTimes).toBe(1);
+  expect(childUserDetailRenderTimes).toBe(1);
+  expect(childUserProvinceRenderTimes).toBe(1);
+  expect(defaultNameText.innerHTML).toBe('default');
+  expect(userCityText.innerHTML).toBe('cd');
+  expect(userProvinceText.innerHTML).toBe('sc');
+  expect(userPatchProvinceText.innerHTML).toBe('sc');
+  expect(symbolStringText.innerHTML).toBe('string');
+  expect(symbolObjectText.innerHTML).toBe(JSON.stringify({key: 'symbol', value: 'object'}));
+  expect(patchSymbolStringText.innerHTML).toBe('string');
+  expect(patchSymbolObjectText.innerHTML).toBe('object');
+
+  const updateDefaultNameBtn = screen.getByRole('updateDefaultNameBtn');
+  fireEvent.click(updateDefaultNameBtn);
+  expect(childNameRenderTimes).toBe(2);
+  expect(childUserDetailRenderTimes).toBe(1);
+  expect(childUserProvinceRenderTimes).toBe(1);
+  expect(defaultNameText.innerHTML).toBe('default_3');
+  expect(userCityText.innerHTML).toBe('cd');
+  expect(userProvinceText.innerHTML).toBe('sc');
+  expect(userPatchProvinceText.innerHTML).toBe('sc');
+  expect(symbolStringText.innerHTML).toBe('string');
+  expect(symbolObjectText.innerHTML).toBe(JSON.stringify({key: 'symbol', value: 'object'}));
+  expect(patchSymbolStringText.innerHTML).toBe('string');
+  expect(patchSymbolObjectText.innerHTML).toBe('object');
+
+  const updateDetailsBtn = screen.getByRole('updateDetailsBtn');
+  fireEvent.click(updateDetailsBtn);
+  await waitFor(() => expect(fn).toHaveBeenCalledTimes(3));
+  console.log(1111);
+  expect(childNameRenderTimes).toBe(2);
+  expect(childUserDetailRenderTimes).toBe(2);
+  expect(childUserProvinceRenderTimes).toBe(2);
+  expect(defaultNameText.innerHTML).toBe('default_3');
+  expect(userCityText.innerHTML).toBe('updated_3');
+  expect(userProvinceText.innerHTML).toBe('updated_3');
+  expect(userPatchProvinceText.innerHTML).toBe('updated_3');
+  expect(symbolStringText.innerHTML).toBe('string');
+  expect(symbolObjectText.innerHTML).toBe(JSON.stringify({key: 'symbol', value: 'object'}));
+  expect(patchSymbolStringText.innerHTML).toBe('string');
+  expect(patchSymbolObjectText.innerHTML).toBe('object');
+
+  const updateDetailsCityBtn = screen.getByRole('updateDetailsCityBtn');
+  fireEvent.click(updateDetailsCityBtn);
+  expect(childNameRenderTimes).toBe(2);
+  expect(childUserDetailRenderTimes).toBe(3);
+  expect(childUserProvinceRenderTimes).toBe(2);
+  expect(defaultNameText.innerHTML).toBe('default_3');
+  expect(userCityText.innerHTML).toBe('updated_city_3');
+  expect(userProvinceText.innerHTML).toBe('updated_3');
+  expect(userPatchProvinceText.innerHTML).toBe('updated_3');
+  expect(symbolStringText.innerHTML).toBe('string');
+  expect(symbolObjectText.innerHTML).toBe(JSON.stringify({key: 'symbol', value: 'object'}));
+  expect(patchSymbolStringText.innerHTML).toBe('string');
+  expect(patchSymbolObjectText.innerHTML).toBe('object');
+
+  const updateSymbolStringBtn = screen.getByRole('updateSymbolString');
+  fireEvent.click(updateSymbolStringBtn);
+  expect(childNameRenderTimes).toBe(2);
+  expect(childUserDetailRenderTimes).toBe(4);
+  expect(childUserProvinceRenderTimes).toBe(3);
+  expect(defaultNameText.innerHTML).toBe('default_3');
+  expect(userCityText.innerHTML).toBe('updated_city_3');
+  expect(userProvinceText.innerHTML).toBe('updated_3');
+  expect(userPatchProvinceText.innerHTML).toBe('updated_3');
+  expect(symbolStringText.innerHTML).toBe('updated_symbol_string_3');
+  expect(symbolObjectText.innerHTML).toBe(JSON.stringify({key: 'symbol', value: 'object'}));
+  expect(patchSymbolStringText.innerHTML).toBe('updated_symbol_string_3');
+  expect(patchSymbolObjectText.innerHTML).toBe('object');
+
+  const updateSymbolObjectBtn = screen.getByRole('updateSymbolObject');
+  fireEvent.click(updateSymbolObjectBtn);
+  expect(childNameRenderTimes).toBe(2);
+  expect(childUserDetailRenderTimes).toBe(5);
+  expect(childUserProvinceRenderTimes).toBe(4);
+  expect(defaultNameText.innerHTML).toBe('default_3');
+  expect(userCityText.innerHTML).toBe('updated_city_3');
+  expect(userProvinceText.innerHTML).toBe('updated_3');
+  expect(userPatchProvinceText.innerHTML).toBe('updated_3');
+  expect(symbolStringText.innerHTML).toBe('updated_symbol_string_3');
+  expect(symbolObjectText.innerHTML).toBe(JSON.stringify({key: 'symbol', value: 'updateSymbolObject_3'}));
+  expect(patchSymbolStringText.innerHTML).toBe('updated_symbol_string_3');
+  expect(patchSymbolObjectText.innerHTML).toBe('updateSymbolObject_3');
 });

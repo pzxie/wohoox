@@ -5,7 +5,7 @@ import { EffectType } from '../constant';
 
 import type { ActionsDefine, ActionDispatch } from '../types';
 
-export type Options = { strictMode?: boolean; proxySetDeep?: boolean; };
+export type Options = { strictMode?: boolean; proxySetDeep?: boolean };
 
 function revertActionsToAutoMode<TState, TActions extends ActionsDefine<TState>>(
   state: TState,
@@ -49,9 +49,6 @@ export class Store<S extends object, A extends ActionsDefine<S>> {
 
   public actions = {} as ActionDispatch<S, A>;
 
-  // Recording every components who used the store state property
-  usedMap: Record<string, Set<string>> = {};
-
   // Properties stack to record current visited properties，effectList source
   currentProxyGetKeys: string[] = [];
 
@@ -78,7 +75,7 @@ export class Store<S extends object, A extends ActionsDefine<S>> {
 
         this.addKeyToEffectList(keys, value, EffectType.modify);
       },
-      addCallback: (value, keys, target) => {
+      addCallback: (value, keys) => {
         if (!getIsModifyByAction() && this.options.strictMode) {
           throw new Error(
             'In the strict mode, state cannot be modified by expression. Only actions are allowed',
@@ -96,7 +93,7 @@ export class Store<S extends object, A extends ActionsDefine<S>> {
 
         this.addKeyToEffectList(keys, target, EffectType.delete);
       },
-      proxySetDeep: this.options.proxySetDeep
+      proxySetDeep: this.options.proxySetDeep,
     });
 
     this.actions = revertActionsToAutoMode(
@@ -125,29 +122,6 @@ export class Store<S extends object, A extends ActionsDefine<S>> {
     const index = this.listeners.indexOf(listener);
 
     if (index > -1) this.listeners.splice(index, 1);
-  }
-
-  addKeyToUsedMap(key: string, componentId: string) {
-    if (!key) return;
-
-    if (!this.usedMap[key]) {
-      this.usedMap[key] = new Set([componentId]);
-    } else {
-      this.usedMap[key].add(componentId);
-    }
-  }
-
-  removeAllKeysFromUsedMap(componentId: string) {
-    const trashList: string[] = [];
-
-    for(let key in this.usedMap) {
-      const keySet =  this.usedMap[key];
-
-      keySet.delete(componentId);
-      if (keySet.size === 0) trashList.push(key);
-    }
-
-    trashList.forEach(key => delete this.usedMap[key])
   }
 
   addKeyToEffectList(keys: string[], newValue: any, effectType: EffectType) {

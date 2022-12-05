@@ -17,9 +17,12 @@ export function useWohoox<T extends (state: any) => any>(
 export function useWohoox(name?: any, getState?: any): any {
   const storeName = typeof name === 'string' ? name : defaultStoreName;
 
+  const usedKeys = useRef(new Set());
+
   const [, update] = useState({});
   const id = useId();
   const store = useStore(storeName);
+  
 
   const getStateFn = useEvent(
     typeof name === 'function'
@@ -41,10 +44,10 @@ export function useWohoox(name?: any, getState?: any): any {
           store.currentProxyGetKeys = keys;
           const key = keys.join('.');
 
-          store.addKeyToUsedMap(key, id);
+          usedKeys.current.add(key);
 
           if (Array.isArray(value)) {
-            store.addKeyToUsedMap([...keys, 'length'].join('.'), id);
+            usedKeys.current.add([...keys, 'length'].join('.'));
           }
         } catch (e) {}
       },
@@ -89,6 +92,7 @@ export function useWohoox(name?: any, getState?: any): any {
     // State changed, should be set to a new state
     preState.current = state;
     setState(isObserverObject(state) ? getObserverState : state);
+    usedKeys.current.clear();
   });
 
   const onEveryRender = () => {
@@ -96,12 +100,12 @@ export function useWohoox(name?: any, getState?: any): any {
     const keys = store.currentProxyGetKeys;
 
     if (Array.isArray(tempState)) {
-      store.addKeyToUsedMap([...keys, 'length'].join('.'), id);
+      usedKeys.current.add([...keys, 'length'].join('.'));
     } else {
       try {
         if (keys.length) {
           // Some property cannot be converted to strings, ex symbol. We can ignore this
-          store.addKeyToUsedMap(keys.join('.'), id);
+          usedKeys.current.add(keys.join('.'));
         }
       } catch (e) {}
     }
@@ -125,9 +129,9 @@ export function useWohoox(name?: any, getState?: any): any {
 
       // After the state sub-property is changed, it will be pushed into the effectList
       for (let key of store.effectList) {
-        if (store.usedMap[key] && store.usedMap[key].has(id)) {
+        if (usedKeys.current.has(key)) {
           preState.current = state;
-          store.usedMap[key].delete(id);
+          usedKeys.current.clear();
           update({});
         }
       }
@@ -136,12 +140,6 @@ export function useWohoox(name?: any, getState?: any): any {
     store.addListener(callback);
     return () => {
       store.removeListener(callback);
-    };
-  }, [id, store]);
-
-  useEffect(() => {
-    return () => {
-      store.removeAllKeysFromUsedMap(id);
     };
   }, [id, store]);
 

@@ -28,7 +28,7 @@ function initStore(storeName?: string, options?: { strictMode?: boolean }) {
   };
 }
 
-afterEach(cleanup);
+beforeEach(cleanup);
 
 describe('single component', () => {
   it('value modify: original item', () => {
