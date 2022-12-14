@@ -4,6 +4,10 @@ import useId from './common/useId';
 import { useStore } from './useStore';
 
 import { observer } from '../core/observer';
+import {
+  tagAsUsedStringifyKeys,
+  removeAsUnusedStringifyKeys,
+} from '../core/keyStore';
 import { isObserverObject } from '../utils';
 import { defaultStoreName } from '../global';
 import { EffectType } from '../constant';
@@ -17,12 +21,11 @@ export function useWohoox<T extends (state: any) => any>(
 export function useWohoox(name?: any, getState?: any): any {
   const storeName = typeof name === 'string' ? name : defaultStoreName;
 
-  const usedKeys = useRef(new Set());
+  const usedKeys = useRef(new Set<string>());
 
   const [, update] = useState({});
   const id = useId();
   const store = useStore(storeName);
-  
 
   const getStateFn = useEvent(
     typeof name === 'function'
@@ -84,15 +87,20 @@ export function useWohoox(name?: any, getState?: any): any {
 
   const preState = useRef(getStateFn(store.state));
   const [state, setState] = useState(getObserverState);
-  const updateState = useEvent(() => {
+  const updateState = useEvent((isForce?: boolean) => {
     const state = getStateFn(store.state);
 
-    if (state === preState.current) return;
+    if (!isForce && state === preState.current) {
+      return false;
+    }
 
     // State changed, should be set to a new state
     preState.current = state;
-    setState(isObserverObject(state) ? getObserverState : state);
     usedKeys.current.clear();
+    removeAsUnusedStringifyKeys(id);
+    setState(isObserverObject(state) ? getObserverState : state);
+
+    return true;
   });
 
   const onEveryRender = () => {
@@ -116,16 +124,27 @@ export function useWohoox(name?: any, getState?: any): any {
   // For dev environment more，
   // StoreName would not be changed normally.Unless manually changed in dev
   // or set dynamic storeName in production
-  useEffect(updateState, [id, store]);
+  useEffect(() => {
+    updateState();
+  }, [id, store]);
 
   useEffect(() => {
     if (!id) return;
 
     const callback = () => {
+      // state itself changed, update
+      const isUpdated = updateState();
+      if (isUpdated) return;
+
       const state = getStateFn(store.state);
 
-      // state itself changed, update
-      updateState();
+      // For update object, re-get state to update keys cache
+      for (let key of store.effectUpdateList) {
+        if (usedKeys.current.has(key)) { 
+          updateState(true);
+          return;
+        }
+      }
 
       // After the state sub-property is changed, it will be pushed into the effectList
       for (let key of store.effectList) {
@@ -142,6 +161,16 @@ export function useWohoox(name?: any, getState?: any): any {
       store.removeListener(callback);
     };
   }, [id, store]);
+
+  useEffect(() => {
+    tagAsUsedStringifyKeys(id, [...usedKeys.current]);
+  });
+
+  useEffect(() => {
+    return () => {
+      removeAsUnusedStringifyKeys(id);
+    };
+  }, []);
 
   return state;
 }

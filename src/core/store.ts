@@ -2,6 +2,7 @@ import { storeMap, getIsModifyByAction, setIsModifyByAction, defaultStoreName } 
 import { observer } from './observer';
 import { isPlainObject } from '../utils';
 import { EffectType } from '../constant';
+import {getSourceByStringifyKey} from '../core/keyStore';
 
 import type { ActionsDefine, ActionDispatch } from '../types';
 
@@ -55,6 +56,8 @@ export class Store<S extends object, A extends ActionsDefine<S>> {
   // settled state property list
   effectList: Set<string> = new Set();
 
+  effectUpdateList: Set<string> = new Set();
+  
   dispatch = () => {};
 
   constructor(name: string, state: S, actions?: A, options?: Options) {
@@ -102,6 +105,7 @@ export class Store<S extends object, A extends ActionsDefine<S>> {
       () => {
         this.applyRender();
         this.effectList.clear();
+        this.effectUpdateList.clear();
       },
     );
 
@@ -127,13 +131,14 @@ export class Store<S extends object, A extends ActionsDefine<S>> {
   addKeyToEffectList(keys: string[], newValue: any, effectType: EffectType) {
     if (!keys.length) return;
 
-    this.effectList.add(keys.join('.'));
+    if (effectType === EffectType.add || !keys.find(key => getSourceByStringifyKey(key))) {
+      this.effectList.add(keys.join('.'));
 
-    if (effectType === EffectType.add) {
       const parentKeys = keys.slice(0, -1);
 
       if (parentKeys.length) this.effectList.add(parentKeys.join('.'));
     }
+    else this.effectUpdateList.add(keys.join('.'));    
   }
 
   getOptions() {

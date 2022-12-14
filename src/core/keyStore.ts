@@ -1,24 +1,57 @@
 import { guid } from '../utils';
 
-const originKeyMap = new Map();
-const objectMap = new WeakMap();
+export const sourceMap = new Map();
 
-const stringifiedKeySourceMap = new Map();
+export const stringifiedKeySourceMap = new Map<string, any>();
+
+const usedStringifyKeys = new Map<string, string[]>();
+
 const keyJoinSymbol = '__$$__';
 
-export function getStringifyKey(obj: any, key: any): string {
+// @ts-ignore
+function removeUnusedKeys() {
+  const keysArr = [...usedStringifyKeys.values()].flat();
+  const keysSet = new Set();
+
+  const usedKeysSet = new Set();
+
+  keysArr.forEach(key => {
+    key.split('.').forEach(item => {
+      keysSet.add(item);
+
+      const [objectKey, originKey] = item.split(keyJoinSymbol);
+
+      if (!objectKey || !originKey) return;
+
+      usedKeysSet.add(objectKey);
+      usedKeysSet.add(originKey);
+    });
+  });
+
+  stringifiedKeySourceMap.forEach((_, item) => {
+    if (!keysSet.has(item)) stringifiedKeySourceMap.delete(item);
+  });
+
+  sourceMap.forEach((stringifyKey, originKey) => {
+    !usedKeysSet.has(stringifyKey) && sourceMap.delete(originKey);
+  });
+}
+
+export function getStringifyKey(obj: any, key: any, force?: boolean): string {
   if (typeof key === 'string') return key;
 
-  let keyId = originKeyMap.get(key);
+  let keyId = sourceMap.get(key);
+  let objId = sourceMap.get(obj);
+
+  if (!force && (!keyId || !objId)) return '';
+
   if (!keyId) {
     keyId = guid();
-    originKeyMap.set(key, keyId);
+    sourceMap.set(key, keyId);
   }
-
-  let objId = objectMap.get(obj);
   if (!objId) {
     objId = guid();
-    objectMap.set(obj, objId);
+    sourceMap.set(obj, objId);
   }
 
   const id = objId + keyJoinSymbol + keyId;
@@ -31,8 +64,15 @@ export function getSourceByStringifyKey(stringifyKey: string) {
   return stringifiedKeySourceMap.get(stringifyKey);
 }
 
-export function removeStringifyKey(key: string, target?: any): void {
-  const stringifyKey = target ? getStringifyKey(target, key) : key;
+export function getKeyBySource(source) {
+  return sourceMap.get(source);
+}
 
-  stringifiedKeySourceMap.delete(stringifyKey);
+export function tagAsUsedStringifyKeys(componentId: string, keys: string[]) {
+  usedStringifyKeys.set(componentId, keys);
+}
+
+export function removeAsUnusedStringifyKeys(componentId) {
+  usedStringifyKeys.delete(componentId);
+  removeUnusedKeys();
 }

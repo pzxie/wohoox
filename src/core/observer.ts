@@ -1,5 +1,5 @@
 import { isObserverObject, isMap, isSet } from '../utils';
-import { getStringifyKey, removeStringifyKey } from './keyStore';
+import { getStringifyKey } from './keyStore';
 import ProxyMap from './proxyMap';
 import ProxyWeakMap from './proxyWeakMap';
 import ProxySet from './proxySet';
@@ -13,7 +13,7 @@ type ObserverParams<T> = {
   getCallback(value: any, keys: string[]): void;
   setCallback(value: any, keys: string[], source?: any, oldValue?: any): boolean | undefined | void;
   addCallback(value: any, keys: string[], source?: any);
-  deleteCallback(targe, key: string[]): void;
+  deleteCallback(target, key: string[]): void;
   proxySetDeep?: boolean;
 };
 
@@ -31,7 +31,7 @@ function observerObject({
     get(target, key: string, receiver) {
       let value = Reflect.get(target, key, receiver);
       const proxyValue = proxyMap.get(value);
-      const keys = [...keysStack, getStringifyKey(target, key)];
+      const keys = [...keysStack, getStringifyKey(target, key, true)];
 
       getCallback(value, keys);
 
@@ -50,7 +50,8 @@ function observerObject({
       return proxyValue || value;
     },
     set(target, key: string, value, receiver) {
-      const keys = [...keysStack, getStringifyKey(target, key)];
+      const mapKey = getStringifyKey(target, key, true);
+      const keys = [...keysStack, mapKey];
 
       const oldValue = Reflect.get(target, key);
 
@@ -63,11 +64,10 @@ function observerObject({
       return Reflect.set(target, key, value, receiver);
     },
     deleteProperty(target: Record<string, any>, key: string) {
-      const mapKey = getStringifyKey(target, key);
+      const mapKey = getStringifyKey(target, key, true);
 
       const keys = [...keysStack, mapKey];
       deleteCallback(target, keys);
-      removeStringifyKey(mapKey);
 
       return Reflect.deleteProperty(target, key);
     },
@@ -90,7 +90,7 @@ function observerMap({
     get(target, key) {
       let value = target.get(key);
       const proxyValue = proxyMap.get(value);
-      const keys = [...keysStack, getStringifyKey(target, key)];
+      const keys = [...keysStack, getStringifyKey(target, key, true)];
 
       getCallback(value, keys);
 
@@ -109,7 +109,8 @@ function observerMap({
       return proxyValue || value;
     },
     set(target, key, value) {
-      const keys = [...keysStack, getStringifyKey(target, key)];
+      const mapKey = getStringifyKey(target, key, true);
+      const keys = [...keysStack, mapKey];
       const oldValue = target.get(key);
 
       if (!target.has(key)) {
@@ -122,11 +123,10 @@ function observerMap({
     },
 
     deleteProperty(target, key) {
-      const mapKey = getStringifyKey(target, key);
+      const mapKey = getStringifyKey(target, key, true);
       const keys = [...keysStack, mapKey];
 
       deleteCallback(target, keys);
-      removeStringifyKey(mapKey);
 
       return target.delete(key);
     },
@@ -140,8 +140,11 @@ function observerMap({
       // same as delete properties
       deleteCallback(target, keysStack);
       target.forEach((_, key) => {
+        const stringifyKey = getStringifyKey(target, key);
+
+        if (stringifyKey) deleteCallback(target, [...keysStack, stringifyKey]);
+
         target.delete(key);
-        removeStringifyKey(key, target);
       });
     },
     size(target, oldValue, newValue) {
@@ -167,7 +170,7 @@ function observerSet({
     get(target, key) {
       let value = key;
       const proxyValue = proxyMap.get(value);
-      const keys = [...keysStack, getStringifyKey(target, key)];
+      const keys = [...keysStack, getStringifyKey(target, key, true)];
 
       getCallback(value, keys);
 
@@ -188,7 +191,7 @@ function observerSet({
       return proxyValue || value;
     },
     add(target, key, value) {
-      const keys = [...keysStack, getStringifyKey(target, key)];
+      const keys = [...keysStack, getStringifyKey(target, key, true)];
 
       if (target.has(key)) return target;
 
@@ -197,11 +200,10 @@ function observerSet({
       return target.add(value);
     },
     deleteProperty(target, key) {
-      const mapKey = getStringifyKey(target, key);
+      const mapKey = getStringifyKey(target, key, true);
       const keys = [...keysStack, mapKey];
 
       deleteCallback(target, keys);
-      removeStringifyKey(mapKey);
 
       return target.delete(key);
     },
@@ -217,8 +219,11 @@ function observerSet({
         // same as delete properties
         deleteCallback(target, keysStack);
         target.forEach(value => {
+          const stringifyKey = getStringifyKey(target, value);
+
+          if (stringifyKey) deleteCallback(target, [...keysStack, stringifyKey]);
+
           target.delete(value);
-          removeStringifyKey(value, target);
         });
       },
       size(target, oldValue, newValue) {
