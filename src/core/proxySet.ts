@@ -118,6 +118,6 @@ export default class ProxySet<T extends Set<any>> extends Set {
   }
 
   [Symbol.iterator]() {
-    return this.source[Symbol.iterator]();
+    return this.keys();
   }
 }

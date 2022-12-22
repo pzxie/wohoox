@@ -1,4 +1,4 @@
-import { MapSetSizeKey } from '../constant'
+import { MapSetSizeKey } from '../constant';
 
 type ProxyMapActions<T> = {
   get(source: T, key: any): any;
@@ -9,10 +9,10 @@ type ProxyMapActions<T> = {
 };
 
 export default class ProxyMap<T extends Map<any, any>> extends Map {
-  get size () {
-    const  value = this.source.size;
+  get size() {
+    const value = this.source.size;
 
-    this.interceptor.get(this.source, MapSetSizeKey)
+    this.interceptor.get(this.source, MapSetSizeKey);
 
     return value;
   }
@@ -30,8 +30,8 @@ export default class ProxyMap<T extends Map<any, any>> extends Map {
     super();
     this.source = source;
     this.interceptor = { ...this.interceptor, ...interceptor };
-    Object.defineProperty(this, 'source' ,{ enumerable: false });
-    Object.defineProperty(this, 'interceptor' ,{ enumerable: false });
+    Object.defineProperty(this, 'source', { enumerable: false });
+    Object.defineProperty(this, 'interceptor', { enumerable: false });
   }
 
   get(key) {
@@ -82,19 +82,27 @@ export default class ProxyMap<T extends Map<any, any>> extends Map {
   }
 
   keys(): IterableIterator<any> {
-    this.interceptor.get(this.source, MapSetSizeKey)
+    this.interceptor.get(this.source, MapSetSizeKey);
 
     return this.source.keys();
   }
 
   values(): IterableIterator<any> {
-    this.forEach(() => {});
-    return this.source.values();
+    const proxyItems: [any, any][] = [...this.source.entries()].map(([key, value]) => {
+      const proxyValue = this.interceptor.get(this.source, key) || value;
+      return [key, proxyValue];
+    });
+
+    return new Map(proxyItems).values();
   }
 
   entries(): IterableIterator<[any, any]> {
-    this.forEach(() => {});
-    return this.source.entries();
+    const proxyItems: [any, any][] = [...this.source.entries()].map(([key, value]) => {
+      const proxyValue = this.interceptor.get(this.source, key) || value;
+      return [key, proxyValue];
+    });
+
+    return new Map(proxyItems).entries();
   }
 
   toString() {
@@ -102,6 +110,6 @@ export default class ProxyMap<T extends Map<any, any>> extends Map {
   }
 
   [Symbol.iterator]() {
-    return this.source[Symbol.iterator]();
+    return this.entries();
   }
 }
