@@ -2204,7 +2204,6 @@ it('update field by multi actions in one queue, components rerender check', asyn
   const updateDetailsBtn = screen.getByRole('updateDetailsBtn');
   fireEvent.click(updateDetailsBtn);
   await waitFor(() => expect(fn).toHaveBeenCalledTimes(3));
-  console.log(1111);
   expect(childNameRenderTimes).toBe(2);
   expect(childUserDetailRenderTimes).toBe(2);
   expect(childUserProvinceRenderTimes).toBe(2);

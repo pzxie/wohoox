@@ -861,7 +861,7 @@ describe('set multi component', () => {
         const set = [...state.values()][4];
         const weakSet = [...state.values()][5];
 
-        return (
+        const render = (
           <div>
             <div role="objText">{renderItem(obj)}</div>
             <div role="arrayText">{renderItem(array)}</div>
@@ -925,7 +925,9 @@ describe('set multi component', () => {
               edit weakSet
             </button>
           </div>
-        );
+        )
+
+        return render;
       }
 
       function Parent() {
@@ -938,7 +940,7 @@ describe('set multi component', () => {
         const set = [...state.values()][4];
         const weakSet = [...state.values()][5];
 
-        return (
+        const render = (
           <div>
             <div role="parentObjText">{renderItem(obj)}</div>
             <div role="parentArrayText">{renderItem(array)}</div>
@@ -948,7 +950,9 @@ describe('set multi component', () => {
             <div role="parentWeakSetText">{renderItem(weakSet)}</div>
             <Child />
           </div>
-        );
+        )
+
+        return render;
       }
 
       render(<Parent />, { legacyRoot: reactLegency });

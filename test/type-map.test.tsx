@@ -323,7 +323,7 @@ describe('map single component', () => {
 
       items.forEach(item => {
         expect(+item.innerHTML).toBeLessThanOrEqual(100);
-        expect(+item.innerHTML).toBeGreaterThan(0);
+        expect(+item.innerHTML).toBeGreaterThanOrEqual(0);
       });
     });
 
