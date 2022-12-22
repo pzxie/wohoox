@@ -30,12 +30,16 @@ function observerObject({
   const proxy = new Proxy(source, {
     get(target, key: string, receiver) {
       let value = Reflect.get(target, key, receiver);
+      
+      if (value && !target.hasOwnProperty(key)) return value;
+      
+      const stringifyKey = getStringifyKey(target, key, true)
+      const keys = stringifyKey ? [...keysStack, stringifyKey] : keysStack;
+
+      if (stringifyKey) getCallback(value, keys);
+
       const proxyValue = proxyMap.get(value);
-      const keys = [...keysStack, getStringifyKey(target, key, true)];
-
-      getCallback(value, keys);
-
-      if (isObserverObject(value) && !proxyValue) {
+      if (!proxyValue && isObserverObject(value)) {
         return observer(value, {
           getCallback,
           setCallback,
@@ -90,9 +94,10 @@ function observerMap({
     get(target, key) {
       let value = target.get(key);
       const proxyValue = proxyMap.get(value);
-      const keys = [...keysStack, getStringifyKey(target, key, true)];
+      const stringifyKey = getStringifyKey(target, key, true)
+      const keys = stringifyKey ? [...keysStack, stringifyKey] : keysStack;
 
-      getCallback(value, keys);
+      if(stringifyKey) getCallback(value, keys);
 
       if (isObserverObject(value) && !proxyValue) {
         return observer(value, {
@@ -170,9 +175,10 @@ function observerSet({
     get(target, key) {
       let value = key;
       const proxyValue = proxyMap.get(value);
-      const keys = [...keysStack, getStringifyKey(target, key, true)];
+      const stringifyKey = getStringifyKey(target, key, true)
+      const keys = stringifyKey ? [...keysStack, stringifyKey] : keysStack;
 
-      getCallback(value, keys);
+      if(stringifyKey) getCallback(value, keys);
 
       if (!proxySetDeep) return value;
 

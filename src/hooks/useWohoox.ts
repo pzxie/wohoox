@@ -98,7 +98,8 @@ export function useWohoox(name?: any, getState?: any): any {
     preState.current = state;
     usedKeys.current.clear();
     removeAsUnusedStringifyKeys(id);
-    setState(isObserverObject(state) ? getObserverState : state);
+    
+    setState(isObserverObject(state) ? getObserverState() : state);
 
     return true;
   });

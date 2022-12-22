@@ -8,7 +8,12 @@ const usedStringifyKeys = new Map<string, string[]>();
 
 const keyJoinSymbol = '__$$__';
 
-// @ts-ignore
+export const ignoreToStringifyKeys = new Set([
+  Symbol.toPrimitive,
+  Symbol.toStringTag,
+  Symbol.iterator,
+])
+
 function removeUnusedKeys() {
   const keysArr = [...usedStringifyKeys.values()].flat();
   const keysSet = new Set();
@@ -39,6 +44,8 @@ function removeUnusedKeys() {
 
 export function getStringifyKey(obj: any, key: any, force?: boolean): string {
   if (typeof key === 'string') return key;
+
+  if(ignoreToStringifyKeys.has(key)) return '';
 
   let keyId = sourceMap.get(key);
   let objId = sourceMap.get(obj);
