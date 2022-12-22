@@ -7,27 +7,6 @@ const store = createStore({
       name: 'wohoox',
       other: 'xxx'
     },
-    type: {
-      number: 123,
-      string: 'string',
-      boolean: true,
-      symbol: Symbol(123),
-      null: null as null | boolean,
-      undefined: undefined as undefined | boolean,
-      object: {
-        name: 'object',
-        author: 'pzxie',
-        reference: {
-          key: 'name',
-          value: 'wohoox'
-        }
-      },
-      array: ['1', true, 3, {name: 'arrayObject'}, [11,22,33]] as [string, boolean, number, {name: string}, Array<number>],
-      set: new Set<any>(),
-      weakSet: new WeakSet(),
-      map: new Map<any, any>([[{type: 'map'}, {'name': 123}]]),
-      weakMap: new WeakMap()
-    }
   },
   actions: {
     updateVersion(state, version: string) {

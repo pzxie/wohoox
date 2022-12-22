@@ -1,49 +1,33 @@
-import { useMemo } from 'react';
+import { useStore, actions } from './store';
 import './App.css';
-import Example from './components/example';
-import MultiExample from './components/multiExample';
-import ExampleDataType from './components/exampleDataType';
-import ArrayType from './components/exampleArray';
-import ExampleObject from './components/exampleObject';
-import ExampleMap from './components/exampleMap';
-import ExampleWeakMap from './components/exampleWeakMap';
-import ExampleSet from './components/exampleSet';
-import ExampleWeakSet from './components/exampleWeakSet';
-
-import { useStore, dispatchAll } from './multiStore';
 
 function App() {
-  console.log('render app');
-
-  const address = useStore('department', state => state.address);
-  const type = useStore(state => state.type);
-  const mapObj = useStore(state => state.type.map);
-
-  const multi = useMemo(() => <MultiExample />, []);
+  const version = useStore(state => state.version);
 
   return (
     <div className="App">
-      <div className="App-header" style={{ textAlign: 'left' }}>
-        <img src="/wohoox.png" className="App-logo" alt="logo" />
-        <h2>APP</h2>
-        <div className='text'><span className='title'>address.city: </span>{address.city}</div>
+      <div className="App-header">
+        <div className="App-logo">
+          <img src="/wohoox.png" className="App-logo" alt="logo" />
+          <span className="version-tag">{version}</span>
+        </div>
 
-        <div>{mapObj.size}</div>
+        <div>
+          <strong className="primary">Easy</strong>,{' '}
+          <strong className="primary">lightweight</strong> and{' '}
+          <strong className="primary">reactive</strong> store
+        </div>
 
-        <button onClick={() => {
-          type.object.name = Math.random() + '_1';
-          dispatchAll()
-        }}>update default name</button>
-
-        <ExampleWeakSet />
-        {<ExampleSet></ExampleSet>}
-        <ExampleMap></ExampleMap>
-        <ExampleWeakMap></ExampleWeakMap>
-        <ExampleDataType></ExampleDataType>
-        <ExampleObject></ExampleObject>
-        <ArrayType></ArrayType>
-        <Example />
-        {multi}
+        <div>
+          <span className="version">Version: {version}</span>
+          <button
+            onClick={() => {
+              actions.updateVersion(`1.${Math.floor(Math.random() * 10)}`);
+            }}
+          >
+            click to update
+          </button>
+        </div>
       </div>
     </div>
   );

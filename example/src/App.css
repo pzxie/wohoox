@@ -5,6 +5,7 @@
 }
 
 .App-logo {
+  position: relative;
   align-self: center;
   width: 150px;
   pointer-events: none;
@@ -39,6 +40,27 @@
 
 h2, h3, h1 {
   margin: 10px 0;
+}
+
+.primary {
+  color: #3aa7f9;
+}
+
+.version-tag {
+  position: absolute;
+  right: 30px;
+  top: 20px;
+  font-weight: bold;
+  background: white;
+  border-radius: 6px;
+  color: #3aa7f9;
+  padding: 0 6px;
+}
+
+.version {
+  display: inline-block;
+  margin-top: 50px;
+  margin-right: 8px;
 }
 
 @keyframes App-logo-spin {
