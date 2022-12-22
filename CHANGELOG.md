@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.6.0](https://github.com/pzxie/wohoox/compare/v1.5.2...v1.6.0) (2022-12-22)
+
+
+### Features
+
+* do not to save useless key ([c50ec19](https://github.com/pzxie/wohoox/commit/c50ec19386403fbab7d1bfe8af1eef2104f9eafd))
+* support to destruct for map and set reactive ([f666302](https://github.com/pzxie/wohoox/commit/f6663023a65762eece65ae7e22bb34a0d828d18b))
+
 ### [1.5.2](https://github.com/pzxie/wohoox/compare/v1.5.1...v1.5.2) (2022-12-05)
 
 
