@@ -2,9 +2,12 @@
 
 ![wohoox](./example/public/wohoox_211x176.png)
 
-Easy,lightweight and reactive store by react hooks.
-
 [English](./README.md) [中文](./README_CN.md)
+
+* Lightweight and reactive state management
+* Dependency collection automatic，components update exactly
+* Easy to use. No HOC, only one API to use in components, its more intuitive to code
+* React hooks support only now
 
 ## Required
 
@@ -31,7 +34,7 @@ const store = createStore({
   initState: {
     version: '1.x',
     details: {
-      author: 'pzxie',
+      name: 'wohoox',
       other: 'xxx'
     }
   },
@@ -105,7 +108,7 @@ const store = createStore({
   initState: {
     version: '1.x',
     details: {
-      author: 'pzxie',
+      name: 'wohoox',
       other: 'xxx'
     }
   },
@@ -134,7 +137,7 @@ export const actions = store.actions
 
 ### Multi Store
 
-> If you want to use multi store by module, you can look here.
+> If you want to use multi store by module, look here.
 
 #### Create multi store
 
@@ -447,7 +450,7 @@ const store = createStore({
   initState: {
     version: '1.x',
     details: {
-      author: 'pzxie',
+      name: 'wohoox',
       other: 'xxx'
     }
   },
@@ -494,7 +497,7 @@ function Example () {
 
   // get state field by callback and store name
   const version = useStore(state => state.version)
-  const author = useStore(state => state.details.author)
+  const name = useStore(state => state.details.name)
   const details = useStore('default', state => state.details)
 
   ...
@@ -607,6 +610,10 @@ function example () {
       userState.name += '_3'
 
       dispatchAll()
+      {/* same as below */}
+      {/* dispatch() */}
+      {/* dispatch('user') */}
+      {/* dispatch('department') */}
     }}>click to update all</button>
   </div>
 }
@@ -624,3 +631,4 @@ function example () {
 
 1. sync from server
 2. persist
+3. framework independence

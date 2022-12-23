@@ -2,11 +2,12 @@
 
 ![wohoox](./example/public/wohoox_211x176.png)
 
-基于 react hooks 开发的简洁、轻量、响应式的 react store.
-
-## 翻译
-
 [English](./README.md) [中文](./README_CN.md)
+
+* 轻量、响应式的状态管理库
+* 依赖自动收集，组件精确更新
+* 简单易用。不需要高阶组件，只需要在组件中使用一个 API 就够，更符合直觉的编程体验
+* 当前只支持 React 框架，仅提供了 hooks 写法
 
 ## 兼容要求
 
@@ -33,7 +34,7 @@ const store = createStore({
   initState: {
     version: '1.x',
     details: {
-      author: 'pzxie',
+      name: 'wohoox',
       other: 'xxx'
     }
   },
@@ -107,7 +108,7 @@ const store = createStore({
   initState: {
     version: '1.x',
     details: {
-      author: 'pzxie',
+      name: 'wohoox',
       other: 'xxx'
     }
   },
@@ -136,7 +137,7 @@ export const actions = store.actions
 
 ### 多模块整合
 
-> 如果你想对store按模块进行划分，你可以看这里
+> 如果你想对store按模块进行划分，看这里
 
 #### 创建多个 store
 
@@ -453,7 +454,7 @@ const store = createStore({
   initState: {
     version: '1.x',
     details: {
-      author: 'pzxie',
+      name: 'wohoox',
       other: 'xxx'
     }
   },
@@ -500,7 +501,7 @@ function Example () {
 
   // 通过名称、callback 获取 state 里面的具体字段
   const version = useStore(state => state.version)
-  const author = useStore(state => state.details.author)
+  const name = useStore(state => state.details.name)
   const details = useStore('default', state => state.details)
 
   ...
@@ -613,6 +614,10 @@ function example () {
       userState.name += '_3'
 
       dispatchAll()
+      {/* 作用和下面的代码一样 */}
+      {/* dispatch() */}
+      {/* dispatch('user') */}
+      {/* dispatch('department') */}
     }}>click to update all</button>
   </div>
 }
@@ -630,3 +635,4 @@ function example () {
 
 1. 增加服务器同步数据的功能
 2. 持久化
+3. 框架无光性
