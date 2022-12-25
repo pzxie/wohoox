@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.6.1](https://github.com/pzxie/wohoox/compare/v1.6.0...v1.6.1) (2022-12-25)
+
+
+### Features
+
+* multi store combines api add ([b4146aa](https://github.com/pzxie/wohoox/commit/b4146aad81d64a4d727f37653c17060929247572))
+
 ## [1.6.0](https://github.com/pzxie/wohoox/compare/v1.5.2...v1.6.0) (2022-12-22)
 
 
