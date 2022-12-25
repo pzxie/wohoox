@@ -1,4 +1,4 @@
-import createStore, { useStore as useWohoox, dispatch as wohooxDispatch } from 'wohoox';
+import createStore, { useStore as useWohoox, dispatch as wohooxDispatch, combineStores} from 'wohoox';
 import defaultStore from './store';
 
 const userStore = createStore({
@@ -42,14 +42,15 @@ const devStore = createStore({
   options: { strictMode: false },
 });
 
-const store = {
-  default: defaultStore,
-  department: devStore,
-  user: userStore,
-};
+export const { store, actions } = combineStores(defaultStore, devStore, userStore)
+
+// const store = {
+//   default: defaultStore,
+//   department: devStore,
+//   user: userStore,
+// };
 
 type AppStore = typeof store;
-type StoreActions = { [K in keyof AppStore]: AppStore[K]['actions'] };
 
 export function useStore(): AppStore['default']['state'];
 export function useStore<T extends (state: AppStore['default']['state']) => any>(
@@ -72,7 +73,8 @@ export function dispatch(storName?: keyof AppStore) {
 
 export { dispatchAll } from 'wohoox';
 
-export const actions = Object.keys(store).reduce((pre, current) => {
-  pre[current as 'default'] = store[current as 'default']['actions'];
-  return pre;
-}, {} as StoreActions);
+// type StoreActions = { [K in keyof AppStore]: AppStore[K]['actions'] };
+// export const actions = Object.keys(store).reduce((pre, current) => {
+//   pre[current as 'default'] = store[current as 'default']['actions'];
+//   return pre;
+// }, {} as StoreActions);

@@ -201,15 +201,18 @@ You can combine all stores together. In order to be able to automatically infer 
  * src/multiStore.ts
  */
 import defaultStore from './store'
+import { combineStores } from 'wohoox';
 
-const store = {
-  default: defaultStore,
-  department: devStore,
-  user: userStore,
-};
+export const { store, actions } = combineStores(defaultStore, devStore, userStore)
+
+// same as manual to combine stores
+// const store = {
+//   default: defaultStore,
+//   department: devStore,
+//   user: userStore,
+// };
 
 type AppStore = typeof store;
-type StoreActions = { [K in keyof AppStore]: AppStore[K]["actions"] };
 
 export function useStore(): AppStore["default"]["state"];
 export function useStore<T extends (state: AppStore["default"]["state"]) => any>(fn: T): ReturnType<T>;
@@ -223,14 +226,6 @@ export function useStore(fn?: any, name?: any) {
 
   return state;
 }
-
-/**
- * pick up actions
- */
-export const actions = Object.keys(store).reduce((pre, current) => {
-  pre[current as "default"] = store[current as "default"]["actions"];
-  return pre;
-}, {} as StoreActions);
 ````
 
 #### usage
@@ -416,6 +411,7 @@ async function getVersion () {
 ## API
 
 * [createStore](#createstore)
+* [combineStores](#combineStores)
 * [useStore](#usestore)
 * [dispatch](#dispatch)
 * [dispatchAll](#dispatchall)
@@ -467,6 +463,16 @@ const store = createStore({
   }
 })
 
+````
+
+### combineStores
+
+combine multi stores to a new store
+
+````jsx
+import { combineStores } from 'wohoox';
+
+export const { store, actions } = combineStores(defaultStore, devStore, userStore)
 ````
 
 ### useStore

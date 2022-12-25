@@ -15,3 +15,13 @@ export type ExtractDispatcherFromActions<TState, TAction> = TAction extends () =
   : TAction extends ActionsDefine<TState>
   ? ActionDispatch<TState, TAction>
   : never;
+
+export type ExtractStoresName<Stores> = Stores extends { name: infer N }[] ? N : never;
+
+export type ExtractStores<Stores, Name> = Stores extends (infer S)[]
+  ? S extends { name: infer N }
+    ? N extends Name
+      ? S
+      : never
+    : never
+  : never;

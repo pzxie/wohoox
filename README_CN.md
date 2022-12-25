@@ -202,15 +202,18 @@ export const devActions = devStore.actions
  * src/multiStore.ts
  */
 import defaultStore from './store'
+import { combineStores } from 'wohoox';
 
-const store = {
-  default: defaultStore,
-  department: devStore,
-  user: userStore,
-};
+export const { store, actions } = combineStores(defaultStore, devStore, userStore)
+
+// combineStores 和手动组装多个 store 作用一致
+// const store = {
+//   default: defaultStore,
+//   department: devStore,
+//   user: userStore,
+// };
 
 type AppStore = typeof store;
-type StoreActions = { [K in keyof AppStore]: AppStore[K]["actions"] };
 
 export function useStore(): AppStore["default"]["state"];
 export function useStore<T extends (state: AppStore["default"]["state"]) => any>(fn: T): ReturnType<T>;
@@ -224,14 +227,6 @@ export function useStore(fn?: any, name?: any) {
 
   return state;
 }
-
-/**
- * 获取所有模块的 actions 属性
- */
-export const actions = Object.keys(store).reduce((pre, current) => {
-  pre[current as "default"] = store[current as "default"]["actions"];
-  return pre;
-}, {} as StoreActions);
 ````
 
 #### usage
@@ -419,10 +414,10 @@ async function getVersion () {
 ## API
 
 * [createStore](#createstore)
+* [combineStores](#combineStores)
 * [useStore](#usestore)
 * [dispatch](#dispatch)
 * [dispatchAll](#dispatchall)
-
 
 ### createStore
 
@@ -471,6 +466,16 @@ const store = createStore({
   }
 })
 
+````
+
+### combineStores
+
+将多个 store 组合成一个独立的 store
+
+````jsx
+import { combineStores } from 'wohoox';
+
+export const { store, actions } = combineStores(defaultStore, devStore, userStore)
 ````
 
 ### useStore

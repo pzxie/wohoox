@@ -1,14 +1,5 @@
 import guid from './uuid';
 
-export function isOriginalType(data) {
-  return (
-    typeof data === 'string' ||
-    typeof data === 'bigint' ||
-    typeof data === 'boolean' ||
-    typeof data === 'symbol'
-  );
-}
-
 export function isPlainObject(data) {
   const dataType = Object.prototype.toString.call(data);
 

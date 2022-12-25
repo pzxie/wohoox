@@ -10,5 +10,6 @@ export function dispatchAll() {
   Array.from(storeMap.values()).forEach(store => store.dispatch());
 }
 
-export default createStore;
 export { useWohoox as useStore } from './hooks/useWohoox';
+export { combineStores } from './core/store';
+export default createStore;

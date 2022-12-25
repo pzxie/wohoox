@@ -4,7 +4,7 @@ import { isPlainObject } from '../utils';
 import { EffectType } from '../constant';
 import {getSourceByStringifyKey} from '../core/keyStore';
 
-import type { ActionsDefine, ActionDispatch } from '../types';
+import type { ActionsDefine, ActionDispatch, ExtractStoresName, ExtractStores } from '../types';
 
 export type Options = { strictMode?: boolean; proxySetDeep?: boolean };
 
@@ -35,7 +35,7 @@ function revertActionsToAutoMode<TState, TActions extends ActionsDefine<TState>>
   return autoModeActions;
 }
 
-export class Store<S extends object, A extends ActionsDefine<S>> {
+export class Store<N extends string, S extends object, A extends ActionsDefine<S>> {
   private listeners: Array<() => void> = [];
 
   private options = {
@@ -60,7 +60,7 @@ export class Store<S extends object, A extends ActionsDefine<S>> {
   
   dispatch = () => {};
 
-  constructor(name: string, state: S, actions?: A, options?: Options) {
+  constructor(name: N, state: S, actions?: A, options?: Options) {
     storeMap.set(name, this);
     this.sourceState = state;
     Object.assign(this.options, options);
@@ -146,13 +146,13 @@ export class Store<S extends object, A extends ActionsDefine<S>> {
   }
 }
 
-export function createStore<S extends object, A extends ActionsDefine<S>>({
-  name = defaultStoreName,
+export function createStore<S extends object, A extends ActionsDefine<S>, N extends string = typeof defaultStoreName>({
+  name = defaultStoreName as N,
   initState,
   actions,
   options,
 }: {
-  name?: string;
+  name?: N;
   initState: S;
   actions?: A;
   options?: Options;
@@ -164,4 +164,20 @@ export function createStore<S extends object, A extends ActionsDefine<S>>({
     state: store.state,
     actions: store.actions,
   };
+}
+
+export function combineStores<S extends ReturnType<typeof createStore>[]>(...stores: S) {
+  const allStore = {} as {[K in ExtractStoresName<S>]: ExtractStores<S, K>}
+
+  stores.forEach(store => allStore[store.name] = store)
+
+  const actions = Object.keys(allStore).reduce((pre, current) => {
+    pre[current] = allStore[current]['actions'];
+    return pre;
+  }, {} as { [K in ExtractStoresName<S>]: typeof allStore[K]['actions'] })
+
+  return {
+    store: allStore,
+    actions
+  }
 }

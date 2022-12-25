@@ -1,7 +1,7 @@
 import { ActionsDefine } from './types';
 import type { Store } from './core/store';
 
-export const storeMap: Map<string, Store<object, ActionsDefine<object>>> = new Map();
+export const storeMap: Map<string, Store<string, object, ActionsDefine<object>>> = new Map();
 
 export const defaultStoreName = 'default';
 
