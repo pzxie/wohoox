@@ -164,7 +164,7 @@ describe('set single component', () => {
         return (
           <div>
             {items.map(item => (
-              <span role="item">
+              <span role="item" key={Math.random()}>
                 {typeof item === 'bigint'
                   ? item.toString()
                   : JSON.stringify(
@@ -229,7 +229,7 @@ describe('set single component', () => {
         return (
           <div>
             {items.map(item => (
-              <span role="item">
+              <span key={Math.random()} role="item">
                 {typeof item === 'bigint'
                   ? item.toString()
                   : JSON.stringify(
@@ -687,7 +687,7 @@ describe('set multi component', () => {
         return (
           <div>
             {items.map(item => (
-              <span role="item">
+              <span key={Math.random()} role="item">
                 {typeof item === 'bigint'
                   ? item.toString()
                   : JSON.stringify(
@@ -766,7 +766,7 @@ describe('set multi component', () => {
         return (
           <div>
             {items.map(item => (
-              <span role="item">
+              <span key={Math.random()} role="item">
                 {typeof item === 'bigint'
                   ? item.toString()
                   : JSON.stringify(
