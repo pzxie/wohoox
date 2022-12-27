@@ -84,7 +84,8 @@ export function useWohoox(name?: any, getState?: any): any {
       },
       keysStack: state === store.state ? [] : currentPrefixKeys,
       proxySetDeep: storeOptions.proxySetDeep,
-      proxyMap: proxyMap.current
+      proxyMap: proxyMap.current,
+      name: storeName
     });
   });
 
