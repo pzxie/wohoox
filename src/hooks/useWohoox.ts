@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import useEvent from './common/useEvent';
 import useId from './common/useId';
 import { useStore } from './useStore';
@@ -22,6 +22,7 @@ export function useWohoox(name?: any, getState?: any): any {
   const storeName = typeof name === 'string' ? name : defaultStoreName;
 
   const usedKeys = useRef(new Set<string>());
+  const proxyMap = useRef(new WeakMap());
 
   const [, update] = useState({});
   const id = useId();
@@ -39,6 +40,7 @@ export function useWohoox(name?: any, getState?: any): any {
     const state = getStateFn(store.state);
     const currentPrefixKeys = [...store.currentProxyGetKeys];
     const storeOptions = store.getOptions();
+    proxyMap.current = new WeakMap();
 
     // Use the same target with store state
     return observer(getStateFn(store.sourceState), {
@@ -82,12 +84,13 @@ export function useWohoox(name?: any, getState?: any): any {
       },
       keysStack: state === store.state ? [] : currentPrefixKeys,
       proxySetDeep: storeOptions.proxySetDeep,
+      proxyMap: proxyMap.current
     });
   });
 
   const preState = useRef(getStateFn(store.state));
   const [state, setState] = useState(getObserverState);
-  const updateState = useEvent((isForce?: boolean) => {
+  const updateState = useCallback((isForce?: boolean) => {
     const state = getStateFn(store.state);
 
     if (!isForce && state === preState.current) {
@@ -102,7 +105,7 @@ export function useWohoox(name?: any, getState?: any): any {
     setState(isObserverObject(state) ? getObserverState() : state);
 
     return true;
-  });
+  }, [store, state, getObserverState]);
 
   const onEveryRender = () => {
     const tempState = getStateFn(store.state);
@@ -127,7 +130,7 @@ export function useWohoox(name?: any, getState?: any): any {
   // or set dynamic storeName in production
   useEffect(() => {
     updateState();
-  }, [id, store]);
+  }, [id, store, updateState]);
 
   useEffect(() => {
     if (!id) return;
@@ -161,7 +164,7 @@ export function useWohoox(name?: any, getState?: any): any {
     return () => {
       store.removeListener(callback);
     };
-  }, [id, store]);
+  }, [id, store, updateState]);
 
   useEffect(() => {
     tagAsUsedStringifyKeys(id, [...usedKeys.current]);
