@@ -411,10 +411,92 @@ async function getVersion () {
 }
 ````
 
+### plugins
+
+提供了插件选项用于增强 wohoox 的功能
+
+wohoox 的插件由以下一些方法构成
+
+````jsx
+import type { WohooxPlugin } from 'wohoox';
+
+export const plugin: WohooxPlugin = {
+  beforeInit(initState, actions) {
+    // 在初始化 store 前，对 initState, actions 进行处理，并返回新的 initState 和 actions 用于初始化
+    return {
+      initState,
+      actions,
+    };
+  },
+  
+  onInit(store) {
+    // store 初始化后
+  },
+  onAdd(storeName, value, keys) {
+    // 当有新属性增加时的回调
+  },
+  onDelete(storeName, keys) {
+    // 当属性被删除时的回调
+  },
+  onChange(storeName, value, keys) {
+    // 当 state 变更时的回调
+  },
+  onGet(storeName, value, keys) {
+    // 属性获取时的回调
+    // 该回调可能会调用多次，所以不要通过该回调做【次数相关】的处理
+  },
+};
+````
+
+#### Example of persist
+
+* 创建一个插件
+
+````jsx
+// src/plugin/persist.ts
+import type { WohooxPlugin } from 'wohoox';
+
+const persistPlugin: WohooxPlugin = {
+  beforeInit(initState, actions) {
+    return {
+      initState: {
+        ...initState,
+        version: JSON.parse(localStorage.getItem('wohoox_version') || '""'),
+      },
+      actions,
+    };
+  },
+  onChange(_name, value, keys) {
+    if (keys.toString() === 'version')
+      localStorage.setItem('wohoox_version', JSON.stringify(value));
+  },
+};
+
+export default persistPlugin;
+````
+
+* 将插件添加到 plugins 选项中
+
+````jsx
+import persistPlugin from './plugin/persist'
+
+const store = createStore({
+  initState: {
+    version: "1.x",
+  },
+  actions: {
+    updateVersion(state, version: string) {
+      state.version = version;
+    },
+  },
+  plugins: [persistPlugin],
+});
+````
+
 ## API
 
 * [createStore](#createstore)
-* [combineStores](#combineStores)
+* [combineStores](#combinestores)
 * [useStore](#usestore)
 * [dispatch](#dispatch)
 * [dispatchAll](#dispatchall)
@@ -428,6 +510,7 @@ async function getVersion () {
 * `name:` store名称，默认为`'default'`. 作为 store 的唯一标识符，在多模块的时候，该字段用于区分模块.
 * `initState:` 初始化数据，并使用该数据的数据结构作为 typescript 类型推断
 * `actions:` 修改数据的方式，并促使相关组件进行重新渲染。如果在严格模式下，是作为唯一合法修改数据的方式
+* `plugins:` 插件选项
 * `options.strictMode:` 严格模式开关。默认 `true`. 严格模式下，actions 是唯一可以修改 state 的方式。非严格模式下，还可以直接修改 state。 `ex: state.age = 23`  
 * `options.proxySetDeep:` 严格模式开关。默认 `true`. Set 类型的数据不会对将其子节点进行 proxy 处理。因其没有获取数据的情形，对其子节点进行 proxy 处理没有太大必要。不过如果你确定需要，你可以将其设置为true
 
