@@ -53,6 +53,7 @@ function observerObject({
           keysStack: keys,
           proxyMap,
           proxySetDeep,
+          isTopLevel: false,
         });
       }
 
@@ -115,6 +116,7 @@ function observerMap({
           keysStack: keys,
           proxyMap,
           proxySetDeep,
+          isTopLevel: false,
         });
       }
 
@@ -200,6 +202,7 @@ function observerSet({
           keysStack: keys,
           proxyMap,
           proxySetDeep,
+          isTopLevel: false,
         });
       }
 
@@ -254,30 +257,32 @@ function observerSet({
 
 export function observer(
   source,
-  options?: Omit<Partial<ObserverParams<any>>, 'source'> & { name: string },
+  options?: Omit<Partial<ObserverParams<any>>, 'source'> & { name: string; isTopLevel?: boolean },
 ) {
   const {
     keysStack = [],
     proxyMap = new WeakMap(),
     proxySetDeep = false,
     name = defaultStoreName,
+    isTopLevel = true,
   } = options || {};
 
   const getCallback: ObserverParams<any>['getCallback'] = (...args) => {
     options?.getCallback?.(...args);
-    pluginsMap.get(name)?.forEach(plugin => plugin.onGet?.(name, args[0], args[1]));
+    if (isTopLevel) pluginsMap.get(name)?.forEach(plugin => plugin.onGet?.(name, args[0], args[1]));
   };
   const setCallback: ObserverParams<any>['setCallback'] = (...args) => {
     options?.setCallback?.(...args);
-    pluginsMap.get(name)?.forEach(plugin => plugin.onChange?.(name, args[0], args[1], args[3]));
+    if (isTopLevel)
+      pluginsMap.get(name)?.forEach(plugin => plugin.onChange?.(name, args[0], args[1], args[3]));
   };
   const addCallback: ObserverParams<any>['addCallback'] = (...args) => {
     options?.addCallback?.(...args);
-    pluginsMap.get(name)?.forEach(plugin => plugin.onAdd?.(name, args[0], args[1]));
+    if (isTopLevel) pluginsMap.get(name)?.forEach(plugin => plugin.onAdd?.(name, args[0], args[1]));
   };
   const deleteCallback: ObserverParams<any>['deleteCallback'] = (...args) => {
     options?.deleteCallback?.(...args);
-    pluginsMap.get(name)?.forEach(plugin => plugin.onDelete?.(name, args[1]));
+    if (isTopLevel) pluginsMap.get(name)?.forEach(plugin => plugin.onDelete?.(name, args[1]));
   };
 
   if (!isObserverObject(source)) return source;
