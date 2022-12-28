@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.7.0](https://github.com/pzxie/wohoox/compare/v1.6.1...v1.7.0) (2022-12-28)
+
+
+### Features
+
+* plugins support ([5818279](https://github.com/pzxie/wohoox/commit/58182794075edc34bda683823b88a254a97cc537))
+
+
+### Bug Fixes
+
+* fix plugin methods exec multi times in nest obj ([e544a95](https://github.com/pzxie/wohoox/commit/e544a9517dd97b366d43114ae10e7155b08e8cbb))
+* fix re-render failed when devtools openning ([99e14b2](https://github.com/pzxie/wohoox/commit/99e14b21831067b125c262326739a3b6b09aa263))
+
 ### [1.6.1](https://github.com/pzxie/wohoox/compare/v1.6.0...v1.6.1) (2022-12-25)
 
 
