@@ -219,7 +219,7 @@ describe('map single component', () => {
         return (
           <div>
             {[...map.values()].map(value => (
-              <span role="string">{value}</span>
+              <span key={Math.random()} role="string">{value}</span>
             ))}
 
             <button
@@ -281,7 +281,7 @@ describe('map single component', () => {
         return (
           <div>
             {[...map.values()].map(value => (
-              <span role="number">{value}</span>
+              <span key={Math.random()} role="number">{value}</span>
             ))}
 
             <button
@@ -501,7 +501,7 @@ describe('map single component', () => {
         return (
           <div>
             {items.map(item => (
-              <span role="item">
+              <span key={Math.random()} role="item">
                 {typeof item === 'bigint'
                   ? item.toString()
                   : JSON.stringify(

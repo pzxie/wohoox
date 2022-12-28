@@ -210,7 +210,7 @@ describe('keyStore cache: single component', () => {
         <div>
           <span role="string">
             {state.data.map(item => (
-              <span>{JSON.stringify(item)}</span>
+              <span key={Math.random()}>{JSON.stringify(item)}</span>
             ))}
           </span>
 
@@ -320,7 +320,7 @@ describe('keyStore cache: single component', () => {
         <div>
           <span role="string">
             {data.map(item => (
-              <span>{JSON.stringify(item)}</span>
+              <span key={Math.random()}>{JSON.stringify(item)}</span>
             ))}
           </span>
           <span>{state.data.size}</span>
@@ -409,7 +409,7 @@ describe('keyStore cache: single component', () => {
         <div>
           <span role="string">
             {data.map((key, item) => (
-              <span>{JSON.stringify(item)}</span>
+              <span key={Math.random()}>{JSON.stringify(item)}</span>
             ))}
           </span>
           <span>{state.data.size}</span>

@@ -408,10 +408,92 @@ async function getVersion () {
 }
 ````
 
+### plugins
+
+Plug-in options are provided to enhance the functionality of wohoox
+
+wohoox plugin is a object who contains below methods
+
+````jsx
+import type { WohooxPlugin } from 'wohoox';
+
+export const plugin: WohooxPlugin = {
+  beforeInit(initState, actions) {
+    // do something before store init, return new initState and actions
+    return {
+      initState,
+      actions,
+    };
+  },
+  
+  onInit(store) {
+    // do something after store inited
+  },
+  onAdd(storeName, value, keys) {
+    // do something when state property has been added
+  },
+  onDelete(storeName, keys) {
+    // do something when state property has been deleted
+  },
+  onChange(storeName, value, keys) {
+    // do something when state changed
+  },
+  onGet(storeName, value, keys) {
+    // do something when state has been gettled
+    // do not to deal with count, it would be called multi times sometimes
+  },
+};
+````
+
+#### Example of persist
+
+* create a plugin
+
+````jsx
+// src/plugin/persist.ts
+import type { WohooxPlugin } from 'wohoox';
+
+const persistPlugin: WohooxPlugin = {
+  beforeInit(initState, actions) {
+    return {
+      initState: {
+        ...initState,
+        version: JSON.parse(localStorage.getItem('wohoox_version') || '""'),
+      },
+      actions,
+    };
+  },
+  onChange(_name, value, keys) {
+    if (keys.toString() === 'version')
+      localStorage.setItem('wohoox_version', JSON.stringify(value));
+  },
+};
+
+export default persistPlugin;
+````
+
+* add to plugin option
+
+````jsx
+import persistPlugin from './plugin/persist'
+
+const store = createStore({
+  initState: {
+    version: "1.x",
+  },
+  actions: {
+    updateVersion(state, version: string) {
+      state.version = version;
+    },
+  },
+  plugins: [persistPlugin],
+});
+````
+
 ## API
 
 * [createStore](#createstore)
-* [combineStores](#combineStores)
+* [combineStores](#combinestores)
 * [useStore](#usestore)
 * [dispatch](#dispatch)
 * [dispatchAll](#dispatchall)
@@ -425,6 +507,7 @@ It is used to create a store.
 * `name:` default as `'default'`. name of store. it is used as an identifier to get store data.
 * `initState:` Initial the data and use it as the data structure of the state.
 * `actions:` Dispatch to change data. As the only valid way to modify data in strict mode, then it will caused by page rerender
+* `plugins:` plugin list for store
 * `options.strictMode:` default as `true`. Strict mode switch for store. Once the switch turn on, actions will be the only valid way to modify data, otherwise you can directly modify the data by state. `ex: state.age = 23`  
 * `options.proxySetDeep:` default as `false`. Type data of set will not be proxy for its child item. Cause there is no method to get item, child proxy is is not necessary to proxy. But if you want to proxy anyway, you can set it to true.
 

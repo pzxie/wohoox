@@ -2,6 +2,8 @@ import { storeMap, defaultStoreName } from './global';
 
 import { createStore } from './core/store';
 
+export type { WohooxPlugin } from './core/plugin'; 
+
 export function dispatch(storeName?: string) {
   storeMap.get(storeName || defaultStoreName)?.dispatch();
 }

@@ -1,4 +1,5 @@
 import createStore, { useStore as useWohoox } from "wohoox";
+import persistPlugin from './plugin/persist';
 
 const store = createStore({
   initState: {
@@ -13,6 +14,7 @@ const store = createStore({
       state.version = version;
     },
   },
+  plugins: [persistPlugin],
   options: {
     strictMode: false,
     proxySetDeep: true

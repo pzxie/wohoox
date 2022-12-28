@@ -2,7 +2,10 @@ import { storeMap, getIsModifyByAction, setIsModifyByAction, defaultStoreName } 
 import { observer } from './observer';
 import { isPlainObject } from '../utils';
 import { EffectType } from '../constant';
-import {getSourceByStringifyKey} from '../core/keyStore';
+import { getSourceByStringifyKey } from '../core/keyStore';
+import { addPlugins } from './plugin';
+
+import type { WohooxPlugin } from './plugin';
 
 import type { ActionsDefine, ActionDispatch, ExtractStoresName, ExtractStores } from '../types';
 
@@ -57,7 +60,7 @@ export class Store<N extends string, S extends object, A extends ActionsDefine<S
   effectList: Set<string> = new Set();
 
   effectUpdateList: Set<string> = new Set();
-  
+
   dispatch = () => {};
 
   constructor(name: N, state: S, actions?: A, options?: Options) {
@@ -97,6 +100,7 @@ export class Store<N extends string, S extends object, A extends ActionsDefine<S
         this.addKeyToEffectList(keys, target, EffectType.delete);
       },
       proxySetDeep: this.options.proxySetDeep,
+      name,
     });
 
     this.actions = revertActionsToAutoMode(
@@ -137,8 +141,7 @@ export class Store<N extends string, S extends object, A extends ActionsDefine<S
       const parentKeys = keys.slice(0, -1);
 
       if (parentKeys.length) this.effectList.add(parentKeys.join('.'));
-    }
-    else this.effectUpdateList.add(keys.join('.'));    
+    } else this.effectUpdateList.add(keys.join('.'));
   }
 
   getOptions() {
@@ -146,18 +149,36 @@ export class Store<N extends string, S extends object, A extends ActionsDefine<S
   }
 }
 
-export function createStore<S extends object, A extends ActionsDefine<S>, N extends string = typeof defaultStoreName>({
+export function createStore<
+  S extends object,
+  A extends ActionsDefine<S>,
+  N extends string = typeof defaultStoreName,
+>({
   name = defaultStoreName as N,
   initState,
   actions,
+  plugins,
   options,
 }: {
-  name?: N;
   initState: S;
+  name?: N;
+  plugins?: WohooxPlugin[];
   actions?: A;
   options?: Options;
 }) {
-  const store = new Store(name, initState, actions, options);
+  addPlugins(name, ...(plugins || []));
+  const beforeInitResult = plugins?.reduce(
+    (pre, plugin) =>
+      plugin.beforeInit?.(pre.initState, pre.actions) || {
+        initState: pre.initState,
+        actions: pre.actions,
+      },
+    { initState, actions },
+  ) || { initState, actions };
+
+  const store = new Store(name, beforeInitResult.initState, beforeInitResult.actions, options);
+
+  plugins?.forEach(plugin => plugin.onInit?.({ name, state: store.state, actions: store.actions }));
 
   return {
     name,
@@ -167,17 +188,17 @@ export function createStore<S extends object, A extends ActionsDefine<S>, N exte
 }
 
 export function combineStores<S extends ReturnType<typeof createStore>[]>(...stores: S) {
-  const allStore = {} as {[K in ExtractStoresName<S>]: ExtractStores<S, K>}
+  const allStore = {} as { [K in ExtractStoresName<S>]: ExtractStores<S, K> };
 
-  stores.forEach(store => allStore[store.name] = store)
+  stores.forEach(store => (allStore[store.name] = store));
 
   const actions = Object.keys(allStore).reduce((pre, current) => {
     pre[current] = allStore[current]['actions'];
     return pre;
-  }, {} as { [K in ExtractStoresName<S>]: typeof allStore[K]['actions'] })
+  }, {} as { [K in ExtractStoresName<S>]: typeof allStore[K]['actions'] });
 
   return {
     store: allStore,
-    actions
-  }
+    actions,
+  };
 }

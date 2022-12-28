@@ -1,3 +1,4 @@
+import { defaultStoreName } from './../global';
 import { isObserverObject, isMap, isSet } from '../utils';
 import { getStringifyKey } from './keyStore';
 import ProxyMap from './proxyMap';
@@ -5,19 +6,22 @@ import ProxyWeakMap from './proxyWeakMap';
 import ProxySet from './proxySet';
 import ProxyWeakSet from './proxyWeakSet';
 import { MapSetSizeKey } from '../constant';
+import { pluginsMap } from './plugin';
 
 type ObserverParams<T> = {
+  name: string;
   source: T;
   proxyMap: WeakMap<Record<any, any> | Map<any, any> | Set<any>, any>;
   keysStack: string[];
   getCallback(value: any, keys: string[]): void;
   setCallback(value: any, keys: string[], source?: any, oldValue?: any): boolean | undefined | void;
   addCallback(value: any, keys: string[], source?: any);
-  deleteCallback(target, key: string[]): void;
+  deleteCallback(target, keys: string[]): void;
   proxySetDeep?: boolean;
 };
 
 function observerObject({
+  name,
   source,
   proxyMap,
   keysStack,
@@ -30,10 +34,10 @@ function observerObject({
   const proxy = new Proxy(source, {
     get(target, key: string, receiver) {
       let value = Reflect.get(target, key, receiver);
-      
+
       if (value && !target.hasOwnProperty(key)) return value;
-      
-      const stringifyKey = getStringifyKey(target, key, true)
+
+      const stringifyKey = getStringifyKey(target, key, true);
       const keys = stringifyKey ? [...keysStack, stringifyKey] : keysStack;
 
       if (stringifyKey) getCallback(value, keys);
@@ -41,6 +45,7 @@ function observerObject({
       const proxyValue = proxyMap.get(value);
       if (!proxyValue && isObserverObject(value)) {
         return observer(value, {
+          name,
           getCallback,
           setCallback,
           addCallback,
@@ -48,6 +53,7 @@ function observerObject({
           keysStack: keys,
           proxyMap,
           proxySetDeep,
+          isTopLevel: false,
         });
       }
 
@@ -81,6 +87,7 @@ function observerObject({
 }
 
 function observerMap({
+  name,
   source,
   proxyMap,
   keysStack,
@@ -94,13 +101,14 @@ function observerMap({
     get(target, key) {
       let value = target.get(key);
       const proxyValue = proxyMap.get(value);
-      const stringifyKey = getStringifyKey(target, key, true)
+      const stringifyKey = getStringifyKey(target, key, true);
       const keys = stringifyKey ? [...keysStack, stringifyKey] : keysStack;
 
-      if(stringifyKey) getCallback(value, keys);
+      if (stringifyKey) getCallback(value, keys);
 
       if (isObserverObject(value) && !proxyValue) {
         return observer(value, {
+          name,
           getCallback,
           setCallback,
           addCallback,
@@ -108,6 +116,7 @@ function observerMap({
           keysStack: keys,
           proxyMap,
           proxySetDeep,
+          isTopLevel: false,
         });
       }
 
@@ -170,20 +179,22 @@ function observerSet({
   addCallback,
   deleteCallback,
   proxySetDeep,
+  name,
 }: ObserverParams<Map<any, any>>) {
   const commonActions = {
     get(target, key) {
       let value = key;
       const proxyValue = proxyMap.get(value);
-      const stringifyKey = getStringifyKey(target, key, true)
+      const stringifyKey = getStringifyKey(target, key, true);
       const keys = stringifyKey ? [...keysStack, stringifyKey] : keysStack;
 
-      if(stringifyKey) getCallback(value, keys);
+      if (stringifyKey) getCallback(value, keys);
 
       if (!proxySetDeep) return value;
 
       if (isObserverObject(value) && !proxyValue) {
         return observer(value, {
+          name,
           getCallback,
           setCallback,
           addCallback,
@@ -191,6 +202,7 @@ function observerSet({
           keysStack: keys,
           proxyMap,
           proxySetDeep,
+          isTopLevel: false,
         });
       }
 
@@ -245,30 +257,33 @@ function observerSet({
 
 export function observer(
   source,
-  options?: {
-    getCallback?(value: any, keys: string[]): void;
-    setCallback?(
-      value: any,
-      keys: string[],
-      source?: any,
-      oldValue?: any,
-    ): boolean | undefined | void;
-    addCallback?(value: any, keys: string[], source?: any): boolean | undefined | void;
-    deleteCallback?(targe, key: string[]): void;
-    keysStack?: string[];
-    proxyMap?: WeakMap<any, any>;
-    proxySetDeep?: boolean;
-  },
+  options?: Omit<Partial<ObserverParams<any>>, 'source'> & { name: string; isTopLevel?: boolean },
 ) {
   const {
-    getCallback = () => {},
-    setCallback = () => {},
-    addCallback = () => {},
-    deleteCallback = () => {},
     keysStack = [],
-    proxyMap = new WeakMap<Record<string, any> | Map<any, any> | Set<any>>(),
+    proxyMap = new WeakMap(),
     proxySetDeep = false,
+    name = defaultStoreName,
+    isTopLevel = true,
   } = options || {};
+
+  const getCallback: ObserverParams<any>['getCallback'] = (...args) => {
+    options?.getCallback?.(...args);
+    if (isTopLevel) pluginsMap.get(name)?.forEach(plugin => plugin.onGet?.(name, args[0], args[1]));
+  };
+  const setCallback: ObserverParams<any>['setCallback'] = (...args) => {
+    options?.setCallback?.(...args);
+    if (isTopLevel)
+      pluginsMap.get(name)?.forEach(plugin => plugin.onChange?.(name, args[0], args[1], args[3]));
+  };
+  const addCallback: ObserverParams<any>['addCallback'] = (...args) => {
+    options?.addCallback?.(...args);
+    if (isTopLevel) pluginsMap.get(name)?.forEach(plugin => plugin.onAdd?.(name, args[0], args[1]));
+  };
+  const deleteCallback: ObserverParams<any>['deleteCallback'] = (...args) => {
+    options?.deleteCallback?.(...args);
+    if (isTopLevel) pluginsMap.get(name)?.forEach(plugin => plugin.onDelete?.(name, args[1]));
+  };
 
   if (!isObserverObject(source)) return source;
 
@@ -276,6 +291,7 @@ export function observer(
   if (proxyObj) return proxyObj;
 
   const proxy = (isSet(source) ? observerSet : isMap(source) ? observerMap : observerObject)({
+    name,
     source,
     proxyMap,
     keysStack,
