@@ -440,7 +440,6 @@ export const plugin: WohooxPlugin = {
   },
   onGet(storeName, value, keys) {
     // do something when state has been gettled
-    // do not to deal with count, it would be called multi times sometimes
   },
 };
 ````
