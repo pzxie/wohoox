@@ -443,7 +443,6 @@ export const plugin: WohooxPlugin = {
   },
   onGet(storeName, value, keys) {
     // 属性获取时的回调
-    // 该回调可能会调用多次，所以不要通过该回调做【次数相关】的处理
   },
 };
 ````

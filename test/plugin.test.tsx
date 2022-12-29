@@ -426,7 +426,7 @@ it('plugin:hooks: onGet', () => {
     },
     actions: {
       updateName(state, name) {
-        state.obj.name = name;
+        state.obj = { name };
       },
     },
     plugins: [
@@ -462,7 +462,7 @@ it('plugin:hooks: onGet', () => {
 
   render(<Parent />, { legacyRoot: reactLegency });
 
-  expect(logs.length).toBeGreaterThanOrEqual(2);
+  expect(logs.length).toBe(2);
   expect(logs[0][0]).toBe('default');
   expect(JSON.stringify(logs[0][1])).toBe(JSON.stringify({ name: 'wohoox' }));
   expect(logs[0][2].join('.')).toBe('obj');
@@ -474,9 +474,13 @@ it('plugin:hooks: onGet', () => {
   logs.splice(0, 10);
   fireEvent.click(screen.getByRole('update'));
 
-  const name = logs.find(item => item[2].join('.') === 'obj.name');
-  const obj = logs.find(item => item[2].join('.') === 'obj');
+  expect(logs.length).toBe(2);
 
-  expect(name).not.toBeFalsy();
-  expect(obj).not.toBeFalsy();
+  expect(logs[0][0]).toBe('default');
+  expect(JSON.stringify(logs[0][1])).toBe(JSON.stringify({ name: 'update' }));
+  expect(logs[0][2].join('.')).toBe('obj');
+
+  expect(logs[1][0]).toBe('default');
+  expect(logs[1][1]).toBe('update');
+  expect(logs[1][2].join('.')).toBe('obj.name');
 });

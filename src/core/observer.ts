@@ -6,7 +6,7 @@ import ProxyWeakMap from './proxyWeakMap';
 import ProxySet from './proxySet';
 import ProxyWeakSet from './proxyWeakSet';
 import { MapSetSizeKey } from '../constant';
-import { pluginsMap } from './plugin';
+import { pluginsMap, isEventDisabled } from './plugin';
 
 type ObserverParams<T> = {
   name: string;
@@ -269,20 +269,20 @@ export function observer(
 
   const getCallback: ObserverParams<any>['getCallback'] = (...args) => {
     options?.getCallback?.(...args);
-    if (isTopLevel) pluginsMap.get(name)?.forEach(plugin => plugin.onGet?.(name, args[0], args[1]));
+    if (isTopLevel && !isEventDisabled('onGet')) pluginsMap.get(name)?.forEach(plugin => plugin.onGet?.(name, args[0], args[1]));
   };
   const setCallback: ObserverParams<any>['setCallback'] = (...args) => {
     options?.setCallback?.(...args);
-    if (isTopLevel)
+    if (isTopLevel && !isEventDisabled('onChange'))
       pluginsMap.get(name)?.forEach(plugin => plugin.onChange?.(name, args[0], args[1], args[3]));
   };
   const addCallback: ObserverParams<any>['addCallback'] = (...args) => {
     options?.addCallback?.(...args);
-    if (isTopLevel) pluginsMap.get(name)?.forEach(plugin => plugin.onAdd?.(name, args[0], args[1]));
+    if (isTopLevel && !isEventDisabled('onAdd')) pluginsMap.get(name)?.forEach(plugin => plugin.onAdd?.(name, args[0], args[1]));
   };
   const deleteCallback: ObserverParams<any>['deleteCallback'] = (...args) => {
     options?.deleteCallback?.(...args);
-    if (isTopLevel) pluginsMap.get(name)?.forEach(plugin => plugin.onDelete?.(name, args[1]));
+    if (isTopLevel && !isEventDisabled('onDelete')) pluginsMap.get(name)?.forEach(plugin => plugin.onDelete?.(name, args[1]));
   };
 
   if (!isObserverObject(source)) return source;

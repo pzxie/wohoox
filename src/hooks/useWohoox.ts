@@ -4,13 +4,11 @@ import useId from './common/useId';
 import { useStore } from './useStore';
 
 import { observer } from '../core/observer';
-import {
-  tagAsUsedStringifyKeys,
-  removeAsUnusedStringifyKeys,
-} from '../core/keyStore';
+import { tagAsUsedStringifyKeys, removeAsUnusedStringifyKeys } from '../core/keyStore';
 import { isObserverObject } from '../utils';
 import { defaultStoreName } from '../global';
 import { EffectType } from '../constant';
+import { ignoreToRecordEvent } from '../core/plugin';
 
 export function useWohoox(storeName?: string): any;
 export function useWohoox<T extends (state: any) => any>(getState?: T): ReturnType<T>;
@@ -35,9 +33,9 @@ export function useWohoox(name?: any, getState?: any): any {
       ? getState
       : (state: any) => state,
   );
-  
+
   const renderState = getStateFn(store.state);
-  const basePrefixKeys = renderState === store.state ? [] : [...store.currentProxyGetKeys]
+  const basePrefixKeys = renderState === store.state ? [] : [...store.currentProxyGetKeys];
 
   const getObserverState = useEvent(() => {
     const storeOptions = store.getOptions();
@@ -86,28 +84,31 @@ export function useWohoox(name?: any, getState?: any): any {
       keysStack: basePrefixKeys,
       proxySetDeep: storeOptions.proxySetDeep,
       proxyMap: proxyMap.current,
-      name: storeName
+      name: storeName,
     });
   });
 
   const preState = useRef(renderState);
   const [state, setState] = useState(getObserverState);
-  const updateState = useCallback((isForce?: boolean) => {
-    const state = getStateFn(store.state);
+  const updateState = useCallback(
+    (isForce?: boolean) => {
+      const state = ignoreToRecordEvent('onGet', () => getStateFn(store.state));
 
-    if (!isForce && state === preState.current) {
-      return false;
-    }
+      if (!isForce && state === preState.current) {
+        return false;
+      }
 
-    // State changed, should be set to a new state
-    preState.current = state;
-    usedKeys.current.clear();
-    removeAsUnusedStringifyKeys(id);
-    
-    setState(isObserverObject(state) ? getObserverState() : state);
+      // State changed, should be set to a new state
+      preState.current = state;
+      usedKeys.current.clear();
+      removeAsUnusedStringifyKeys(id);
 
-    return true;
-  }, [store, state, getObserverState]);
+      setState(isObserverObject(state) ? getObserverState() : state);
+
+      return true;
+    },
+    [store, state, getObserverState],
+  );
 
   const onEveryRender = () => {
     if (Array.isArray(renderState)) {
@@ -141,13 +142,13 @@ export function useWohoox(name?: any, getState?: any): any {
 
       // For update object, re-get state to update keys cache
       for (let key of store.effectUpdateList) {
-        if (usedKeys.current.has(key)) { 
+        if (usedKeys.current.has(key)) {
           updateState(true);
           return;
         }
       }
 
-      const state = getStateFn(store.state);
+      const state = ignoreToRecordEvent('onGet', () => getStateFn(store.state));
       // After the state sub-property is changed, it will be pushed into the effectList
       for (let key of store.effectList) {
         if (usedKeys.current.has(key)) {
