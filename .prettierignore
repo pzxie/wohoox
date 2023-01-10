@@ -1,0 +1,7 @@
+**/dist
+**/build
+*.yaml
+.husky
+.history
+.git
+**/node_modules
