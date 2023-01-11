@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import guid from '../../utils/uuid'
+import { guid } from 'wohoox-utils'
 
 export default function useId() {
   const id = useRef<string>()

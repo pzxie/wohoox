@@ -1,6 +1,6 @@
 import { cleanup } from '@testing-library/react'
 
-import { createStore, combineStores } from '../src/core/store'
+import createStore, { combineStores } from '../src/index'
 
 beforeEach(cleanup)
 

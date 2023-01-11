@@ -4,6 +4,7 @@
   "description": "Easy,lightweight and reactive store by react hooks",
   "author": "pzxie <pzxie@outlook.com>",
   "main": "dist/index.js",
+  "module": "dist/wohoox-react.esm.js",
   "unpkg": "dist/wohoox-react.umd.production.min.js",
   "umd:main": "dist/wohoox-react.umd.production.min.js",
   "types": "dist/index.d.ts",
@@ -23,6 +24,7 @@
     "analyze": "size-limit --why"
   },
   "keywords": [
+    "wohoox",
     "react",
     "store",
     "hooks",
@@ -35,7 +37,8 @@
   },
   "homepage": "https://github.com/pzxie/wohoox.git#readme",
   "dependencies": {
-    "wohoox": "workspace:*"
+    "wohoox": "workspace:*",
+    "wohoox-utils": "workspace:*"
   },
   "peerDependencies": {
     "react": "^18.2.0"

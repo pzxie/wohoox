@@ -2,21 +2,22 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { useState, useEffect, useRef, useCallback } from 'react'
+import {
+  defaultStoreName,
+  observer,
+  EffectType,
+  ignoreToRecordEvent,
+} from 'wohoox'
+import { isObserverObject } from 'wohoox-utils'
+
 import useEvent from './common/useEvent'
 import useId from './common/useId'
 import { useStore } from './useStore'
 
 import {
-  defaultStoreName,
-  observer,
-  EffectType,
-  isObserverObject,
-  ignoreToRecordEvent,
-} from 'wohoox'
-import {
   tagAsUsedStringifyKeys,
   removeAsUnusedStringifyKeys,
-} from '../keyStore'
+} from '../keyCaches'
 
 export function useWohoox(storeName?: string): any
 export function useWohoox<T extends (state: any) => any>(

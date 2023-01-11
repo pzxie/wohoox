@@ -13,7 +13,6 @@ module.exports = {
     require.resolve('jest-watch-typeahead/testname'),
   ],
   testPathIgnorePatterns: [
-    // "<rootDir>/test/purejs*",
     // "<rootDir>/test/components.mul*",
   ],
   testEnvironmentOptions: {

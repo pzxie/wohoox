@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
+import { isObserverObject, isMap, isSet } from 'wohoox-utils'
+
 import { defaultStoreName } from '../global'
-import { isObserverObject, isMap, isSet } from '../utils'
-import { getStringifyKey } from './keyStore'
+import { getStringifyKey } from './keyCaches'
 import ProxyMap from './proxyMap'
 import ProxyWeakMap from './proxyWeakMap'
 import ProxySet from './proxySet'
@@ -279,7 +280,7 @@ export function observer(
   const {
     keysStack = [],
     proxyMap = new WeakMap(),
-    proxySetDeep = false,
+    proxySetDeep = true,
     name = defaultStoreName,
     isTopLevel = true,
   } = options || {}

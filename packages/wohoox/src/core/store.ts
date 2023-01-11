@@ -1,3 +1,5 @@
+import { isPlainObject } from 'wohoox-utils'
+
 import {
   storeMap,
   getIsModifyByAction,
@@ -5,9 +7,8 @@ import {
   defaultStoreName,
 } from '../global'
 import { observer } from './observer'
-import { isPlainObject } from '../utils'
 import { EffectType } from '../constant'
-import { getSourceByStringifyKey } from './keyStore'
+import { getSourceByStringifyKey } from './keyCaches'
 import { addPlugins } from './plugin'
 
 import type { WohooxPlugin } from './plugin'

@@ -35,7 +35,12 @@ module.exports = {
     },
   ],
 
-  scopes: [{ name: 'monorepo' }, { name: 'wohoox' }, { name: 'wohoox-react' }],
+  scopes: [
+    { name: 'monorepo' },
+    { name: 'wohoox' },
+    { name: 'wohoox-react' },
+    { name: 'wohoox-utils' },
+  ],
 
   ticketNumberPrefix: 'fix',
   footerPrefix: 'close',

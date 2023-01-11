@@ -1,4 +1,4 @@
-import guid from './uuid'
+import guid from './guid'
 
 export function isPlainObject(data) {
   const dataType = Object.prototype.toString.call(data)

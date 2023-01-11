@@ -3,7 +3,7 @@ import { fireEvent, cleanup, render, screen } from '@testing-library/react'
 
 import createStore, { useStore, dispatch } from '../src'
 
-import { sourceMap, stringifiedKeySourceMap } from '../src/core/keyStore'
+import { keyCaches_SourceMap, keyCaches_StringifiedKeySourceMap } from 'wohoox'
 
 const reactLegency = !!process.env.reactLegency
 
@@ -70,27 +70,27 @@ describe('keyStore cache: single component', () => {
 
     render(<Child />, { legacyRoot: reactLegency })
 
-    expect(stringifiedKeySourceMap.size).toBe(0)
-    expect(sourceMap.size).toBe(0)
+    expect(keyCaches_StringifiedKeySourceMap.size).toBe(0)
+    expect(keyCaches_SourceMap.size).toBe(0)
     expect(screen.getByRole('string').innerHTML).toBe(existValue + '')
     expect(screen.getByRole('string_add').innerHTML).toBe('undefined')
 
     fireEvent.click(screen.getByRole('update'))
     expect(screen.getByRole('string').innerHTML).toBe(updateValue + '')
-    expect(stringifiedKeySourceMap.size).toBe(0)
-    expect(sourceMap.size).toBe(0)
+    expect(keyCaches_StringifiedKeySourceMap.size).toBe(0)
+    expect(keyCaches_SourceMap.size).toBe(0)
 
     fireEvent.click(screen.getByRole('add'))
     expect(screen.getByRole('string').innerHTML).toBe(updateValue + '')
     expect(screen.getByRole('string_add').innerHTML).toBe(addValue + '')
-    expect(stringifiedKeySourceMap.size).toBe(0)
-    expect(sourceMap.size).toBe(0)
+    expect(keyCaches_StringifiedKeySourceMap.size).toBe(0)
+    expect(keyCaches_SourceMap.size).toBe(0)
 
     fireEvent.click(screen.getByRole('delete'))
     expect(screen.getByRole('string').innerHTML).toBe(updateValue + '')
     expect(screen.getByRole('string_add').innerHTML).toBe('undefined')
-    expect(stringifiedKeySourceMap.size).toBe(0)
-    expect(sourceMap.size).toBe(0)
+    expect(keyCaches_StringifiedKeySourceMap.size).toBe(0)
+    expect(keyCaches_SourceMap.size).toBe(0)
   }
 
   it('string', () => {
@@ -176,38 +176,42 @@ describe('keyStore cache: single component', () => {
     let currentStringifiedKeySourceMapSize = 1
     let currentSourceMapSize = 2
 
-    expect(stringifiedKeySourceMap.size).toBe(
+    expect(keyCaches_StringifiedKeySourceMap.size).toBe(
       currentStringifiedKeySourceMapSize,
     )
-    expect(sourceMap.size).toBe(currentSourceMapSize)
+    expect(keyCaches_SourceMap.size).toBe(currentSourceMapSize)
     expect(screen.getByRole('string').innerHTML).toContain('init')
     expect(screen.getByRole('string_add').innerHTML).toBe('existSymbolValue')
 
     fireEvent.click(screen.getByRole('update'))
-    expect(stringifiedKeySourceMap.size).toBeGreaterThanOrEqual(
+    expect(keyCaches_StringifiedKeySourceMap.size).toBeGreaterThanOrEqual(
       currentStringifiedKeySourceMapSize,
     )
-    expect(sourceMap.size).toBeGreaterThanOrEqual(currentSourceMapSize)
+    expect(keyCaches_SourceMap.size).toBeGreaterThanOrEqual(
+      currentSourceMapSize,
+    )
     expect(screen.getByRole('string').innerHTML).toContain('update')
     expect(screen.getByRole('string_add').innerHTML).toBe('222')
-    currentStringifiedKeySourceMapSize = stringifiedKeySourceMap.size
-    currentSourceMapSize = sourceMap.size
+    currentStringifiedKeySourceMapSize = keyCaches_StringifiedKeySourceMap.size
+    currentSourceMapSize = keyCaches_SourceMap.size
 
     fireEvent.click(screen.getByRole('add'))
-    expect(stringifiedKeySourceMap.size).toBeGreaterThanOrEqual(
+    expect(keyCaches_StringifiedKeySourceMap.size).toBeGreaterThanOrEqual(
       currentStringifiedKeySourceMapSize,
     )
-    expect(sourceMap.size).toBeGreaterThanOrEqual(currentSourceMapSize)
+    expect(keyCaches_SourceMap.size).toBeGreaterThanOrEqual(
+      currentSourceMapSize,
+    )
     expect(screen.getByRole('string').innerHTML).toContain('add')
     expect(screen.getByRole('string_add').innerHTML).toBe('222')
-    currentStringifiedKeySourceMapSize = stringifiedKeySourceMap.size
-    currentSourceMapSize = sourceMap.size
+    currentStringifiedKeySourceMapSize = keyCaches_StringifiedKeySourceMap.size
+    currentSourceMapSize = keyCaches_SourceMap.size
 
     fireEvent.click(screen.getByRole('delete'))
-    expect(stringifiedKeySourceMap.size).toBeLessThanOrEqual(
+    expect(keyCaches_StringifiedKeySourceMap.size).toBeLessThanOrEqual(
       currentStringifiedKeySourceMapSize,
     )
-    expect(sourceMap.size).toBeLessThanOrEqual(currentSourceMapSize)
+    expect(keyCaches_SourceMap.size).toBeLessThanOrEqual(currentSourceMapSize)
     expect(screen.getByRole('string').innerHTML).not.toContain('add')
     expect(screen.getByRole('string_add').innerHTML).toBe('')
   })
@@ -281,52 +285,52 @@ describe('keyStore cache: single component', () => {
     let currentStringifiedKeySourceMapSize = 0
     let currentSourceMapSize = 0
 
-    expect(stringifiedKeySourceMap.size).toBe(
+    expect(keyCaches_StringifiedKeySourceMap.size).toBe(
       currentStringifiedKeySourceMapSize,
     )
-    expect(sourceMap.size).toBe(currentSourceMapSize)
+    expect(keyCaches_SourceMap.size).toBe(currentSourceMapSize)
     expect(screen.getByRole('string').children.length).toBe(4)
 
     fireEvent.click(screen.getByRole('update'))
-    expect(stringifiedKeySourceMap.size).toBe(
+    expect(keyCaches_StringifiedKeySourceMap.size).toBe(
       currentStringifiedKeySourceMapSize,
     )
-    expect(sourceMap.size).toBe(currentSourceMapSize)
+    expect(keyCaches_SourceMap.size).toBe(currentSourceMapSize)
     expect(screen.getByRole('string').children.length).toBe(4)
     expect(screen.getByRole('string').innerHTML).toContain('update')
 
     fireEvent.click(screen.getByRole('add'))
-    expect(stringifiedKeySourceMap.size).toBe(
+    expect(keyCaches_StringifiedKeySourceMap.size).toBe(
       currentStringifiedKeySourceMapSize,
     )
-    expect(sourceMap.size).toBe(currentSourceMapSize)
+    expect(keyCaches_SourceMap.size).toBe(currentSourceMapSize)
     expect(screen.getByRole('string').children.length).toBe(6)
     expect(screen.getByRole('string').innerHTML).toContain('addObject')
     expect(screen.getByRole('string').innerHTML).toContain('addOrigin')
 
     fireEvent.click(screen.getByRole('deleteAfterObjectIndexNotChange'))
-    expect(stringifiedKeySourceMap.size).toBe(
+    expect(keyCaches_StringifiedKeySourceMap.size).toBe(
       currentStringifiedKeySourceMapSize,
     )
-    expect(sourceMap.size).toBe(currentSourceMapSize)
+    expect(keyCaches_SourceMap.size).toBe(currentSourceMapSize)
     expect(screen.getByRole('string').children.length).toBe(5)
     expect(screen.getByRole('string').innerHTML).not.toContain('addOrigin')
 
     fireEvent.click(screen.getByRole('deleteAfterObjectIndexChanged'))
-    expect(stringifiedKeySourceMap.size).toBe(
+    expect(keyCaches_StringifiedKeySourceMap.size).toBe(
       currentStringifiedKeySourceMapSize,
     )
-    expect(sourceMap.size).toBe(currentSourceMapSize)
+    expect(keyCaches_SourceMap.size).toBe(currentSourceMapSize)
     expect(screen.getByRole('string').children.length).toBe(4)
     expect(screen.getByRole('string').innerHTML).not.toContain('2')
-    currentStringifiedKeySourceMapSize = stringifiedKeySourceMap.size
-    currentSourceMapSize = sourceMap.size
+    currentStringifiedKeySourceMapSize = keyCaches_StringifiedKeySourceMap.size
+    currentSourceMapSize = keyCaches_SourceMap.size
 
     fireEvent.click(screen.getByRole('rewriteArray'))
-    expect(stringifiedKeySourceMap.size).toBe(
+    expect(keyCaches_StringifiedKeySourceMap.size).toBe(
       currentStringifiedKeySourceMapSize,
     )
-    expect(sourceMap.size).toBe(currentSourceMapSize)
+    expect(keyCaches_SourceMap.size).toBe(currentSourceMapSize)
     expect(screen.getByRole('string').children.length).toBe(4)
   })
 
@@ -386,37 +390,37 @@ describe('keyStore cache: single component', () => {
     let currentStringifiedKeySourceMapSize = 3
     let currentSourceMapSize = 4
 
-    expect(stringifiedKeySourceMap.size).toBe(
+    expect(keyCaches_StringifiedKeySourceMap.size).toBe(
       currentStringifiedKeySourceMapSize,
     )
-    expect(sourceMap.size).toBe(currentSourceMapSize)
+    expect(keyCaches_SourceMap.size).toBe(currentSourceMapSize)
     expect(screen.getByRole('string').children.length).toBe(4)
 
     fireEvent.click(screen.getByRole('add'))
     currentStringifiedKeySourceMapSize = 4
     currentSourceMapSize = 5
-    expect(stringifiedKeySourceMap.size).toBe(
+    expect(keyCaches_StringifiedKeySourceMap.size).toBe(
       currentStringifiedKeySourceMapSize,
     )
-    expect(sourceMap.size).toBe(currentSourceMapSize)
+    expect(keyCaches_SourceMap.size).toBe(currentSourceMapSize)
     expect(screen.getByRole('string').children.length).toBe(6)
 
     fireEvent.click(screen.getByRole('delete'))
     currentStringifiedKeySourceMapSize = 3
     currentSourceMapSize = 4
-    expect(stringifiedKeySourceMap.size).toBe(
+    expect(keyCaches_StringifiedKeySourceMap.size).toBe(
       currentStringifiedKeySourceMapSize,
     )
-    expect(sourceMap.size).toBe(currentSourceMapSize)
+    expect(keyCaches_SourceMap.size).toBe(currentSourceMapSize)
     expect(screen.getByRole('string').children.length).toBe(5)
 
     fireEvent.click(screen.getByRole('clear'))
     currentStringifiedKeySourceMapSize = 0
     currentSourceMapSize = 0
-    expect(stringifiedKeySourceMap.size).toBe(
+    expect(keyCaches_StringifiedKeySourceMap.size).toBe(
       currentStringifiedKeySourceMapSize,
     )
-    expect(sourceMap.size).toBe(currentSourceMapSize)
+    expect(keyCaches_SourceMap.size).toBe(currentSourceMapSize)
     expect(screen.getByRole('string').children.length).toBe(0)
   })
 
@@ -483,37 +487,37 @@ describe('keyStore cache: single component', () => {
     let currentStringifiedKeySourceMapSize = 3
     let currentSourceMapSize = 4
 
-    expect(stringifiedKeySourceMap.size).toBe(
+    expect(keyCaches_StringifiedKeySourceMap.size).toBe(
       currentStringifiedKeySourceMapSize,
     )
-    expect(sourceMap.size).toBe(currentSourceMapSize)
+    expect(keyCaches_SourceMap.size).toBe(currentSourceMapSize)
     expect(screen.getByRole('string').children.length).toBe(4)
 
     fireEvent.click(screen.getByRole('add'))
     currentStringifiedKeySourceMapSize = 4
     currentSourceMapSize = 5
-    expect(stringifiedKeySourceMap.size).toBe(
+    expect(keyCaches_StringifiedKeySourceMap.size).toBe(
       currentStringifiedKeySourceMapSize,
     )
-    expect(sourceMap.size).toBe(currentSourceMapSize)
+    expect(keyCaches_SourceMap.size).toBe(currentSourceMapSize)
     expect(screen.getByRole('string').children.length).toBe(6)
 
     fireEvent.click(screen.getByRole('delete'))
     currentStringifiedKeySourceMapSize = 3
     currentSourceMapSize = 4
-    expect(stringifiedKeySourceMap.size).toBe(
+    expect(keyCaches_StringifiedKeySourceMap.size).toBe(
       currentStringifiedKeySourceMapSize,
     )
-    expect(sourceMap.size).toBe(currentSourceMapSize)
+    expect(keyCaches_SourceMap.size).toBe(currentSourceMapSize)
     expect(screen.getByRole('string').children.length).toBe(5)
 
     fireEvent.click(screen.getByRole('clear'))
     currentStringifiedKeySourceMapSize = 0
     currentSourceMapSize = 0
-    expect(stringifiedKeySourceMap.size).toBe(
+    expect(keyCaches_StringifiedKeySourceMap.size).toBe(
       currentStringifiedKeySourceMapSize,
     )
-    expect(sourceMap.size).toBe(currentSourceMapSize)
+    expect(keyCaches_SourceMap.size).toBe(currentSourceMapSize)
     expect(screen.getByRole('string').children.length).toBe(0)
   })
 
@@ -567,18 +571,18 @@ describe('keyStore cache: single component', () => {
     let currentStringifiedKeySourceMapSize = 2
     let currentSourceMapSize = 3
 
-    expect(stringifiedKeySourceMap.size).toBe(
+    expect(keyCaches_StringifiedKeySourceMap.size).toBe(
       currentStringifiedKeySourceMapSize,
     )
-    expect(sourceMap.size).toBe(currentSourceMapSize)
+    expect(keyCaches_SourceMap.size).toBe(currentSourceMapSize)
 
     fireEvent.click(screen.getByRole('button'))
     currentStringifiedKeySourceMapSize = 1
     currentSourceMapSize = 2
-    expect(stringifiedKeySourceMap.size).toBe(
+    expect(keyCaches_StringifiedKeySourceMap.size).toBe(
       currentStringifiedKeySourceMapSize,
     )
-    expect(sourceMap.size).toBe(currentSourceMapSize)
+    expect(keyCaches_SourceMap.size).toBe(currentSourceMapSize)
   })
 
   it('component mounted', () => {
@@ -631,17 +635,17 @@ describe('keyStore cache: single component', () => {
     let currentStringifiedKeySourceMapSize = 1
     let currentSourceMapSize = 2
 
-    expect(stringifiedKeySourceMap.size).toBe(
+    expect(keyCaches_StringifiedKeySourceMap.size).toBe(
       currentStringifiedKeySourceMapSize,
     )
-    expect(sourceMap.size).toBe(currentSourceMapSize)
+    expect(keyCaches_SourceMap.size).toBe(currentSourceMapSize)
 
     fireEvent.click(screen.getByRole('button'))
     currentStringifiedKeySourceMapSize = 2
     currentSourceMapSize = 3
-    expect(stringifiedKeySourceMap.size).toBe(
+    expect(keyCaches_StringifiedKeySourceMap.size).toBe(
       currentStringifiedKeySourceMapSize,
     )
-    expect(sourceMap.size).toBe(currentSourceMapSize)
+    expect(keyCaches_SourceMap.size).toBe(currentSourceMapSize)
   })
 })
