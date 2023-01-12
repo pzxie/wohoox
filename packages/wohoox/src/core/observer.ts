@@ -3,13 +3,12 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 import { isObserverObject, isMap, isSet } from 'wohoox-utils'
 
-import { defaultStoreName } from '../global'
-import { getStringifyKey } from './keyCaches'
+import { defaultStoreName, MapSetSizeKey } from '../global'
+import { isIgnoreToGetCallback } from './keyCaches'
 import ProxyMap from './proxyMap'
 import ProxyWeakMap from './proxyWeakMap'
 import ProxySet from './proxySet'
 import ProxyWeakSet from './proxyWeakSet'
-import { MapSetSizeKey } from '../constant'
 import { pluginsMap, isEventDisabled } from './plugin'
 
 type ObserverParams<T> = {
@@ -17,15 +16,15 @@ type ObserverParams<T> = {
   source: T
   proxyMap: WeakMap<Record<any, any> | Map<any, any> | Set<any>, any>
   keysStack: string[]
-  getCallback(value: any, keys: string[]): void
+  getCallback(value: any, keys: string[], source: any): void
   setCallback(
     value: any,
     keys: string[],
-    source?: any,
-    oldValue?: any,
+    oldValue: any,
+    source: any,
   ): boolean | undefined | void
-  addCallback(value: any, keys: string[], source?: any)
-  deleteCallback(target, keys: string[]): void
+  addCallback(value: any, keys: string[], source: any)
+  deleteCallback(keys: string[], target): void
   proxySetDeep?: boolean
 }
 
@@ -47,10 +46,10 @@ function observerObject({
       // eslint-disable-next-line no-prototype-builtins
       if (value && !target.hasOwnProperty(key)) return value
 
-      const stringifyKey = getStringifyKey(target, key, true)
-      const keys = stringifyKey ? [...keysStack, stringifyKey] : keysStack
+      const isIgnoreKey = isIgnoreToGetCallback(key)
+      const keys = isIgnoreKey ? keysStack : [...keysStack, key]
 
-      if (stringifyKey) getCallback(value, keys)
+      if (!isIgnoreKey) getCallback(value, keys, target)
 
       const proxyValue = proxyMap.get(value)
       if (!proxyValue && isObserverObject(value)) {
@@ -70,8 +69,8 @@ function observerObject({
       return proxyValue || value
     },
     set(target, key: string, value, receiver) {
-      const mapKey = getStringifyKey(target, key, true)
-      const keys = [...keysStack, mapKey]
+      const isIgnoreKey = isIgnoreToGetCallback(key)
+      const keys = isIgnoreKey ? keysStack : [...keysStack, key]
 
       const oldValue = Reflect.get(target, key)
 
@@ -87,10 +86,9 @@ function observerObject({
       return Reflect.set(target, key, value, receiver)
     },
     deleteProperty(target: Record<string, any>, key: string) {
-      const mapKey = getStringifyKey(target, key, true)
-
-      const keys = [...keysStack, mapKey]
-      deleteCallback(target, keys)
+      const isIgnoreKey = isIgnoreToGetCallback(key)
+      const keys = isIgnoreKey ? keysStack : [...keysStack, key]
+      deleteCallback(keys, target)
 
       return Reflect.deleteProperty(target, key)
     },
@@ -114,10 +112,11 @@ function observerMap({
     get(target: Map<object, any>, key) {
       const value = target.get(key)
       const proxyValue = proxyMap.get(value)
-      const stringifyKey = getStringifyKey(target, key, true)
-      const keys = stringifyKey ? [...keysStack, stringifyKey] : keysStack
 
-      if (stringifyKey) getCallback(value, keys)
+      const isIgnoreKey = isIgnoreToGetCallback(key)
+      const keys = isIgnoreKey ? keysStack : [...keysStack, key]
+
+      if (!isIgnoreKey) getCallback(value, keys, target)
 
       if (isObserverObject(value) && !proxyValue) {
         return observer(value, {
@@ -136,8 +135,9 @@ function observerMap({
       return proxyValue || value
     },
     set(target: Map<object, any>, key, value) {
-      const mapKey = getStringifyKey(target, key, true)
-      const keys = [...keysStack, mapKey]
+      const isIgnoreKey = isIgnoreToGetCallback(key)
+      const keys = isIgnoreKey ? keysStack : [...keysStack, key]
+
       const oldValue = target.get(key)
 
       if (!target.has(key)) {
@@ -150,10 +150,10 @@ function observerMap({
     },
 
     deleteProperty(target: Map<object, any>, key) {
-      const mapKey = getStringifyKey(target, key, true)
-      const keys = [...keysStack, mapKey]
+      const isIgnoreKey = isIgnoreToGetCallback(key)
+      const keys = isIgnoreKey ? keysStack : [...keysStack, key]
 
-      deleteCallback(target, keys)
+      deleteCallback(keys, target)
 
       return target.delete(key)
     },
@@ -166,11 +166,11 @@ function observerMap({
     ...commonActions,
     clear(target) {
       // same as delete properties
-      deleteCallback(target, keysStack)
+      deleteCallback(keysStack, target)
       target.forEach((_, key) => {
-        const stringifyKey = getStringifyKey(target, key)
+        const isIgnoreKey = isIgnoreToGetCallback(key)
 
-        if (stringifyKey) deleteCallback(target, [...keysStack, stringifyKey])
+        if (!isIgnoreKey) deleteCallback([...keysStack, key], target)
 
         target.delete(key)
       })
@@ -199,10 +199,11 @@ function observerSet({
     get(target, key) {
       const value = key
       const proxyValue = proxyMap.get(value)
-      const stringifyKey = getStringifyKey(target, key, true)
-      const keys = stringifyKey ? [...keysStack, stringifyKey] : keysStack
 
-      if (stringifyKey) getCallback(value, keys)
+      const isIgnoreKey = isIgnoreToGetCallback(key)
+      const keys = isIgnoreKey ? keysStack : [...keysStack, key]
+
+      if (!isIgnoreKey) getCallback(value, keys, target)
 
       if (!proxySetDeep) return value
 
@@ -223,7 +224,8 @@ function observerSet({
       return proxyValue || value
     },
     add(target: Set<any>, key, value) {
-      const keys = [...keysStack, getStringifyKey(target, key, true)]
+      const isIgnoreKey = isIgnoreToGetCallback(key)
+      const keys = isIgnoreKey ? keysStack : [...keysStack, key]
 
       if (target.has(key)) return target
 
@@ -232,10 +234,10 @@ function observerSet({
       return target.add(value)
     },
     deleteProperty(target: Set<any>, key) {
-      const mapKey = getStringifyKey(target, key, true)
-      const keys = [...keysStack, mapKey]
+      const isIgnoreKey = isIgnoreToGetCallback(key)
+      const keys = isIgnoreKey ? keysStack : [...keysStack, key]
 
-      deleteCallback(target, keys)
+      deleteCallback(keys, target)
 
       return target.delete(key)
     },
@@ -250,11 +252,11 @@ function observerSet({
       ...commonActions,
       clear(target: Set<any>) {
         // same as delete properties
-        deleteCallback(target, keysStack)
+        deleteCallback(keysStack, target)
         target.forEach(value => {
-          const stringifyKey = getStringifyKey(target, value)
+          const isIgnoreKey = isIgnoreToGetCallback(value)
 
-          if (stringifyKey) deleteCallback(target, [...keysStack, stringifyKey])
+          if (!isIgnoreKey) deleteCallback([...keysStack, value], target)
 
           target.delete(value)
         })
@@ -288,28 +290,22 @@ export function observer(
   const getCallback: ObserverParams<any>['getCallback'] = (...args) => {
     options?.getCallback?.(...args)
     if (isTopLevel && !isEventDisabled('onGet'))
-      pluginsMap
-        .get(name)
-        ?.forEach(plugin => plugin.onGet?.(name, args[0], args[1]))
+      pluginsMap.get(name)?.forEach(plugin => plugin.onGet?.(name, ...args))
   }
   const setCallback: ObserverParams<any>['setCallback'] = (...args) => {
     options?.setCallback?.(...args)
     if (isTopLevel && !isEventDisabled('onChange'))
-      pluginsMap
-        .get(name)
-        ?.forEach(plugin => plugin.onChange?.(name, args[0], args[1], args[3]))
+      pluginsMap.get(name)?.forEach(plugin => plugin.onChange?.(name, ...args))
   }
   const addCallback: ObserverParams<any>['addCallback'] = (...args) => {
     options?.addCallback?.(...args)
     if (isTopLevel && !isEventDisabled('onAdd'))
-      pluginsMap
-        .get(name)
-        ?.forEach(plugin => plugin.onAdd?.(name, args[0], args[1]))
+      pluginsMap.get(name)?.forEach(plugin => plugin.onAdd?.(name, ...args))
   }
   const deleteCallback: ObserverParams<any>['deleteCallback'] = (...args) => {
     options?.deleteCallback?.(...args)
     if (isTopLevel && !isEventDisabled('onDelete'))
-      pluginsMap.get(name)?.forEach(plugin => plugin.onDelete?.(name, args[1]))
+      pluginsMap.get(name)?.forEach(plugin => plugin.onDelete?.(name, ...args))
   }
 
   if (!isObserverObject(source)) return source

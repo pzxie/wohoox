@@ -7,8 +7,6 @@ import {
   defaultStoreName,
 } from '../global'
 import { observer } from './observer'
-import { EffectType } from '../constant'
-import { getSourceByStringifyKey } from './keyCaches'
 import { addPlugins } from './plugin'
 
 import type { WohooxPlugin } from './plugin'
@@ -72,9 +70,9 @@ export class Store<
   currentProxyGetKeys: string[] = []
 
   // settled state property list
-  effectList: Set<string> = new Set()
+  private effectList: Set<string> = new Set()
 
-  effectUpdateList: Set<string> = new Set()
+  private effectUpdateList: Set<string> = new Set()
 
   dispatch = () => {}
 
@@ -85,34 +83,28 @@ export class Store<
 
     this.state = observer(state, {
       getCallback: (_, keys) => {
-        this.currentProxyGetKeys = keys
+        if (keys) this.currentProxyGetKeys = keys
       },
-      setCallback: (value, keys) => {
+      setCallback: () => {
         if (!getIsModifyByAction() && this.options.strictMode) {
           throw new Error(
             'In the strict mode, state cannot be modified by expression. Only actions are allowed',
           )
         }
-
-        this.addKeyToEffectList(keys, value, EffectType.modify)
       },
-      addCallback: (value, keys) => {
+      addCallback: () => {
         if (!getIsModifyByAction() && this.options.strictMode) {
           throw new Error(
             'In the strict mode, state cannot be modified by expression. Only actions are allowed',
           )
         }
-
-        this.addKeyToEffectList(keys, value, EffectType.add)
       },
-      deleteCallback: (target, keys) => {
+      deleteCallback: () => {
         if (!getIsModifyByAction() && this.options.strictMode) {
           throw new Error(
             'In the strict mode, state cannot be delete by expression. Only actions are allowed',
           )
         }
-
-        this.addKeyToEffectList(keys, target, EffectType.delete)
       },
       proxySetDeep: this.options.proxySetDeep,
       name,
@@ -147,19 +139,18 @@ export class Store<
     if (index > -1) this.listeners.splice(index, 1)
   }
 
-  addKeyToEffectList(keys: string[], _newValue: any, effectType: EffectType) {
+  addKeyToEffectList(keys: string[], isAdd?: boolean) {
+    this.effectList.add(keys.join('.'))
+
+    const parentKeys = keys.slice(0, -1)
+
+    if (parentKeys.length && isAdd) this.effectList.add(parentKeys.join('.'))
+  }
+
+  addKeyToUpdateEffectList(keys: string[]) {
     if (!keys.length) return
 
-    if (
-      effectType === EffectType.add ||
-      !keys.find(key => getSourceByStringifyKey(key))
-    ) {
-      this.effectList.add(keys.join('.'))
-
-      const parentKeys = keys.slice(0, -1)
-
-      if (parentKeys.length) this.effectList.add(parentKeys.join('.'))
-    } else this.effectUpdateList.add(keys.join('.'))
+    this.effectUpdateList.add(keys.join('.'))
   }
 
   getOptions() {

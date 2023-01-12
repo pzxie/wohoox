@@ -1,4 +1,4 @@
-import { MapSetSizeKey } from '../constant'
+import { MapSetSizeKey } from '../global'
 
 type ProxySetActions<T> = {
   get(source: T, key: any): any

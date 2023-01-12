@@ -1,10 +1,16 @@
 export type WohooxPlugin = {
   beforeInit?(initState, actions): { initState; actions }
   onInit?(store: { name: string; state; actions }): void
-  onAdd?(storeName: string, value: any, keys: string[]): void
-  onDelete?(storeName: string, keys: string[]): void
-  onChange?(storeName: string, value: any, keys: string[], oldValue: any): void
-  onGet?(storeName: string, value: any, keys: string[]): void
+  onAdd?(storeName: string, value: any, keys: string[], target: any): void
+  onDelete?(storeName: string, keys: string[], target: any): void
+  onChange?(
+    storeName: string,
+    value: any,
+    keys: string[],
+    oldValue: any,
+    target: any,
+  ): void
+  onGet?(storeName: string, value: any, keys: string[], target: any): void
 }
 
 const eventDisabled: {
