@@ -3,6 +3,7 @@ import './App.css'
 
 function App() {
   const version = useStore(state => state.version)
+  const set = useStore(state => state.set)
 
   return (
     <div className="App">
@@ -28,6 +29,25 @@ function App() {
             click to update
           </button>
         </div>
+        <ul>
+          {[...set.values()].map(item => (
+            <li>{item}</li>
+          ))}
+        </ul>
+        <button
+          onClick={() => {
+            actions.addItem(Math.floor(Math.random() * 10))
+          }}
+        >
+          click to add
+        </button>
+        <button
+          onClick={() => {
+            actions.empty()
+          }}
+        >
+          empty
+        </button>
       </div>
     </div>
   )

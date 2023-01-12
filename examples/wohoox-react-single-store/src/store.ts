@@ -8,10 +8,17 @@ const store = createStore({
       name: 'wohoox',
       other: 'xxx',
     },
+    set: new Set([1]),
   },
   actions: {
     updateVersion(state, version: string) {
       state.version = version
+    },
+    addItem(state, item) {
+      state.set.add(item)
+    },
+    empty(state) {
+      state.set.clear()
     },
   },
   plugins: [persistPlugin],

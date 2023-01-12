@@ -46,3 +46,10 @@ export function getSourceByStringifyKey(stringifyKey: string) {
 export function getKeyBySource(source) {
   return keyCaches_SourceMap.get(source)
 }
+
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+window.__keyCaches_SourceMap = keyCaches_SourceMap
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+window.__keyCaches_StringifiedKeySourceMap = keyCaches_StringifiedKeySourceMap
