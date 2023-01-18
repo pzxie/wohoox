@@ -2,22 +2,31 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { useState, useEffect, useRef, useCallback } from 'react'
-import {
-  defaultStoreName,
-  observer,
-  EffectType,
-  ignoreToRecordEvent,
-} from 'wohoox'
-import { isObserverObject } from 'wohoox-utils'
+import { defaultStoreName, observer, ignoreToRecordEvent } from 'wohoox'
+import { isObserverObject, guid } from 'wohoox-utils'
 
 import useEvent from './common/useEvent'
 import useId from './common/useId'
 import { useStore } from './useStore'
 
-import {
-  tagAsUsedStringifyKeys,
-  removeAsUnusedStringifyKeys,
-} from '../keyCaches'
+function getStringifyedList(keys: any[], sourceMap: Map<any, string>) {
+  return keys
+    .map(key => {
+      return getStringifyedKey(key, sourceMap)
+    })
+    .filter(Boolean)
+}
+
+function getStringifyedKey(key: any, sourceMap: Map<any, string>) {
+  if (typeof key === 'string') return key
+
+  let keyGuid = sourceMap.get(key)
+
+  if (!keyGuid) {
+    sourceMap.set(key, (keyGuid = guid()))
+  }
+  return keyGuid
+}
 
 export function useWohoox(storeName?: string): any
 export function useWohoox<T extends (state: any) => any>(
@@ -30,6 +39,7 @@ export function useWohoox<T extends (state: any) => any>(
 export function useWohoox(name?: any, getState?: any): any {
   const storeName = typeof name === 'string' ? name : defaultStoreName
 
+  const usedSourceMap = useRef(new Map<any, string>())
   const usedKeys = useRef(new Set<string>())
   const proxyMap = useRef(new WeakMap())
 
@@ -58,42 +68,47 @@ export function useWohoox(name?: any, getState?: any): any {
       getCallback(value, keys) {
         try {
           store.currentProxyGetKeys = keys
-          const key = keys.join('.')
 
-          usedKeys.current.add(key)
+          const stringifyKeys = getStringifyedList(keys, usedSourceMap.current)
+          usedKeys.current.add(stringifyKeys.join('.'))
 
           if (Array.isArray(value)) {
-            usedKeys.current.add([...keys, 'length'].join('.'))
+            usedKeys.current.add([...stringifyKeys, 'length'].join('.'))
           }
         } catch (e) {
           /* empty */
         }
       },
-      setCallback: (value, keys) => {
+      setCallback: (_, keys) => {
         if (storeOptions.strictMode) {
           throw new Error(
             'In the strict mode, state cannot be modified by expression. Only actions are allowed',
           )
         }
 
-        store.addKeyToEffectList(keys, value, EffectType.modify)
+        const isUsed = keys.find(key => usedSourceMap.current.has(key))
+        if (isUsed) store.addKeyToUpdateEffectList(keys)
+        else store.addKeyToEffectList(keys)
       },
-      addCallback: (value, keys) => {
+      addCallback: (_, keys) => {
         if (storeOptions.strictMode) {
           throw new Error(
             'In the strict mode, state cannot be modified by expression. Only actions are allowed',
           )
         }
 
-        store.addKeyToEffectList(keys, value, EffectType.add)
+        store.addKeyToEffectList(keys, true)
       },
-      deleteCallback: (target, keys) => {
+      deleteCallback: keys => {
         if (storeOptions.strictMode) {
           throw new Error(
             'In the strict mode, state cannot be delete by expression. Only actions are allowed',
           )
         }
-        store.addKeyToEffectList(keys, target, EffectType.delete)
+
+        const isUsed = keys.find(key => usedSourceMap.current.has(key))
+        if (isUsed) store.addKeyToUpdateEffectList(keys)
+        else store.addKeyToEffectList(keys)
       },
       keysStack: basePrefixKeys,
       proxySetDeep: storeOptions.proxySetDeep,
@@ -115,7 +130,7 @@ export function useWohoox(name?: any, getState?: any): any {
       // State changed, should be set to a new state
       preState.current = state
       usedKeys.current.clear()
-      removeAsUnusedStringifyKeys(id)
+      usedSourceMap.current.clear()
 
       setState(isObserverObject(state) ? getObserverState() : state)
 
@@ -125,16 +140,18 @@ export function useWohoox(name?: any, getState?: any): any {
   )
 
   const onEveryRender = () => {
+    let keys = [...basePrefixKeys]
+
+    if (keys.find(item => typeof item !== 'string')) {
+      keys = getStringifyedList(keys, usedSourceMap.current)
+    }
+
     if (Array.isArray(renderState)) {
-      usedKeys.current.add([...basePrefixKeys, 'length'].join('.'))
+      keys.push('length')
+      usedKeys.current.add(keys.join('.'))
     } else {
-      try {
-        if (basePrefixKeys.length) {
-          // Some property cannot be converted to strings, ex symbol. We can ignore this
-          usedKeys.current.add(basePrefixKeys.join('.'))
-        }
-      } catch (e) {
-        /* empty */
+      if (basePrefixKeys.length) {
+        usedKeys.current.add(keys.join('.'))
       }
     }
   }
@@ -157,8 +174,12 @@ export function useWohoox(name?: any, getState?: any): any {
       if (isUpdated) return
 
       // For update object, re-get state to update keys cache
-      for (const key of store.effectUpdateList) {
-        if (usedKeys.current.has(key)) {
+      for (const keys of store.effectUpdateList) {
+        if (
+          usedKeys.current.has(
+            getStringifyedList(keys, usedSourceMap.current).join('.'),
+          )
+        ) {
           updateState(true)
           return
         }
@@ -166,10 +187,15 @@ export function useWohoox(name?: any, getState?: any): any {
 
       const state = ignoreToRecordEvent('onGet', () => getStateFn(store.state))
       // After the state sub-property is changed, it will be pushed into the effectList
-      for (const key of store.effectList) {
-        if (usedKeys.current.has(key)) {
+      for (const keys of store.effectList) {
+        if (
+          usedKeys.current.has(
+            getStringifyedList(keys, usedSourceMap.current).join('.'),
+          )
+        ) {
           preState.current = state
           usedKeys.current.clear()
+          usedSourceMap.current.clear()
           update({})
         }
       }
@@ -180,16 +206,6 @@ export function useWohoox(name?: any, getState?: any): any {
       store.removeListener(callback)
     }
   }, [id, store, updateState])
-
-  useEffect(() => {
-    tagAsUsedStringifyKeys(id, [...usedKeys.current])
-  })
-
-  useEffect(() => {
-    return () => {
-      removeAsUnusedStringifyKeys(id)
-    }
-  }, [])
 
   return state
 }
