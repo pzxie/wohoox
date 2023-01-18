@@ -70,9 +70,9 @@ export class Store<
   currentProxyGetKeys: string[] = []
 
   // settled state property list
-  private effectList: Set<string> = new Set()
+  effectList: Set<any[]> = new Set()
 
-  private effectUpdateList: Set<string> = new Set()
+  effectUpdateList: Set<any[]> = new Set()
 
   dispatch = () => {}
 
@@ -139,18 +139,18 @@ export class Store<
     if (index > -1) this.listeners.splice(index, 1)
   }
 
-  addKeyToEffectList(keys: string[], isAdd?: boolean) {
-    this.effectList.add(keys.join('.'))
+  addKeyToEffectList(keys: any[], isAdd?: boolean) {
+    this.effectList.add(keys)
 
     const parentKeys = keys.slice(0, -1)
 
-    if (parentKeys.length && isAdd) this.effectList.add(parentKeys.join('.'))
+    if (parentKeys.length && isAdd) this.effectList.add(parentKeys)
   }
 
   addKeyToUpdateEffectList(keys: string[]) {
     if (!keys.length) return
 
-    this.effectUpdateList.add(keys.join('.'))
+    this.effectUpdateList.add(keys)
   }
 
   getOptions() {

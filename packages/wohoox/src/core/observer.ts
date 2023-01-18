@@ -4,7 +4,7 @@
 import { isObserverObject, isMap, isSet } from 'wohoox-utils'
 
 import { defaultStoreName, MapSetSizeKey } from '../global'
-import { isIgnoreToGetCallback } from './keyCaches'
+import { isIgnoreCacheKey } from './keyCaches'
 import ProxyMap from './proxyMap'
 import ProxyWeakMap from './proxyWeakMap'
 import ProxySet from './proxySet'
@@ -16,15 +16,15 @@ type ObserverParams<T> = {
   source: T
   proxyMap: WeakMap<Record<any, any> | Map<any, any> | Set<any>, any>
   keysStack: string[]
-  getCallback(value: any, keys: string[], source: any): void
+  getCallback(value: any, keys: any[], source: any): void
   setCallback(
     value: any,
-    keys: string[],
+    keys: any[],
     oldValue: any,
     source: any,
   ): boolean | undefined | void
-  addCallback(value: any, keys: string[], source: any)
-  deleteCallback(keys: string[], target): void
+  addCallback(value: any, keys: any[], source: any)
+  deleteCallback(keys: any[], target): void
   proxySetDeep?: boolean
 }
 
@@ -46,10 +46,10 @@ function observerObject({
       // eslint-disable-next-line no-prototype-builtins
       if (value && !target.hasOwnProperty(key)) return value
 
-      const isIgnoreKey = isIgnoreToGetCallback(key)
-      const keys = isIgnoreKey ? keysStack : [...keysStack, key]
+      const ignore = isIgnoreCacheKey(key)
+      const keys = ignore ? keysStack : [...keysStack, key]
 
-      if (!isIgnoreKey) getCallback(value, keys, target)
+      if (!ignore) getCallback(value, keys, target)
 
       const proxyValue = proxyMap.get(value)
       if (!proxyValue && isObserverObject(value)) {
@@ -69,8 +69,8 @@ function observerObject({
       return proxyValue || value
     },
     set(target, key: string, value, receiver) {
-      const isIgnoreKey = isIgnoreToGetCallback(key)
-      const keys = isIgnoreKey ? keysStack : [...keysStack, key]
+      const ignore = isIgnoreCacheKey(key)
+      const keys = ignore ? keysStack : [...keysStack, key]
 
       const oldValue = Reflect.get(target, key)
 
@@ -86,8 +86,8 @@ function observerObject({
       return Reflect.set(target, key, value, receiver)
     },
     deleteProperty(target: Record<string, any>, key: string) {
-      const isIgnoreKey = isIgnoreToGetCallback(key)
-      const keys = isIgnoreKey ? keysStack : [...keysStack, key]
+      const ignore = isIgnoreCacheKey(key)
+      const keys = ignore ? keysStack : [...keysStack, key]
       deleteCallback(keys, target)
 
       return Reflect.deleteProperty(target, key)
@@ -113,10 +113,10 @@ function observerMap({
       const value = target.get(key)
       const proxyValue = proxyMap.get(value)
 
-      const isIgnoreKey = isIgnoreToGetCallback(key)
-      const keys = isIgnoreKey ? keysStack : [...keysStack, key]
+      const ignore = isIgnoreCacheKey(key)
+      const keys = ignore ? keysStack : [...keysStack, key]
 
-      if (!isIgnoreKey) getCallback(value, keys, target)
+      if (!ignore) getCallback(value, keys, target)
 
       if (isObserverObject(value) && !proxyValue) {
         return observer(value, {
@@ -135,8 +135,8 @@ function observerMap({
       return proxyValue || value
     },
     set(target: Map<object, any>, key, value) {
-      const isIgnoreKey = isIgnoreToGetCallback(key)
-      const keys = isIgnoreKey ? keysStack : [...keysStack, key]
+      const ignore = isIgnoreCacheKey(key)
+      const keys = ignore ? keysStack : [...keysStack, key]
 
       const oldValue = target.get(key)
 
@@ -150,8 +150,8 @@ function observerMap({
     },
 
     deleteProperty(target: Map<object, any>, key) {
-      const isIgnoreKey = isIgnoreToGetCallback(key)
-      const keys = isIgnoreKey ? keysStack : [...keysStack, key]
+      const ignore = isIgnoreCacheKey(key)
+      const keys = ignore ? keysStack : [...keysStack, key]
 
       deleteCallback(keys, target)
 
@@ -168,9 +168,9 @@ function observerMap({
       // same as delete properties
       deleteCallback(keysStack, target)
       target.forEach((_, key) => {
-        const isIgnoreKey = isIgnoreToGetCallback(key)
+        const ignore = isIgnoreCacheKey(key)
 
-        if (!isIgnoreKey) deleteCallback([...keysStack, key], target)
+        if (!ignore) deleteCallback([...keysStack, key], target)
 
         target.delete(key)
       })
@@ -200,10 +200,10 @@ function observerSet({
       const value = key
       const proxyValue = proxyMap.get(value)
 
-      const isIgnoreKey = isIgnoreToGetCallback(key)
-      const keys = isIgnoreKey ? keysStack : [...keysStack, key]
+      const ignore = isIgnoreCacheKey(key)
+      const keys = ignore ? keysStack : [...keysStack, key]
 
-      if (!isIgnoreKey) getCallback(value, keys, target)
+      if (!ignore) getCallback(value, keys, target)
 
       if (!proxySetDeep) return value
 
@@ -224,8 +224,8 @@ function observerSet({
       return proxyValue || value
     },
     add(target: Set<any>, key, value) {
-      const isIgnoreKey = isIgnoreToGetCallback(key)
-      const keys = isIgnoreKey ? keysStack : [...keysStack, key]
+      const ignore = isIgnoreCacheKey(key)
+      const keys = ignore ? keysStack : [...keysStack, key]
 
       if (target.has(key)) return target
 
@@ -234,8 +234,8 @@ function observerSet({
       return target.add(value)
     },
     deleteProperty(target: Set<any>, key) {
-      const isIgnoreKey = isIgnoreToGetCallback(key)
-      const keys = isIgnoreKey ? keysStack : [...keysStack, key]
+      const ignore = isIgnoreCacheKey(key)
+      const keys = ignore ? keysStack : [...keysStack, key]
 
       deleteCallback(keys, target)
 
@@ -254,9 +254,9 @@ function observerSet({
         // same as delete properties
         deleteCallback(keysStack, target)
         target.forEach(value => {
-          const isIgnoreKey = isIgnoreToGetCallback(value)
+          const ignore = isIgnoreCacheKey(value)
 
-          if (!isIgnoreKey) deleteCallback([...keysStack, value], target)
+          if (!ignore) deleteCallback([...keysStack, value], target)
 
           target.delete(value)
         })

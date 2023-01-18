@@ -4,7 +4,7 @@ const ignoreToStringifyKeys = new Set<any>([
   Symbol.iterator,
 ])
 
-export function isIgnoreToGetCallback(key) {
+export function isIgnoreCacheKey(key) {
   if (ignoreToStringifyKeys.has(key)) return true
 
   return false
