@@ -67,7 +67,7 @@ export class Store<
   public actions = {} as ActionDispatch<S, A>
 
   // Properties stack to record current visited properties，effectList source
-  currentProxyGetKeys: string[] = []
+  currentProxyGetKeys: any[] = []
 
   // settled state property list
   effectList: Set<any[]> = new Set()
@@ -147,7 +147,7 @@ export class Store<
     if (parentKeys.length && isAdd) this.effectList.add(parentKeys)
   }
 
-  addKeyToUpdateEffectList(keys: string[]) {
+  addKeyToUpdateEffectList(keys: any[]) {
     if (!keys.length) return
 
     this.effectUpdateList.add(keys)
