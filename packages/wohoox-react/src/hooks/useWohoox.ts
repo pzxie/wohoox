@@ -28,6 +28,30 @@ function getStringifyedKey(key: any, sourceMap: Map<any, string>) {
   return keyGuid
 }
 
+function getEffectList(
+  effectMap: { add: Set<any[]>; delete: Set<any[]>; set: Set<any[]> },
+  sourceMap: Map<any, string>,
+) {
+  const effectUpdateList = new Set<any[]>()
+  const effectList = new Set<any[]>()
+
+  effectMap.delete.forEach(keys => {
+    const exist = keys.find(key => sourceMap.has(key))
+    if (exist) effectUpdateList.add(keys)
+    else effectList.add(keys)
+  })
+
+  effectMap.set.forEach(keys => {
+    const exist = keys.find(key => sourceMap.has(key))
+    if (exist) effectUpdateList.add(keys)
+    else effectList.add(keys)
+  })
+
+  effectMap.add.forEach(keys => effectList.add(keys))
+
+  return { effectUpdateList, effectList }
+}
+
 export function useWohoox(storeName?: string): any
 export function useWohoox<T extends (state: any) => any>(
   getState?: T,
@@ -79,36 +103,26 @@ export function useWohoox(name?: any, getState?: any): any {
           /* empty */
         }
       },
-      setCallback: (_, keys) => {
+      setCallback: () => {
         if (storeOptions.strictMode) {
           throw new Error(
             'In the strict mode, state cannot be modified by expression. Only actions are allowed',
           )
         }
-
-        const isUsed = keys.find(key => usedSourceMap.current.has(key))
-        if (isUsed) store.addKeyToUpdateEffectList(keys)
-        else store.addKeyToEffectList(keys)
       },
-      addCallback: (_, keys) => {
+      addCallback: () => {
         if (storeOptions.strictMode) {
           throw new Error(
             'In the strict mode, state cannot be modified by expression. Only actions are allowed',
           )
         }
-
-        store.addKeyToEffectList(keys, true)
       },
-      deleteCallback: keys => {
+      deleteCallback: () => {
         if (storeOptions.strictMode) {
           throw new Error(
             'In the strict mode, state cannot be delete by expression. Only actions are allowed',
           )
         }
-
-        const isUsed = keys.find(key => usedSourceMap.current.has(key))
-        if (isUsed) store.addKeyToUpdateEffectList(keys)
-        else store.addKeyToEffectList(keys)
       },
       keysStack: basePrefixKeys,
       proxySetDeep: storeOptions.proxySetDeep,
@@ -173,13 +187,19 @@ export function useWohoox(name?: any, getState?: any): any {
       const isUpdated = updateState()
       if (isUpdated) return
 
+      const { effectList, effectUpdateList } = getEffectList(
+        store.effectList,
+        usedSourceMap.current,
+      )
+
       // For update object, re-get state to update keys cache
-      for (const keys of store.effectUpdateList) {
-        if (
-          usedKeys.current.has(
-            getStringifyedList(keys, usedSourceMap.current).join('.'),
-          )
-        ) {
+      for (const keys of effectUpdateList) {
+        const stringifyKeys = getStringifyedList(
+          keys,
+          usedSourceMap.current,
+        ).join('.')
+
+        if (usedKeys.current.has(stringifyKeys)) {
           updateState(true)
           return
         }
@@ -187,7 +207,7 @@ export function useWohoox(name?: any, getState?: any): any {
 
       const state = ignoreToRecordEvent('onGet', () => getStateFn(store.state))
       // After the state sub-property is changed, it will be pushed into the effectList
-      for (const keys of store.effectList) {
+      for (const keys of effectList) {
         if (
           usedKeys.current.has(
             getStringifyedList(keys, usedSourceMap.current).join('.'),
