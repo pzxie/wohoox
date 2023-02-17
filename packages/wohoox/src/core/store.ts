@@ -70,9 +70,11 @@ export class Store<
   currentProxyGetKeys: any[] = []
 
   // settled state property list
-  effectList: Set<any[]> = new Set()
-
-  effectUpdateList: Set<any[]> = new Set()
+  effectList: { add: Set<any>; delete: Set<any>; set: Set<any> } = {
+    add: new Set(),
+    delete: new Set(),
+    set: new Set(),
+  }
 
   dispatch = () => {}
 
@@ -115,8 +117,9 @@ export class Store<
       { ...actions!, __not_safe__dispatch: () => {} },
       () => {
         this.applyRender()
-        this.effectList.clear()
-        this.effectUpdateList.clear()
+        this.effectList.add.clear()
+        this.effectList.delete.clear()
+        this.effectList.set.clear()
       },
     )
 
@@ -139,18 +142,12 @@ export class Store<
     if (index > -1) this.listeners.splice(index, 1)
   }
 
-  addKeyToEffectList(keys: any[], isAdd?: boolean) {
-    this.effectList.add(keys)
+  addKeyToEffectList(type: 'add' | 'delete' | 'set', keys: any[]) {
+    this.effectList[type].add(keys)
 
     const parentKeys = keys.slice(0, -1)
 
-    if (parentKeys.length && isAdd) this.effectList.add(parentKeys)
-  }
-
-  addKeyToUpdateEffectList(keys: any[]) {
-    if (!keys.length) return
-
-    this.effectUpdateList.add(keys)
+    if (parentKeys.length && type === 'add') this.effectList.add.add(parentKeys)
   }
 
   getOptions() {
