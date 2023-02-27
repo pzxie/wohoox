@@ -20,7 +20,7 @@ const eventDisabled: {
 }
 
 export function ignoreToRecordEvent(
-  event: keyof WohooxPlugin,
+  event: keyof Omit<WohooxPlugin, 'beforeInit' | 'onInit'>,
   fn: () => any,
 ): ReturnType<typeof fn> {
   eventDisabled[event] = true

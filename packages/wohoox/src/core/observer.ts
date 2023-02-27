@@ -20,8 +20,8 @@ type ObserverParams<T> = {
   setCallback(
     value: any,
     keys: any[],
-    oldValue: any,
     source: any,
+    oldValue: any,
   ): boolean | undefined | void
   addCallback(value: any, keys: any[], source: any)
   deleteCallback(keys: any[], target): void

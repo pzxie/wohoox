@@ -78,9 +78,9 @@ export default class ProxySet<T extends Set<any>> extends Set {
   }
 
   forEach(callbackfn: (value: any, key: any, set: Set<any>) => void): void {
-    this.source.forEach((value: any, key: any, set: Set<any>) => {
-      this.interceptor.get(this.source, key)
-      callbackfn(value, key, set)
+    this.source.forEach((_value: any, key: any, set: Set<any>) => {
+      const proxyValue = this.interceptor.get(this.source, key) || key
+      callbackfn(proxyValue, key, set)
     })
   }
 

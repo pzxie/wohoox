@@ -78,9 +78,9 @@ export default class ProxyMap<T extends Map<any, any>> extends Map {
   forEach(
     callbackfn: (value: any, key: any, map: Map<any, any>) => void,
   ): void {
-    this.source.forEach((value: any, key: any, map: Map<any, any>) => {
-      this.interceptor.get(this.source, key)
-      callbackfn(value, key, map)
+    this.source.forEach((_value: any, key: any, map: Map<any, any>) => {
+      const proxyValue = this.get(key)
+      callbackfn(proxyValue, key, map)
     })
   }
 
@@ -95,23 +95,19 @@ export default class ProxyMap<T extends Map<any, any>> extends Map {
   }
 
   values(): IterableIterator<any> {
-    const proxyItems: [any, any][] = [...this.source.entries()].map(
-      ([key, value]) => {
-        const proxyValue = this.interceptor.get(this.source, key) || value
-        return [key, proxyValue]
-      },
-    )
+    const proxyItems: [any, any][] = [...this.source.entries()].map(([key]) => {
+      const proxyValue = this.get(key)
+      return [key, proxyValue]
+    })
 
     return new Map(proxyItems).values()
   }
 
   entries(): IterableIterator<[any, any]> {
-    const proxyItems: [any, any][] = [...this.source.entries()].map(
-      ([key, value]) => {
-        const proxyValue = this.interceptor.get(this.source, key) || value
-        return [key, proxyValue]
-      },
-    )
+    const proxyItems: [any, any][] = [...this.source.entries()].map(([key]) => {
+      const proxyValue = this.get(key)
+      return [key, proxyValue]
+    })
 
     return new Map(proxyItems).entries()
   }
