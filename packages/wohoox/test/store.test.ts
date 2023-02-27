@@ -1,8 +1,4 @@
-import { cleanup } from '@testing-library/react'
-
 import createStore, { combineStores } from '../src/index'
-
-beforeEach(cleanup)
 
 it('store: properties', () => {
   const store = createStore({
@@ -41,9 +37,10 @@ it('state: init state', () => {
   })
 
   expect(store.state).toHaveProperty('name')
+  expect(store.state.name).toBe('wohoox')
 })
 
-it('actions', () => {
+it('actions define check', () => {
   const store = createStore({
     initState: {
       name: 'wohoox',
@@ -56,9 +53,190 @@ it('actions', () => {
   })
 
   expect(store.actions).toHaveProperty('updateName')
+  expect(store.actions.updateName).toBeInstanceOf(Function)
 })
 
-it('combineStores', () => {
+describe('options', () => {
+  describe('strictMode', () => {
+    it('true', () => {
+      const store = createStore({
+        initState: {
+          name: 'wohoox',
+        },
+        actions: {
+          updateName(state, name) {
+            state.name = name
+          },
+        },
+        options: { strictMode: true },
+      })
+
+      let error: any = null
+
+      try {
+        store.state.name += '_1'
+      } catch (e) {
+        error = e
+      }
+
+      expect(store.state.name).toBe('wohoox')
+      expect(error).toBeInstanceOf(Error)
+      expect(error.message).toContain(
+        'In the strict mode, state cannot be modified by expression. Only actions are allowed',
+      )
+
+      error = null
+      store.actions.updateName('updated')
+      expect(store.state.name).toBe('updated')
+      expect(error).toBe(null)
+    })
+    it('false', () => {
+      const store = createStore({
+        initState: {
+          name: 'wohoox',
+        },
+        actions: {
+          updateName(state, name) {
+            state.name = name
+          },
+        },
+        options: { strictMode: false },
+      })
+
+      let error: any = null
+
+      try {
+        store.state.name = 'updatedByExpression'
+      } catch (e) {
+        error = e
+      }
+
+      expect(store.state.name).toBe('updatedByExpression')
+      expect(error).toBe(null)
+
+      store.actions.updateName('updatedByAction')
+      expect(store.state.name).toBe('updatedByAction')
+      expect(error).toBe(null)
+    })
+    it('check default as 【true】', () => {
+      const store = createStore({
+        initState: {
+          name: 'wohoox',
+        },
+        actions: {
+          updateName(state, name) {
+            state.name = name
+          },
+        },
+      })
+
+      let error: any = null
+
+      try {
+        store.state.name += '_1'
+      } catch (e) {
+        error = e
+      }
+
+      expect(store.state.name).toBe('wohoox')
+      expect(error).toBeInstanceOf(Error)
+      expect(error.message).toContain(
+        'In the strict mode, state cannot be modified by expression. Only actions are allowed',
+      )
+    })
+  })
+
+  describe('proxySetDeep', () => {
+    it('true', () => {
+      const obj = { type: 'obj' }
+      let isChanged = false
+      const store = createStore({
+        initState: {
+          name: 'wohoox',
+          set: new Set([obj]),
+        },
+        actions: {
+          updateObj(state) {
+            const setOb = [...state.set][0]
+            setOb.type = 'objChanged'
+          },
+        },
+        plugins: [
+          {
+            onChange() {
+              isChanged = true
+            },
+          },
+        ],
+        options: { proxySetDeep: true },
+      })
+
+      expect(isChanged).toBe(false)
+      store.actions.updateObj()
+      expect(isChanged).toBe(true)
+      expect(obj.type).toBe('objChanged')
+    })
+    it('false', () => {
+      const obj = { type: 'obj' }
+      let isChanged = false
+      const store = createStore({
+        initState: {
+          name: 'wohoox',
+          set: new Set([obj]),
+        },
+        actions: {
+          updateObj(state) {
+            const setOb = [...state.set][0]
+            setOb.type = 'objChanged'
+          },
+        },
+        plugins: [
+          {
+            onChange() {
+              isChanged = true
+            },
+          },
+        ],
+        options: { proxySetDeep: false },
+      })
+
+      expect(isChanged).toBe(false)
+      store.actions.updateObj()
+      expect(isChanged).toBe(false)
+      expect(obj.type).toBe('objChanged')
+    })
+    it('check default as 【false】', () => {
+      const obj = { type: 'obj' }
+      let isChanged = false
+      const store = createStore({
+        initState: {
+          name: 'wohoox',
+          set: new Set([obj]),
+        },
+        actions: {
+          updateObj(state) {
+            const setOb = [...state.set][0]
+            setOb.type = 'objChanged'
+          },
+        },
+        plugins: [
+          {
+            onChange() {
+              isChanged = true
+            },
+          },
+        ],
+      })
+
+      expect(isChanged).toBe(false)
+      store.actions.updateObj()
+      expect(isChanged).toBe(false)
+      expect(obj.type).toBe('objChanged')
+    })
+  })
+})
+
+it('combineStores define check', () => {
   const defaultStore = createStore({
     initState: {
       type: 'default',
