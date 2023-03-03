@@ -7,8 +7,8 @@ export type WohooxPlugin = {
     storeName: string,
     value: any,
     keys: any[],
-    oldValue: any,
     target: any,
+    oldValue: any,
   ): void
   onGet?(storeName: string, value: any, keys: any[], target: any): void
 }
