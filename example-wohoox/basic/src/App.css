@@ -1,0 +1,79 @@
+.App {
+  text-align: center;
+  min-height: 100vh;
+}
+
+.logo {
+  position: relative;
+  align-self: center;
+  width: 150px;
+}
+
+.content {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 30px;
+  max-width: 550px;
+  font-size: calc(10px + 2vmin);
+  /* color: white; */
+}
+
+.link {
+  display: inline-block;
+  margin-top: 20px;
+  padding: 6px;
+  border-radius: 4px;
+  font-size: 16px;
+  text-decoration: none;
+  background: #3aa7f9;
+  color: white;
+}
+
+.primary {
+  color: #3aa7f9;
+}
+
+.version {
+  margin-bottom: 10px;
+}
+
+.section {
+  margin-top: 20px;
+  text-align: left;
+}
+
+.desc {
+  display: flex;
+  margin: -16px 0 16px;
+  color: #777;
+  font-size: 14px;
+}
+
+.desc::before {
+  content: '';
+  display: inline-block;
+  flex-shrink: 0;
+  width: 6px;
+  margin-left: 4px;
+  margin-right: 6px;
+  background-color: #3aa7f9;
+}
+
+.actions {
+  margin-bottom: 10px;
+}
+
+ul {
+  padding-left: 20px;
+}
+
+.button {
+  display: inline-block;
+  padding: 6px;
+  border-radius: 4px;
+  font-size: 14px;
+  background: #3aa7f9;
+  color: white;
+  border: none;
+}

@@ -1,5 +1,5 @@
 {
-  "name": "example-wohoox-single-store",
+  "name": "ex-wohoox-react-basic",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -14,7 +14,7 @@
     "react-dom": "^18.2.0",
     "react-scripts": "5.0.1",
     "web-vitals": "^2.1.4",
-    "wohoox": "workspace:*"
+    "wohoox-react": "workspace:*"
   },
   "scripts": {
     "start": "react-scripts start",

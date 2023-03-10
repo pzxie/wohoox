@@ -1,3 +1,4 @@
 packages:
   - 'packages/*'
-  - 'examples/*'
+  - 'example-wohoox/*'
+  - 'example-wohoox-react/*'

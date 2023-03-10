@@ -4,28 +4,26 @@ import persistPlugin from './plugin/persist'
 const store = createStore({
   initState: {
     version: '1.x',
-    details: {
-      name: 'wohoox',
-      other: 'xxx',
-    },
-    set: new Set([1]),
+    items: [5],
   },
   actions: {
     updateVersion(state, version: string) {
       state.version = version
     },
     addItem(state, item) {
-      state.set.add(item)
+      state.items.push(item)
+    },
+    deleteItem(state) {
+      state.items.pop()
+    },
+    modifySecondItem(state, item) {
+      state.items[1] = item
     },
     empty(state) {
-      state.set.clear()
+      state.items.length = 0
     },
   },
   plugins: [persistPlugin],
-  options: {
-    strictMode: false,
-    proxySetDeep: true,
-  },
 })
 
 type DefaultState = typeof store.state
