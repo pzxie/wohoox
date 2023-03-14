@@ -73,17 +73,32 @@ function observerObject({
       const keys = ignore ? keysStack : [...keysStack, key]
 
       const oldValue = Reflect.get(target, key)
+      const oldLength: number = Reflect.get(target, 'length')
+      let isAddArrayItem = false
 
       if (!Reflect.has(target, key)) {
         addCallback(value, keys, target)
-      } else if (
-        value !== oldValue ||
-        (Array.isArray(target) && key === 'length')
-      ) {
+        isAddArrayItem = true
+      } else if (value !== oldValue) {
         setCallback(value, keys, target, oldValue)
       }
 
-      return Reflect.set(target, key, value, receiver)
+      const result = Reflect.set(target, key, value, receiver)
+
+      // Array length will be changed when some methods called. ex push, splice, pop
+      // And it will trigger the set callback of length
+
+      // But new array value settled by index, ex: arr[3] = 'new item'
+      // It will be change the length value too, but it will not be trigger the set callback of length
+
+      // So we call the length callback manually when new items added
+      if (isAddArrayItem && Array.isArray(target) && !key.match(/\D/g)) {
+        const newLength = Math.max(oldLength + 1, +key + 1)
+        setCallback(newLength, [...keysStack, 'length'], target, oldLength)
+        Reflect.set(target, 'length', newLength, receiver)
+      }
+
+      return result
     },
     deleteProperty(target: Record<string, any>, key: string) {
       const ignore = isIgnoreCacheKey(key)
