@@ -73,8 +73,10 @@ function App() {
             The page will not be updated until the update ui button is clicked
           </div>
           <ul>
-            {items.map(item => (
-              <li>{item}</li>
+            {items.map((item, index) => (
+              <li key={item}>
+                {index}: {item}
+              </li>
             ))}
           </ul>
           <div className="actions">
