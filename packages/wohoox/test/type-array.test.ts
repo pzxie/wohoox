@@ -1,6 +1,11 @@
 import createStore from '../src'
+import { WohooxPlugin } from '../src'
 
-function initStore(storeName?: string, options?: { strictMode?: boolean }) {
+function initStore(
+  storeName?: string,
+  options?: { strictMode?: boolean },
+  plugins?: WohooxPlugin[],
+) {
   const initState = {
     type: {
       arrayOriginal: ['1', true, 3],
@@ -17,6 +22,7 @@ function initStore(storeName?: string, options?: { strictMode?: boolean }) {
     actions: {
       dispatch() {},
     },
+    plugins,
     options: options || { strictMode: false },
   })
 
@@ -26,7 +32,7 @@ function initStore(storeName?: string, options?: { strictMode?: boolean }) {
   }
 }
 
-describe('single component', () => {
+describe('array item', () => {
   it('value modify: original item', () => {
     const {
       initState,
@@ -231,5 +237,148 @@ describe('single component', () => {
     sort()
     spliceDelete()
     spliceInsert()
+  })
+})
+
+describe('array length', () => {
+  it('methods called, length changed and length callback called', () => {
+    let originalLength = 0
+    let lengthCallbackTriggerTimes = 0
+    let lengthCallbackRecord = 0
+    const {
+      store: { state },
+    } = initStore('default', undefined, [
+      {
+        onChange(_storeName, _value, keys, target) {
+          if (keys[keys.length - 1] === 'length' && Array.isArray(target))
+            lengthCallbackTriggerTimes++
+        },
+      },
+    ])
+
+    originalLength = state.type.arrayOriginal.length
+
+    function push() {
+      state.type.arrayOriginal.push(2)
+      originalLength++
+      lengthCallbackRecord++
+
+      expect(state.type.arrayOriginal.length).toBe(originalLength)
+      expect(lengthCallbackTriggerTimes).toBe(lengthCallbackRecord)
+    }
+
+    function unshift() {
+      state.type.arrayOriginal.unshift(5)
+      originalLength++
+      lengthCallbackRecord++
+
+      expect(state.type.arrayOriginal.length).toBe(originalLength)
+      expect(lengthCallbackTriggerTimes).toBe(lengthCallbackRecord)
+    }
+
+    function shift() {
+      state.type.arrayOriginal.shift()
+      originalLength--
+      lengthCallbackRecord++
+
+      expect(state.type.arrayOriginal.length).toBe(originalLength)
+      expect(lengthCallbackTriggerTimes).toBe(lengthCallbackRecord)
+    }
+
+    function reverse() {
+      state.type.arrayOriginal.reverse()
+
+      expect(state.type.arrayOriginal.length).toBe(originalLength)
+      expect(lengthCallbackTriggerTimes).toBe(lengthCallbackRecord)
+    }
+
+    function sort() {
+      state.type.arrayOriginal.sort()
+
+      expect(state.type.arrayOriginal.length).toBe(originalLength)
+      expect(lengthCallbackTriggerTimes).toBe(lengthCallbackRecord)
+    }
+
+    function spliceDelete() {
+      state.type.arrayOriginal.splice(1, 1)
+
+      originalLength--
+      lengthCallbackRecord++
+
+      expect(state.type.arrayOriginal.length).toBe(originalLength)
+      expect(lengthCallbackTriggerTimes).toBe(lengthCallbackRecord)
+    }
+
+    function spliceInsert() {
+      state.type.arrayOriginal.splice(1, 0, 'splice')
+      originalLength++
+      lengthCallbackRecord++
+
+      expect(state.type.arrayOriginal.length).toBe(originalLength)
+      expect(lengthCallbackTriggerTimes).toBe(lengthCallbackRecord)
+    }
+
+    expect(state.type.arrayOriginal.length).toBe(originalLength)
+    expect(lengthCallbackTriggerTimes).toBe(lengthCallbackRecord)
+
+    push()
+    unshift()
+    shift()
+    reverse()
+    sort()
+    spliceDelete()
+    spliceInsert()
+  })
+
+  it('set item manually, length changed and length callback called', () => {
+    let originalLength = 0
+    let lengthCallbackTriggerTimes = 0
+    let lengthCallbackRecord = 0
+    const {
+      store: { state },
+    } = initStore('default', undefined, [
+      {
+        onChange(_storeName, _value, keys, target) {
+          if (keys[keys.length - 1] === 'length' && Array.isArray(target))
+            lengthCallbackTriggerTimes++
+        },
+      },
+    ])
+
+    originalLength = state.type.arrayOriginal.length
+
+    function changeExist() {
+      state.type.arrayOriginal[0] = 'update_0'
+
+      expect(state.type.arrayOriginal.length).toBe(originalLength)
+      expect(lengthCallbackTriggerTimes).toBe(lengthCallbackRecord)
+    }
+
+    function addNewItem() {
+      state.type.arrayOriginal[6] = 'add_6'
+
+      originalLength = 7
+      lengthCallbackRecord++
+
+      expect(state.type.arrayOriginal.length).toBe(originalLength)
+      expect(lengthCallbackTriggerTimes).toBe(lengthCallbackRecord)
+    }
+
+    function clear() {
+      state.type.arrayOriginal.length = 0
+
+      originalLength = 0
+      lengthCallbackRecord++
+
+      expect(state.type.arrayOriginal.length).toBe(originalLength)
+      expect(lengthCallbackTriggerTimes).toBe(lengthCallbackRecord)
+    }
+
+    expect(state.type.arrayOriginal.length).toBe(originalLength)
+    expect(lengthCallbackTriggerTimes).toBe(lengthCallbackRecord)
+
+    changeExist()
+    addNewItem()
+    clear()
   })
 })
