@@ -4,24 +4,24 @@
 
 [English](./README.md) [中文](./README_CN.md)
 
-- Lightweight and reactive state management
-- Map, Set, WeakMap, WeakSet support
-- Typescript support
-- Plugins api support
+- 轻量的响应式状态管理
+- Map, Set, WeakMap, WeakSet 等类型支持
+- Typescript 支持
+- 插件 api 支持
 
-## Required
+## 兼容性
 
-- browser: only supports browsers with [native ES2015 support](https://caniuse.com/es6)
+\*所有支持[native ES2015 support](https://caniuse.com/es6)的浏览器
 
-## Install
+## 安装
 
 ```bash
 npm install -S wohoox
 ```
 
-## Quick Start
+## 快速上手
 
-1. create a store
+1. 创建 store
 
 ```typescript
 /**
@@ -31,7 +31,7 @@ import createStore from 'wohoox'
 
 const store = createStore({
   initState: {
-    version: '1.x',
+    version: '2.x',
     details: {
       name: 'wohoox',
       other: 'xxx',
@@ -47,7 +47,7 @@ const store = createStore({
 export default store
 ```
 
-2. use state
+2. 在代码中使用 state
 
 ```jsx
 /**
@@ -72,19 +72,19 @@ function Example() {
 }
 ```
 
-3. typescript support
+3. Typescript 支持
 
-wohoox is support typescript completely
+wohoox 完整支持 Typescript
 
-## Advance
+## 进阶使用
 
-### Multi Store
+### 多模块整合
 
-> If you want to use multi store by module, look here.
+> 如果你想对 store 按模块进行划分，wohoox 同样提供了支持.
 
-#### Create multi store
+#### 创建多模块
 
-- Create a store named 'user'
+- 创建一个 'user' 模块
 
 ```typescript
 /**
@@ -107,7 +107,7 @@ const userStore = createStore({
 export const userActions = userStore.actions
 ```
 
-- Create a store named 'department'
+- 创建一个 'department' 模块
 
 ```typescript
 /**
@@ -135,7 +135,7 @@ const devStore = createStore({
 export const devActions = devStore.actions
 ```
 
-- Combine multi store
+- 多模块整合
 
 ```typescript
 /**
@@ -151,9 +151,9 @@ export const { store, actions } = combineStores(
 )
 ```
 
-#### usage
+#### 多模块的使用
 
-Use multi store is same as single store, just need to point the store name
+多模块的使用方式和单模块的一样，只是需要指明获取 state 的 store 名称
 
 ```jsx
 /**
@@ -203,14 +203,14 @@ function example() {
 }
 ```
 
-### StrictMode
+### 严格模式
 
-In order to make the code style more standardized.
-**Strict mode is on by default. Which means actions is the only way to modify state**.
+为了使代码风格更加统一、更加规范  
+**默认是开启了严格模式的，这意味着只能通过 actions 才能对 state 进行修改.**
 
-#### Turn on
+#### 开始严格模式
 
-Actions are the only valid way to modify data
+严格模式下，修改 state 只能通过 actions
 
 ```typescript
 import createStore from 'wohoox'
@@ -233,8 +233,6 @@ const store = createStore({
 export default store
 ```
 
-Modify data by actions
-
 ```jsx
 import store from 'src/store.ts'
 
@@ -242,7 +240,7 @@ function exampleStrictMode() {
   const { state, actions } = store
 
   const updateVersion = () => {
-    // Error when modify by state
+    // 通过表达式直接赋值，将会报错
     // state.version = state.version + '_1'
 
     // OK
@@ -260,12 +258,12 @@ function exampleStrictMode() {
 }
 ```
 
-#### Turn off
+#### 关闭严格模式
 
-Valid ways
+下面的方式都是被允许的
 
 - Actions
-- state expression + dispatch
+- state expression
 
 ```typescript
 import createStore from 'wohoox'
@@ -288,7 +286,7 @@ const store = createStore({
 export default store
 ```
 
-Modify data
+修改数据
 
 ```jsx
 import store from 'src/store.ts'
@@ -315,7 +313,7 @@ function exampleStrictMode() {
 }
 ```
 
-### Used in js/ts code
+### 在普通 js/ts 文件中使用 wohoox
 
 ```typescript
 /**
@@ -327,7 +325,7 @@ import store from 'src/store'
 const { state, actions } = store
 
 function request() {
-  // use state in other js/ts file
+  // 在其他地方使用 state
   return fetch(`/api/details?version=${state.version}`)
 }
 
@@ -339,18 +337,18 @@ async function getVersion() {
 }
 ```
 
-### plugins
+### 插件体系
 
-Plug-in options are provided to enhance the functionality of wohoox
+提供了插件选项用于增强 wohoox 的功能
 
-wohoox plugin is a object who contains below methods
+wohoox 的插件由以下一些方法构成
 
 ```jsx
 import type { WohooxPlugin } from 'wohoox'
 
 export const plugin: WohooxPlugin = {
   beforeInit(initState, actions) {
-    // do something before store init, return new initState and actions
+    // 在初始化 store 前，对 initState, actions 进行处理，并返回新的 initState 和 actions 用于初始化
     return {
       initState,
       actions,
@@ -358,26 +356,26 @@ export const plugin: WohooxPlugin = {
   },
 
   onInit(store) {
-    // do something after store inited
+    // store 初始化后
   },
   onAdd(storeName, value, keys) {
-    // do something when state property has been added
+    // 当有新属性增加时的回调
   },
   onDelete(storeName, keys) {
-    // do something when state property has been deleted
+    // 当属性被删除时的回调
   },
   onChange(storeName, value, keys) {
-    // do something when state changed
+    // 当 state 变更时的回调
   },
   onGet(storeName, value, keys) {
-    // do something when state has been gettled
+    // 属性获取时的回调
   },
 }
 ```
 
-#### Example of persist
+#### 示例：persist plugin
 
-- create a plugin
+- 创建 persist 插件
 
 ```jsx
 // src/plugin/persist.ts
@@ -402,14 +400,14 @@ const persistPlugin: WohooxPlugin = {
 export default persistPlugin
 ```
 
-- add to plugin option
+- 将插件添加到 `createStore` 的 `plugins` 选项中
 
 ```jsx
 import persistPlugin from './plugin/persist'
 
 const store = createStore({
   initState: {
-    version: '1.x',
+    version: '2.x',
   },
   actions: {
     updateVersion(state, version: string) {
@@ -427,20 +425,18 @@ const store = createStore({
 
 ### createStore
 
-It is used to create a store.
+用来初始化并创建一个 store
 
-#### Params
+#### 参数说明
 
-- `name:` default as `'default'`. name of store. it is used as an identifier to get store data.
-- `initState:` Initial the data and use it as the data structure of the state.
-- `actions:` Dispatch to change data. As the only valid way to modify data in strict mode, then it will caused by page rerender
-- `plugins:` plugin list for store
-- `options.strictMode:` default as `true`. Strict mode switch for store. Once the switch turn on, actions will be the only valid way to modify data, otherwise you can directly modify the data by state. `ex: state.age = 23`
-- `options.proxySetDeep:` default as `false`. Type data of set will not be proxy for its child item. Cause there is no method to get item, child proxy is is not necessary to proxy. But if you want to proxy anyway, you can set it to true.
+- `name`: store 名称，**默认为 'default'**。 作为 store 的唯一标识符，在多模块的时候，该字段用于区分模块.
+- `initState`: 初始化数据，并使用该数据的数据结构作为 typescript 类型推断
+- `actions`: 修改数据的方式，并促使相关组件进行重新渲染。如果在严格模式下，是作为唯一合法修改数据的方式
+- `plugins`: 插件选项
+- `options.strictMode`: 严格模式开关。**默认 true**。严格模式下，actions 是唯一可以修改 state 的方式。非严格模式下，还可以直接修改 state。 ex: state.age = 23
+- `options.proxySetDeep`: 严格模式开关。**默认 true**。 Set 类型的数据不会对将其子节点进行 proxy 处理。因其没有获取数据的情形，对其子节点进行 proxy 处理没有太大必要。不过如果你确定需要，你可以将其设置为 true
 
-#### Usage
-
-Create a store named 'default'
+#### 用法
 
 ```typescript
 /**
@@ -450,11 +446,11 @@ import createStore from 'wohoox'
 
 const store = createStore({
   /**
-   * default as 'default'
+   * 默认为 'default'
    */
   name: 'default',
   initState: {
-    version: '1.x',
+    version: '2.x',
     details: {
       name: 'wohoox',
       other: 'xxx',
@@ -466,7 +462,7 @@ const store = createStore({
     },
   },
   /**
-   * default as { strictMode: true }
+   * 默认为 { strictMode: true }
    */
   options: {
     strictMode: true,
@@ -476,7 +472,7 @@ const store = createStore({
 
 ### combineStores
 
-combine multi stores to a new store
+将多个 store 组合成一个独立的 store
 
 ```jsx
 import { combineStores } from 'wohoox'
@@ -490,7 +486,7 @@ export const { store, actions } = combineStores(
 
 ## Notes
 
-- Use strict mode if possible(use actions to modify state).
-- Type data of Set will not be proxy for its child item。If you want to rerender when changed the child items properties, you can：
-  - Delete the last item of Set and add it into Set again
-  - Or set options `proxySetDeep: true`
+- 尽可能使用严格模式（使用 actions 去修改数据）
+- Set 类型的数据，默认不会对子数据做代理。如果改变 set 子数据时也想重新渲染：
+  - 更改后可以先删除一个子数据，再把删除的添加进去
+  - 或者设置 `proxySetDeep: true`
