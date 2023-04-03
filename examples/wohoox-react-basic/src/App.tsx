@@ -50,7 +50,7 @@ function App() {
         </div>
 
         <div className="section">
-          <h3>Type of string</h3>
+          <h3>String</h3>
           <div className="desc">
             Update wohoox store by actions and update ui by useState
           </div>
@@ -65,7 +65,7 @@ function App() {
           </button>
         </div>
         <div className="section">
-          <h3>Type of array</h3>
+          <h3>Array</h3>
           <div className="desc">
             Split with update wohoox store and update ui by useState
           </div>
@@ -74,7 +74,7 @@ function App() {
           </div>
           <ul>
             {items.map((item, index) => (
-              <li key={item}>
+              <li key={Math.random()}>
                 {index}: {item}
               </li>
             ))}
