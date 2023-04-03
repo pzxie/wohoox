@@ -1,8 +1,10 @@
-# wohoox-react
+<p align="center">
+  <img style="width: 160px;" src="../../wohoox.png" alt="wohoox" />
+</p>
 
-![wohoox](../../wohoox_211x176.png)
-
-[English](./README.md) [中文](./README_CN.md)
+<p align="center">
+  <a href="./README.md">English</a> | 中文
+</p>
 
 - 基于 [wohoox](../wohoox/README_CN.md) 的 react 实现
 - 轻量的响应式 React 状态管理

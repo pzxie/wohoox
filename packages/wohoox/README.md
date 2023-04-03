@@ -1,8 +1,10 @@
-# wohoox
+<p align="center">
+  <img style="width: 160px;" src="../../wohoox.png" alt="wohoox" />
+</p>
 
-![wohoox](../../wohoox_211x176.png)
-
-[English](./README.md) [中文](./README_CN.md)
+<p align="center">
+  English | <a href="./README_CN.md">中文</a>
+</p>
 
 - Lightweight and reactive state management
 - Map, Set, WeakMap, WeakSet support

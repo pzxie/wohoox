@@ -3,7 +3,9 @@
     "commit": "cz-cust",
     "lint": "eslint --cache .",
     "format": "prettier --write --cache .",
-    "postinstall": "husky install"
+    "postinstall": "husky install",
+    "build": "pnpm -r -F=./packages/* build",
+    "test": "pnpm -r -F=./packages/* text"
   },
   "author": "pzxie",
   "devDependencies": {

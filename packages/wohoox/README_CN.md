@@ -1,8 +1,10 @@
-# wohoox
+<p align="center">
+  <img style="width: 160px;" src="../../wohoox.png" alt="wohoox" />
+</p>
 
-![wohoox](../../wohoox_211x176.png)
-
-[English](./README.md) [中文](./README_CN.md)
+<p align="center">
+  <a href="./README.md">English</a> | 中文
+</p>
 
 - 轻量的响应式状态管理
 - Map, Set, WeakMap, WeakSet 等类型支持
