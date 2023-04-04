@@ -1,13 +1,22 @@
 {
   "scripts": {
+    "preinstall": "npx only-allow pnpm",
+    "postinstall": "husky install",
     "commit": "cz-cust",
     "lint": "eslint --cache .",
     "format": "prettier --write --cache .",
-    "postinstall": "husky install",
     "build": "pnpm -r -F=./packages/* build",
-    "test": "pnpm -r -F=./packages/* text"
+    "test": "pnpm -r -F=./packages/* text",
+    "clear": "rimraf 'packages/*/{dist,node_modules}' && rimraf node_modules",
+    "clear:dist": "rimraf 'packages/*/{dist}'",
+    "changeset": "changeset",
+    "changeset-version": "changeset version",
+    "before-publish": "pnpm clear:dist && pnpm install && pnpm build",
+    "changeset-publish": "changeset publish",
+    "push": "git add . && git commit && git push"
   },
   "author": "pzxie",
+  "private": true,
   "devDependencies": {
     "@changesets/cli": "^2.26.0",
     "@commitlint/cli": "^17.4.0",
