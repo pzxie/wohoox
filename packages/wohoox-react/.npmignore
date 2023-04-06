@@ -1,0 +1,6 @@
+node_modules
+.cache
+.github
+./example/node_modules
+./example/.cache
+./example/dist
