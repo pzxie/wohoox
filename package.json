@@ -8,12 +8,12 @@
     "build": "pnpm -r -F=./packages/* build",
     "test": "pnpm -r -F=./packages/* text",
     "clear": "rimraf 'packages/*/{dist,node_modules}' && rimraf node_modules",
-    "clear:dist": "rimraf 'packages/*/{dist}'",
+    "clear:dist": "rimraf packages/*/dist",
     "changeset": "changeset",
     "changeset-version": "changeset version",
     "before-publish": "pnpm clear:dist && pnpm install && pnpm build",
     "changeset-publish": "changeset publish",
-    "push": "git add . && git commit && git push"
+    "push": "git add . && git commit && git push --follow-tags"
   },
   "author": "pzxie",
   "private": true,
@@ -37,6 +37,7 @@
     "jest-watch-typeahead": "^2.2.2",
     "lint-staged": "^13.1.0",
     "prettier": "^2.8.1",
+    "rimraf": "^4.4.1",
     "ts-jest": "^29.0.3",
     "typescript": "4.8.4"
   },

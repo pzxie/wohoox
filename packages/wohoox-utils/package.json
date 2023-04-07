@@ -1,6 +1,6 @@
 {
   "name": "wohoox-utils",
-  "version": "0.0.1",
+  "version": "1.0.0-rc.0",
   "description": "wohoox utils collections",
   "author": "pzxie <pzxie@outlook.com>",
   "main": "dist/index.js",

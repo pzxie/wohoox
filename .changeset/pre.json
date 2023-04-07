@@ -1,0 +1,12 @@
+{
+  "mode": "pre",
+  "tag": "rc",
+  "initialVersions": {
+    "ex-wohoox-basic": "0.1.0",
+    "ex-wohoox-react-basic": "0.1.0",
+    "wohoox": "1.7.1",
+    "wohoox-react": "0.0.1",
+    "wohoox-utils": "0.0.1"
+  },
+  "changesets": ["hungry-pigs-dream"]
+}
