@@ -6,7 +6,7 @@
     "lint": "eslint --cache .",
     "format": "prettier --write --cache .",
     "build": "pnpm -r -F=./packages/* build",
-    "test": "pnpm -r -F=./packages/* text",
+    "test": "pnpm -r -F=./packages/* test",
     "clear": "rimraf '{examples,packages}/*/{dist,node_modules}' -g && rimraf node_modules",
     "clear:dist": "rimraf packages/*/dist",
     "changeset": "changeset",
