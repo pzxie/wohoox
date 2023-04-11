@@ -7,7 +7,7 @@
     "format": "prettier --write --cache .",
     "build": "pnpm -r -F=./packages/* build",
     "test": "pnpm -r -F=./packages/* text",
-    "clear": "rimraf 'packages/*/{dist,node_modules}' && rimraf node_modules",
+    "clear": "rimraf '{examples,packages}/*/{dist,node_modules}' -g && rimraf node_modules",
     "clear:dist": "rimraf packages/*/dist",
     "changeset": "changeset",
     "changeset-version": "changeset version",
