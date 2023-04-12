@@ -7,7 +7,7 @@ import {
   waitFor,
 } from '@testing-library/react'
 
-import createStore, { useStore, dispatch, dispatchAll } from '../src'
+import { createStore, useStore, dispatch, dispatchAll } from '../src'
 
 const reactLegency = !!process.env.reactLegency
 

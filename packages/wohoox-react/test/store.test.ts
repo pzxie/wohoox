@@ -1,4 +1,4 @@
-import createStore, { combineStores } from '../src/index'
+import { createStore, combineStores } from '../src/index'
 
 it('store: properties', () => {
   const store = createStore({

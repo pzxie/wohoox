@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { fireEvent, cleanup, render, act, screen } from '@testing-library/react'
 
-import createStore, { useStore, dispatch, dispatchAll } from '../src'
+import { createStore, useStore, dispatch, dispatchAll } from '../src'
 
 const reactLegency = !!process.env.reactLegency
 
