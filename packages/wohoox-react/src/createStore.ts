@@ -1,10 +1,9 @@
-import { ActionsDefine } from 'wohoox/src/types'
-import { Options } from 'wohoox/src/core/store'
-import createWohooxStore, { defaultStoreName, WohooxPlugin } from 'wohoox'
+import type { ActionsDefine, Options, WohooxPlugin } from 'wohoox'
+import { createStore as createWohooxStore, defaultStoreName } from 'wohoox'
 
 import effectListPlugin from './plugins/effectList'
 
-function createStore<
+export function createStore<
   S extends object,
   A extends ActionsDefine<S>,
   N extends string = typeof defaultStoreName,
@@ -29,5 +28,3 @@ function createStore<
     options,
   })
 }
-
-export default createStore
