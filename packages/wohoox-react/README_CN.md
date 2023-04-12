@@ -31,7 +31,7 @@ npm install -S wohoox-react
 /**
  * src/store.ts
  */
-import createStore from 'wohoox-react'
+import { createStore } from 'wohoox-react'
 
 const store = createStore({
   initState: {
@@ -92,8 +92,8 @@ function Example() {
 /**
  * diff src/store.ts
  */
-- import createStore from 'wohoox-react'
-+ import createStore, { useStore as useWoHoox } from 'wohoox-react'
+- import { createStore } from 'wohoox-react'
++ import { createStore, useStore as useWoHoox } from 'wohoox-react'
 
 + type DefaultState = typeof store.state
 
@@ -113,7 +113,7 @@ function Example() {
 /**
  * src/store.ts
  */
-import createStore, { useStore as useWoHoox } from 'wohoox-react'
+import { createStore, useStore as useWoHoox } from 'wohoox-react'
 
 const store = createStore({
   initState: {
@@ -360,8 +360,8 @@ function exampleStrictMode() {
 - 通过表达式直接修改数据 + dispatch
 
 ```typescript
-- import createStore, { useStore as useWohoox } from 'wohoox-react'
-+ import createStore, { useStore as useWohoox, dispatch as wohooxDispatch } from 'wohoox-react'
+- import { createStore, useStore as useWohoox } from 'wohoox-react'
++ import { createStore, useStore as useWohoox, dispatch as wohooxDispatch } from 'wohoox-react'
 
 const store = createStore({
   initState: {
@@ -556,7 +556,7 @@ const store = createStore({
 /**
  * src/store.ts
  */
-import createStore from 'wohoox-react'
+import { createStore } from 'wohoox-react'
 
 const store = createStore({
   /**
@@ -642,7 +642,7 @@ function Example () {
 /**
  * src/store.ts
  */
-import createStore, { useStore as useWoHoox } from 'wohoox-react'
+import { createStore, useStore as useWoHoox } from 'wohoox-react'
 
 const store = createStore({...})
 
