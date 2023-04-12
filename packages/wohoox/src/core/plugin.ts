@@ -1,17 +1,4 @@
-export type WohooxPlugin = {
-  beforeInit?(initState, actions): { initState; actions }
-  onInit?(store: { name: string; state; actions }): void
-  onAdd?(storeName: string, value: any, keys: any[], target: any): void
-  onDelete?(storeName: string, keys: any[], target: any): void
-  onChange?(
-    storeName: string,
-    value: any,
-    keys: any[],
-    target: any,
-    oldValue: any,
-  ): void
-  onGet?(storeName: string, value: any, keys: any[], target: any): void
-}
+import type { WohooxPlugin } from '../types'
 
 const eventDisabled: {
   [event in keyof Omit<WohooxPlugin, 'beforeInit' | 'onInit'>]: boolean

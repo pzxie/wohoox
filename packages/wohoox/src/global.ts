@@ -1,4 +1,4 @@
-import { ActionsDefine } from './types'
+import type { ActionsDefine } from './types'
 import type { Store } from './core/store'
 
 export const MapSetSizeKey = '__size'
