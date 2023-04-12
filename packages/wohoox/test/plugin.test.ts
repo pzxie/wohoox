@@ -1,4 +1,4 @@
-import createStore from '../src'
+import { createStore } from '../src'
 
 import { pluginsMap, ignoreToRecordEvent } from '../src/core/plugin'
 
