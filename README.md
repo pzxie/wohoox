@@ -29,7 +29,7 @@ Docs for libs, click to get more
 /**
  * @file src/store.ts
  */
-import createStore from 'wohoox-react'
+import { createStore } from 'wohoox-react'
 
 const store = createStore({
   initState: {
