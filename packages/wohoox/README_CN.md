@@ -29,7 +29,7 @@ npm install -S wohoox
 /**
  * src/store.ts
  */
-import createStore from 'wohoox'
+import { createStore } from 'wohoox'
 
 const store = createStore({
   initState: {
@@ -215,7 +215,7 @@ function example() {
 严格模式下，修改 state 只能通过 actions
 
 ```typescript
-import createStore from 'wohoox'
+import { createStore } from 'wohoox'
 
 const store = createStore({
   initState: {
@@ -268,7 +268,7 @@ function exampleStrictMode() {
 - state expression
 
 ```typescript
-import createStore from 'wohoox'
+import { createStore } from 'wohoox'
 
 const store = createStore({
   initState: {
@@ -444,7 +444,7 @@ const store = createStore({
 /**
  * src/store.ts
  */
-import createStore from 'wohoox'
+import { createStore } from 'wohoox'
 
 const store = createStore({
   /**

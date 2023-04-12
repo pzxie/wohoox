@@ -29,7 +29,7 @@ npm install -S wohoox
 /**
  * src/store.ts
  */
-import createStore from 'wohoox'
+import { createStore } from 'wohoox'
 
 const store = createStore({
   initState: {
@@ -215,7 +215,7 @@ In order to make the code style more standardized.
 Actions are the only valid way to modify data
 
 ```typescript
-import createStore from 'wohoox'
+import { createStore } from 'wohoox'
 
 const store = createStore({
   initState: {
@@ -270,7 +270,7 @@ Valid ways
 - state expression + dispatch
 
 ```typescript
-import createStore from 'wohoox'
+import { createStore } from 'wohoox'
 
 const store = createStore({
   initState: {
@@ -448,7 +448,7 @@ Create a store named 'default'
 /**
  * src/store.ts
  */
-import createStore from 'wohoox'
+import { createStore } from 'wohoox'
 
 const store = createStore({
   /**

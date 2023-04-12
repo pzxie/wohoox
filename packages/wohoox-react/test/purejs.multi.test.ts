@@ -1,4 +1,4 @@
-import createStore from '../src'
+import { createStore } from '../src'
 
 function initStore(options?: { strictMode?: boolean }) {
   const defaultInitState = {

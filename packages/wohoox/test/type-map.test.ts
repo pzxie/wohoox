@@ -1,4 +1,5 @@
-import createStore, { WohooxPlugin } from '../src'
+import { createStore } from '../src'
+import type { WohooxPlugin } from '../src'
 
 const sourceMap = {
   string: () => Math.floor(Math.random() * 10000) + '',

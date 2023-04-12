@@ -1,4 +1,4 @@
-import createStore from 'wohoox'
+import { createStore } from 'wohoox'
 import persistPlugin from './plugin/persist'
 
 const store = createStore({

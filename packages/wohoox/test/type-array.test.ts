@@ -1,5 +1,5 @@
-import createStore from '../src'
-import { WohooxPlugin } from '../src'
+import { createStore } from '../src'
+import type { WohooxPlugin } from '../src'
 
 function initStore(
   storeName?: string,

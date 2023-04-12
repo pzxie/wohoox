@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 
-import createStore, { useStore } from '../src/index'
+import { createStore, useStore } from '../src/index'
 
 const reactLegency = !!process.env.reactLegency
 
@@ -39,7 +39,6 @@ it('plugin: beforeInit', () => {
   expect(store.state).toHaveProperty('type')
   expect((store.state as any).type).toBe('beforeInit')
   expect(store.actions).toHaveProperty('updateType')
-
   ;(store.actions as any).updateType('updated')
 
   expect((store.state as any).type).toBe('updated')
@@ -152,7 +151,6 @@ it('plugin:js: onChange', () => {
   expect(logs[0][2].toString()).toBe('name')
   expect(logs[0][3]).toBe('wohoox')
   expect(store.state.name).toBe('update')
-
   ;(store.state as any).type = 'onAdd'
   expect(logs.length).toBe(1)
 })

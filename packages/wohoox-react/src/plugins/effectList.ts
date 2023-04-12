@@ -1,4 +1,5 @@
-import { WohooxPlugin, storeMap } from 'wohoox'
+import { storeMap } from 'wohoox'
+import type { WohooxPlugin } from 'wohoox'
 
 function addKeysToEffect(
   storeName: string,

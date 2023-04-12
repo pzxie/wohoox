@@ -31,7 +31,7 @@ npm install -S wohoox-react
 /**
  * src/store.ts
  */
-import createStore from 'wohoox-react'
+import { createStore } from 'wohoox-react'
 
 const store = createStore({
   initState: {
@@ -92,8 +92,8 @@ In order to be able to automatically infer the type based on state, useStore nee
 /**
  * diff src/store.ts
  */
-- import createStore from 'wohoox-react'
-+ import createStore, { useStore as useWoHoox } from 'wohoox-react'
+- import { createStore } from 'wohoox-react'
++ import { createStore, useStore as useWoHoox } from 'wohoox-react'
 
 + type DefaultState = typeof store.state
 
@@ -113,7 +113,7 @@ In order to be able to automatically infer the type based on state, useStore nee
 /**
  * src/store.ts
  */
-import createStore, { useStore as useWoHoox } from 'wohoox-react';
+import { createStore, useStore as useWoHoox } from 'wohoox-react';
 
 const store = createStore({
   initState: {
@@ -358,8 +358,8 @@ Valid ways
 - state expression + dispatch
 
 ```typescript
-- import createStore, { useStore as useWohoox } from 'wohoox-react'
-+ import createStore, { useStore as useWohoox, dispatch as wohooxDispatch } from 'wohoox-react'
+- import { createStore, useStore as useWohoox } from 'wohoox-react'
++ import { createStore, useStore as useWohoox, dispatch as wohooxDispatch } from 'wohoox-react'
 
 const store = createStore({
   initState: {
@@ -553,7 +553,7 @@ Create a store named 'default'
 /**
  * src/store.ts
  */
-import createStore from 'wohoox-react'
+import { createStore } from 'wohoox-react'
 
 const store = createStore({
   /**
@@ -639,7 +639,7 @@ In order to be able to automatically infer the type based on state, useStore nee
 /**
  * src/store.ts
  */
-import createStore, { useStore as useWoHoox } from 'wohoox-react'
+import { createStore, useStore as useWoHoox } from 'wohoox-react'
 
 const store = createStore({...})
 

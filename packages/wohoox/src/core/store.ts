@@ -9,16 +9,14 @@ import {
 import { observer } from './observer'
 import { addPlugins } from './plugin'
 
-import type { WohooxPlugin } from './plugin'
-
 import type {
+  Options,
+  WohooxPlugin,
   ActionsDefine,
   ActionDispatch,
   ExtractStoresName,
   ExtractStores,
 } from '../types'
-
-export type Options = { strictMode?: boolean; proxySetDeep?: boolean }
 
 function revertActionsToAutoMode<
   TState,

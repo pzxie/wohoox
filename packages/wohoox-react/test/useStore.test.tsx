@@ -3,7 +3,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 
 import { defaultStoreName, storeMap } from 'wohoox'
 
-import createStore from '../src/index'
+import { createStore } from '../src/index'
 import { useStore } from '../src/hooks/useStore'
 
 const reactLegency = !!process.env.reactLegency
