@@ -1,5 +1,14 @@
 # wohoox-react
 
+## 1.0.0-rc.2
+
+### Patch Changes
+
+- 3868c94: remove default export and update ts definition
+- Updated dependencies [3868c94]
+  - wohoox@2.0.0-rc.2
+  - wohoox-utils@1.0.0-rc.2
+
 ## 1.0.0-rc.1
 
 ### Patch Changes

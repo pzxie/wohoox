@@ -1,5 +1,11 @@
 # wohoox-utils
 
+## 1.0.0-rc.2
+
+### Patch Changes
+
+- 3868c94: remove default export and update ts definition
+
 ## 1.0.0-rc.1
 
 ### Patch Changes
