@@ -40,6 +40,7 @@ module.exports = {
     { name: 'wohoox' },
     { name: 'wohoox-react' },
     { name: 'wohoox-utils' },
+    { name: 'examples' },
   ],
 
   ticketNumberPrefix: 'fix',
