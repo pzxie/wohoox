@@ -6,7 +6,14 @@
     "ex-wohoox-react-basic": "0.1.0",
     "wohoox": "1.7.1",
     "wohoox-react": "0.0.1",
-    "wohoox-utils": "0.0.1"
+    "wohoox-utils": "0.0.1",
+    "ex-wohoox-plugin": "0.1.0",
+    "ex-wohoox-react-multi-module": "0.1.0"
   },
-  "changesets": ["hungry-pigs-dream", "tasty-cats-design", "violet-ties-judge"]
+  "changesets": [
+    "hungry-pigs-dream",
+    "shaggy-terms-build",
+    "tasty-cats-design",
+    "violet-ties-judge"
+  ]
 }
