@@ -95,19 +95,23 @@ export default class ProxyMap<T extends Map<any, any>> extends Map {
   }
 
   values(): IterableIterator<any> {
-    const proxyItems: [any, any][] = [...this.source.entries()].map(([key]) => {
-      const proxyValue = this.get(key)
-      return [key, proxyValue]
-    })
+    const proxyItems: [any, any][] = Array.from(this.source.entries()).map(
+      ([key]) => {
+        const proxyValue = this.get(key)
+        return [key, proxyValue]
+      },
+    )
 
     return new Map(proxyItems).values()
   }
 
   entries(): IterableIterator<[any, any]> {
-    const proxyItems: [any, any][] = [...this.source.entries()].map(([key]) => {
-      const proxyValue = this.get(key)
-      return [key, proxyValue]
-    })
+    const proxyItems: [any, any][] = Array.from(this.source.entries()).map(
+      ([key]) => {
+        const proxyValue = this.get(key)
+        return [key, proxyValue]
+      },
+    )
 
     return new Map(proxyItems).entries()
   }

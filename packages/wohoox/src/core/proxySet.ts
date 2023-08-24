@@ -95,7 +95,7 @@ export default class ProxySet<T extends Set<any>> extends Set {
       return this.source.keys()
     }
 
-    const proxyItems = [...this.source.keys()].map(item => {
+    const proxyItems = Array.from(this.source.keys()).map(item => {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return this.interceptor.get(this.source, item) || item
     })
@@ -113,7 +113,7 @@ export default class ProxySet<T extends Set<any>> extends Set {
       return this.source.entries()
     }
 
-    const proxyItems = [...this.source.entries()].map(([item]) => {
+    const proxyItems = Array.from(this.source.entries()).map(([item]) => {
       const proxyValue = this.interceptor.get(this.source, item) || item
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return proxyValue
