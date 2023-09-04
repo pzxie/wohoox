@@ -1,10 +1,6 @@
-<p align="center">
-  <img style="width: 160px;" src="../../wohoox.png" alt="wohoox" />
-</p>
+# wohoox-react
 
-<p align="center">
-  English | <a href="./README_CN.md">中文</a>
-</p>
+English | [中文](./README_CN.md)
 
 - Based on [wohoox](../wohoox/README.md)
 - Lightweight and reactive state management for react
@@ -25,7 +21,7 @@ npm install -S wohoox-react
 
 ## Quick Start
 
-1. create a store
+1. Create a store
 
 ```typescript
 /**
@@ -52,7 +48,7 @@ export { useStore } from 'wohoox-react'
 export const actions = store.actions
 ```
 
-2. use state in component
+2. Use state in component
 
 ```jsx
 /**
@@ -83,7 +79,7 @@ function Example() {
 }
 ```
 
-3. typescript support
+3. Typescript support
 
 In order to be able to automatically infer the type based on state, useStore needs to be redefine
 **If you do not use typescript, you can use `useStore` directly**
@@ -142,105 +138,154 @@ export function useStore(name?: any, fn?: any) {
 }
 
 export const actions = store.actions
+export default store
 ```
 
 ## Advanced
 
+### Key-Value by one action
+
+> It's common for an action to update one field. For example, `updateVersion` is used to update the `version`. `Redux` and `Mobx` are often used like this
+> `wohoox-react` also allows you to update by defining a common action, thus simplifying the definition of the action
+
+```typescript
+/**
+ * src/store.ts
+ */
+
+import { createStore } from 'wohoox'
+
+type RevertObjectToArrayUnion<T extends object, K = keyof T> = K extends keyof T
+  ? [K, T[K]]
+  : unknown
+
+const store = createStore({
+  initState: {
+    version: '2.x',
+    details: {
+      name: 'wohoox-react',
+      other: 'xxx',
+    },
+  },
+  actions: {
+    // Use the key-value action for unified definition update, and typescript support
+    updateByKeyValue(state, ...args: RevertObjectToArrayUnion<typeof state>) {
+      const [key, value] = args as [keyof typeof state, any]
+      state[key] = value
+    },
+  },
+})
+
+// OK
+store.actions.updateByKeyValue('version', '2.0')
+// OK
+store.actions.updateByKeyValue('details', {
+  name: 'wohoox-react',
+  other: 'anything',
+})
+```
+
 ### Multi Store
 
-> If you want to use multi store by module
+> wohoox also supports division by module
 
 #### Create multi store
 
-- Create a store named 'user'
+- Create a store named `user`
 
 ```typescript
 /**
- * src/multiStore.ts
+ * src/store/user.ts
  */
 
-const userStore = createStore({
+import { createStore } from 'wohoox-react'
+
+export default createStore({
   name: 'user',
   initState: {
-    name: 'wohoox-react',
-    description: 'reactive store',
+    time: new Date().toLocaleString(),
   },
   actions: {
-    updateName(state, name: string) {
-      state.name = name
+    updateBirthday(state, time: string) {
+      state.time = time
     },
   },
 })
-
-export const userActions = userStore.actions
 ```
 
-- Create a store named 'department'
+- Create a default store
 
 ```typescript
 /**
- * src/multiStore.ts
+ * src/store/default.ts
  */
 
-const devInitState = {
-  name: 'developer',
-  address: {
-    province: 'sc',
-    city: 'cd',
-  },
-}
+import { createStore } from 'wohoox-react'
 
-const devStore = createStore({
-  name: 'department',
-  initState: devInitState,
+type RevertObjectToArrayUnion<T extends object, K = keyof T> = K extends keyof T
+  ? [K, T[K]]
+  : unknown
+
+const store = createStore({
+  initState: {
+    version: '2.x',
+    details: {
+      name: 'wohoox-react',
+      other: 'xxx',
+    },
+  },
   actions: {
-    updateAddress(state, address: typeof state.address) {
-      state.address = address
+    updateByKeyValue(state, ...args: RevertObjectToArrayUnion<typeof state>) {
+      const [key, value] = args as [keyof typeof state, any]
+      state[key] = value
     },
   },
 })
-
-export const devActions = devStore.actions
 ```
 
 - Combine multi store  
-  You can combine all stores together. In order to be able to automatically infer the type based on state, useStore needs to be redefine
+  You can combine all stores together. In order to be able to automatically infer the type based on state, `useStore` needs to be redefine
   **If you do not use typescript, you can use `useStore` directly**
 
 ```typescript
 /**
- * src/multiStore.ts
+ * src/store/index.ts
  */
-import defaultStore from './store'
-import { combineStores } from 'wohoox-react'
 
-export const { store, actions } = combineStores(
+import { useStore as useWohoox, combineStores } from 'wohoox-react'
+
+import defaultStore from './default'
+import userStore from './user'
+
+const { store, actions: combineActions } = combineStores(
   defaultStore,
-  devStore,
   userStore,
 )
 
 type AppStore = typeof store
+type StoreNames = keyof typeof store
 
-export function useStore(): AppStore['default']['state']
+export function useStore<N extends StoreNames = 'default'>(
+  name?: N,
+): AppStore[N]['state']
 export function useStore<
   T extends (state: AppStore['default']['state']) => any,
->(fn: T): ReturnType<T>
-export function useStore<T extends keyof AppStore>(
-  name: T,
-): AppStore[T]['state']
+>(fn?: T): ReturnType<T>
 export function useStore<
-  N extends keyof AppStore,
+  N extends StoreNames,
   T extends (state: AppStore[N]['state']) => any,
 >(name?: N, fn?: T): ReturnType<T>
-export function useStore(fn?: any, name?: any) {
-  const state = useWohoox(fn, name)
+export function useStore(name?: any, fn?: any) {
+  const state = useWohoox(name, fn)
 
   return state
 }
+
+export const actions = combineActions
+export default store
 ```
 
-#### usage
+#### Multi store usage
 
 Use multi store is same as single store, just need to point the store name
 
@@ -248,64 +293,63 @@ Use multi store is same as single store, just need to point the store name
 /**
  * src/pages/multiExample.tsx
  */
-import { actions } from 'src/multiStore.ts'
+import { actions, useStore } from 'src/store'
 
-function example() {
-  const defaultState = useStore()
-  const userState = useStore('user', state => state.name)
-  const devState = useStore('department', state => state.address)
+function MultiExample() {
+  const defaultStoreVersion = useStore(s => s.version)
+  const userStoreTime = useStore('user', state => state.time)
 
   return (
-    <div>
-      <h2>Default Version</h2>
-      {defaultState.version}
-
-      <h2>User Name</h2>
-      {userState}
-
-      <h2>Dev address</h2>
-      {devState.province}
-      {devState.city}
-
-      <button
-        onClick={() => {
-          actions.default.updateVersion(version + '_1')
-        }}
-      >
-        click to update version
-      </button>
-      <button
-        onClick={() => {
-          actions.user.updateName(userState + '_1')
-        }}
-      >
-        click to update name
-      </button>
-      <button
-        onClick={() => {
-          actions.department.updateAddress({
-            ...devState,
-            city: devState.city + '_1',
-          })
-        }}
-      >
-        click to update address
-      </button>
+    <div className="App">
+      <div className="section">
+        <h3>Default Store</h3>
+        <div className="version">Version: {defaultStoreVersion}</div>
+        <button
+          className="button"
+          onClick={() => {
+            actions.default.updateByKeyValue(
+              'version',
+              `1.${Math.floor(Math.random() * 10)}`,
+            )
+          }}
+        >
+          update version
+        </button>
+      </div>
+      <div className="section">
+        <h3>User Store</h3>
+        <div className="version">name: {userStoreTime}</div>
+        <button
+          className="button"
+          onClick={() => {
+            actions.user.updateBirthday(new Date().toLocaleString())
+          }}
+        >
+          update time
+        </button>
+      </div>
     </div>
   )
 }
+
+export default MultiExample
 ```
 
 ### StrictMode
 
 In order to make the code style more standardized.
-**Strict mode is on by default. Which means actions is the only way to modify state**.
+**Strict mode is on by default. Which means `actions` is the only way to modify state**.
 
 #### Turn on
 
 Actions are the only valid way to modify data
 
 ```typescript
+/**
+ * src/store.ts
+ */
+import { useStore as useWohoox, createStore } from 'wohoox-react'
+
 const store = createStore({
   initState: {
     version: '2.X',
@@ -320,12 +364,20 @@ const store = createStore({
     strictMode: true,
   },
 })
+
+// ... useStore typescript define
+export function useStore(name?: any, fn?: any) {
+  const state = useWohoox(name, fn)
+
+  return state
+}
+export const actions = store.actions
 ```
 
 Modify data by actions
 
 ```jsx
-import { actions } from 'src/store.ts'
+import { actions, useStore } from 'src/store.ts'
 
 function exampleStrictMode() {
   const state = useStore()
@@ -358,8 +410,7 @@ Valid ways
 - state expression + dispatch
 
 ```typescript
-- import { createStore, useStore as useWohoox } from 'wohoox-react'
-+ import { createStore, useStore as useWohoox, dispatch as wohooxDispatch } from 'wohoox-react'
+import { useStore as useWohoox, createStore } from 'wohoox-react'
 
 const store = createStore({
   initState: {
@@ -376,16 +427,21 @@ const store = createStore({
   }
 })
 
-+ export function dispatch(storName?: keyof AppStore) {
-+   wohooxDispatch(storName)
-+ }
+// ... useStore typescript define
+export function useStore(name?: any, fn?: any) {
+  const state = useWohoox(name, fn)
+
+  return state
+}
++ export { dispatch } from 'wohoox-react'
+export const actions = store.actions
 ```
 
 Modify data
 
 ```jsx
-- import { actions } from 'src/store.ts'
-+ import { actions, dispatch } from 'src/store.ts'
+- import { actions, useStore } from 'src/store.ts'
++ import { actions, useStore, dispatch } from 'src/store.ts'
 
 function exampleStrictMode () {
   const state = useStore()
@@ -443,7 +499,7 @@ async function getVersion() {
 }
 ```
 
-### plugins
+### Plugins
 
 Plug-in options are provided to enhance the functionality of wohoox-react
 
@@ -509,6 +565,10 @@ export default persistPlugin
 - add to plugin option
 
 ```jsx
+/**
+ * src/store.ts
+ */
+
 import persistPlugin from './plugin/persist'
 
 const store = createStore({
@@ -536,7 +596,7 @@ const store = createStore({
 
 It is used to create a store.
 
-#### Params
+#### Params of createStore
 
 - `name:` default as `'default'`. name of store. it is used as an identifier to get store data.
 - `initState:` Initial the data and use it as the data structure of the state.
@@ -545,7 +605,7 @@ It is used to create a store.
 - `options.strictMode:` default as `true`. Strict mode switch for store. Once the switch turn on, actions will be the only valid way to modify data, otherwise you can directly modify the data by state. `ex: state.age = 23`
 - `options.proxySetDeep:` default as `false`. Type data of set will not be proxy for its child item. Cause there is no method to get item, child proxy is is not necessary to proxy. But if you want to proxy anyway, you can set it to true.
 
-#### Usage
+#### Usage for createStore
 
 Create a store named 'default'
 
@@ -599,18 +659,18 @@ export const { store, actions } = combineStores(
 
 A hooks to get the state of store by store name and callback
 
-#### Params
+#### Params of useStore
 
-- `name:` Optional, default as 'default'. Get state from store by name. `Note:` An error will be throw when the name does not exist.
+- `name:` Optional, default as `default`. Get state from store by name. `Note:` An error will be throw when the name does not exist.
 - `callback:` return a detail state, you can use it as redux reselect, but it would be recalculate every time.
 
-#### Usage
+#### Usage for useStore
 
 ```jsx
 /**
  * src/pages/example.tsx
  */
-import { actions } from 'src/store.ts'
+import { useStore } from 'src/store'
 
 function Example () {
   // Default to get 'default' store and return the hole state
@@ -630,10 +690,12 @@ function Example () {
 }
 ```
 
-#### Typescript
+#### Typescript for useStore
 
 In order to be able to automatically infer the type based on state, useStore needs to be redefine
 **If you do not use typescript, you can use `useStore` directly**
+
+Single Store
 
 ```jsx
 /**
@@ -655,6 +717,8 @@ export function useStore(name?: any, fn?: any) {
 }
 ```
 
+[Multi Store](#multi-store)
+
 ### dispatch
 
 dispatch action for non-strict mode. Same as defined in actions, like:
@@ -665,14 +729,22 @@ actions: {
 }
 ```
 
-#### Params
+#### Params of dispatch
 
-- `storeName:` default as 'default'. tell wohoox-react which store should be update
+- `storeName:` default as `default`. tell wohoox-react which store should be update
 
-#### Usage
+#### Usage for dispatch
 
 ```typescript
-import { useStore, dispatch } from '../store'
+/**
+ * src/store.ts
+ */
+
++ export { dispatch } from 'wohoox-react'
+```
+
+```typescript
+import { useStore, dispatch } from 'src/store'
 
 function exampleNonStrictMode() {
   const state = useStore()
@@ -693,13 +765,15 @@ function exampleNonStrictMode() {
 }
 ```
 
-#### Typescript
+#### Multi module for dispatch typescript support
 
-In order to be able to automatically infer the type based on store module, useStore needs to be redefine
+In order to be able to automatically infer the type based on store module, `dispatch` needs to be redefine
 **If you do not use typescript, you can use `dispatch` directly**
 
 ```typescript
-export function dispatch(storName?: keyof AppStore) {
+const { store } = combineStores(...)
+
+export function dispatch(storName?: keyof typeof store) {
   wohooxDispatch(storName)
 }
 ```
@@ -712,7 +786,7 @@ dispatch all store to rerender
 /**
  * src/pages/multiExample.tsx
  */
-import { actions } from 'src/multiStore.ts'
+import { actions } from 'src/store'
 import { dispatchAll } from 'wohoox-react'
 
 function example() {
@@ -760,7 +834,7 @@ function example() {
 }
 ```
 
-## Notes
+## Notice
 
 - If you do not use `useStore` to get state, **components will not re-render**.
 - Use strict mode if possible(use actions to modify state).

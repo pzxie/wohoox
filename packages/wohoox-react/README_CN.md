@@ -1,10 +1,6 @@
-<p align="center">
-  <img style="width: 160px;" src="../../wohoox.png" alt="wohoox" />
-</p>
+# wohoox-react
 
-<p align="center">
-  <a href="./README.md">English</a> | 中文
-</p>
+[English](./README.md) | 中文
 
 - 基于 [wohoox](../wohoox/README_CN.md) 的 react 实现
 - 轻量的响应式 React 状态管理
@@ -142,106 +138,155 @@ export function useStore(name?: any, fn?: any) {
 }
 
 export const actions = store.actions
+export default store
 ```
 
 ## 更多用法
 
+### Key-Value by one action
+
+> 一个字段用一个 `action` 进行更新是很常见的，比如 `updateVersion` 是用来更新 `version` 的。常见的 `Redux`、`mobx` 也经常这样使用
+> `wohoox-react` 还允许你定义一个通用型的 `action`，这样就可以简化很多格式化的 `action` 定义
+
+```typescript
+/**
+ * src/store.ts
+ */
+
+import { createStore } from 'wohoox'
+
+type RevertObjectToArrayUnion<T extends object, K = keyof T> = K extends keyof T
+  ? [K, T[K]]
+  : unknown
+
+const store = createStore({
+  initState: {
+    version: '2.x',
+    details: {
+      name: 'wohoox-react',
+      other: 'xxx',
+    },
+  },
+  actions: {
+    // 定义一个通用的 Key-Value action，简化操作，也支持 typescript
+    updateByKeyValue(state, ...args: RevertObjectToArrayUnion<typeof state>) {
+      const [key, value] = args as [keyof typeof state, any]
+      state[key] = value
+    },
+  },
+})
+
+// OK
+store.actions.updateByKeyValue('version', '2.0')
+// OK
+store.actions.updateByKeyValue('details', {
+  name: 'wohoox-react',
+  other: 'anything',
+})
+```
+
 ### 多模块整合
 
-> 如果你想对 store 按模块进行划分，看这里
+> wohoox 同样支持按模块进行状态划分
 
 #### 创建多个 store
 
-- 创建一个名为【user】的 store
+- 创建一个名为 `user` 的 store
 
 ```typescript
 /**
- * src/multiStore.ts
+ * src/store/user.ts
  */
 
-const userStore = createStore({
+import { createStore } from 'wohoox-react'
+
+export default createStore({
   name: 'user',
   initState: {
-    name: 'wohoox-react',
-    description: 'reactive store',
+    time: new Date().toLocaleString(),
   },
   actions: {
-    updateName(state, name: string) {
-      state.name = name
+    updateBirthday(state, time: string) {
+      state.time = time
     },
   },
 })
-
-export const userActions = userStore.actions
 ```
 
-- 创建一个名为【department】的 store
+- 创建一个默认 store
 
 ```typescript
 /**
- * src/multiStore.ts
+ * src/store/default.ts
  */
 
-const devInitState = {
-  name: 'developer',
-  address: {
-    province: 'sc',
-    city: 'cd',
-  },
-}
+import { createStore } from 'wohoox-react'
 
-const devStore = createStore({
-  name: 'department',
-  initState: devInitState,
+type RevertObjectToArrayUnion<T extends object, K = keyof T> = K extends keyof T
+  ? [K, T[K]]
+  : unknown
+
+const store = createStore({
+  initState: {
+    version: '2.x',
+    details: {
+      name: 'wohoox-react',
+      other: 'xxx',
+    },
+  },
   actions: {
-    updateAddress(state, address: typeof state.address) {
-      state.address = address
+    updateByKeyValue(state, ...args: RevertObjectToArrayUnion<typeof state>) {
+      const [key, value] = args as [keyof typeof state, any]
+      state[key] = value
     },
   },
 })
-
-export const devActions = devStore.actions
 ```
 
 - 将多个 store 组合起来
 
-同样的，为了能够完整使用 typescript 的类型推断, useStore，actions 需要进行重新声明
-**如果你不使用 typescript, 你可以直接使用 wohoox-react 导出的 `useStore` 以及 store 的 actions 属性**
+同样的，为了能够完整使用 typescript 的类型推断, `useStore` 需要进行重新声明
+**如果你不使用 typescript, 你可以直接使用 `wohoox-react` 导出的 `useStore`**
 
 ```typescript
 /**
- * src/multiStore.ts
+ * src/store/index.ts
  */
-import defaultStore from './store'
-import { combineStores } from 'wohoox-react'
 
-export const { store, actions } = combineStores(
+import { useStore as useWohoox, combineStores } from 'wohoox-react'
+
+import defaultStore from './default'
+import userStore from './user'
+
+const { store, actions: combineActions } = combineStores(
   defaultStore,
-  devStore,
   userStore,
 )
 
 type AppStore = typeof store
+type StoreNames = keyof typeof store
 
-export function useStore(): AppStore['default']['state']
+export function useStore<N extends StoreNames = 'default'>(
+  name?: N,
+): AppStore[N]['state']
 export function useStore<
   T extends (state: AppStore['default']['state']) => any,
->(fn: T): ReturnType<T>
-export function useStore<T extends keyof AppStore>(
-  name: T,
-): AppStore[T]['state']
+>(fn?: T): ReturnType<T>
 export function useStore<
-  N extends keyof AppStore,
+  N extends StoreNames,
   T extends (state: AppStore[N]['state']) => any,
 >(name?: N, fn?: T): ReturnType<T>
-export function useStore(fn?: any, name?: any) {
-  const state = useWohoox(fn, name)
+export function useStore(name?: any, fn?: any) {
+  const state = useWohoox(name, fn)
 
   return state
 }
+
+export const actions = combineActions
+export default store
 ```
 
-#### usage
+#### 多模块使用方式
 
 多模块的使用方式和单模块的一样，只是需要指明获取 state 的 store 名称
 
@@ -249,64 +294,63 @@ export function useStore(fn?: any, name?: any) {
 /**
  * src/pages/multiExample.tsx
  */
-import { actions } from 'src/multiStore.ts'
+import { actions, useStore } from 'src/store'
 
-function example() {
-  const defaultState = useStore()
-  const userState = useStore('user', state => state.name)
-  const devState = useStore('department', state => state.address)
+function MultiExample() {
+  const defaultStoreVersion = useStore(s => s.version)
+  const userStoreTime = useStore('user', state => state.time)
 
   return (
-    <div>
-      <h2>Default Version</h2>
-      {defaultState.version}
-
-      <h2>User Name</h2>
-      {userState}
-
-      <h2>Dev address</h2>
-      {devState.province}
-      {devState.city}
-
-      <button
-        onClick={() => {
-          actions.default.updateVersion(version + '_1')
-        }}
-      >
-        click to update version
-      </button>
-      <button
-        onClick={() => {
-          actions.user.updateName(userState + '_1')
-        }}
-      >
-        click to update name
-      </button>
-      <button
-        onClick={() => {
-          actions.department.updateAddress({
-            ...devState,
-            city: devState.city + '_1',
-          })
-        }}
-      >
-        click to update address
-      </button>
+    <div className="App">
+      <div className="section">
+        <h3>Default Store</h3>
+        <div className="version">Version: {defaultStoreVersion}</div>
+        <button
+          className="button"
+          onClick={() => {
+            actions.default.updateByKeyValue(
+              'version',
+              `1.${Math.floor(Math.random() * 10)}`,
+            )
+          }}
+        >
+          update version
+        </button>
+      </div>
+      <div className="section">
+        <h3>User Store</h3>
+        <div className="version">name: {userStoreTime}</div>
+        <button
+          className="button"
+          onClick={() => {
+            actions.user.updateBirthday(new Date().toLocaleString())
+          }}
+        >
+          update time
+        </button>
+      </div>
     </div>
   )
 }
+
+export default MultiExample
 ```
 
 ### 严格模式
 
 为了使代码风格更加统一，以及使代码更加规范
-**默认是开启了严格模式的，这意味着只能通过 actions 才能对 state 进行修改**.
+**默认是开启了严格模式的，这意味着只能通过 `actions` 才能对 state 进行修改**.
 
 #### 开启严格模式
 
 只能通过 actions 才能对 state 进行修改
 
 ```typescript
+/**
+ * src/store.ts
+ */
+import { useStore as useWohoox, createStore } from 'wohoox-react'
+
 const store = createStore({
   initState: {
     version: '2.X',
@@ -315,19 +359,26 @@ const store = createStore({
     updateVersion(state, version: string) {
       state.version = version
     },
-    dispatch() {},
   },
   options: {
     // default true
     strictMode: true,
   },
 })
+
+// ... useStore typescript define
+export function useStore(name?: any, fn?: any) {
+  const state = useWohoox(name, fn)
+
+  return state
+}
+export const actions = store.actions
 ```
 
 通过 actions 修改数据
 
 ```jsx
-import { actions } from 'src/store.ts'
+import { actions, useStore } from 'src/store.ts'
 
 function exampleStrictMode() {
   const state = useStore()
@@ -360,8 +411,7 @@ function exampleStrictMode() {
 - 通过表达式直接修改数据 + dispatch
 
 ```typescript
-- import { createStore, useStore as useWohoox } from 'wohoox-react'
-+ import { createStore, useStore as useWohoox, dispatch as wohooxDispatch } from 'wohoox-react'
+import { useStore as useWohoox, createStore } from 'wohoox-react'
 
 const store = createStore({
   initState: {
@@ -378,17 +428,21 @@ const store = createStore({
   }
 })
 
-+ export function dispatch(storName?: keyof AppStore) {
-+   wohooxDispatch(storName)
-+ }
+// ... useStore typescript define
+export function useStore(name?: any, fn?: any) {
+  const state = useWohoox(name, fn)
+
+  return state
+}
++ export { dispatch } from 'wohoox-react'
+export const actions = store.actions
 ```
 
 修改数据
 
 ```jsx
-- import { actions } from 'src/store.ts'
-+ import { actions, dispatch } from 'src/store.ts'
-
+- import { actions, useStore } from 'src/store.ts'
++ import { actions, useStore, dispatch } from 'src/store.ts'
 
 function exampleStrictMode () {
   const state = useStore()
@@ -446,7 +500,7 @@ async function getVersion() {
 }
 ```
 
-### plugins
+### 插件系统
 
 提供了插件选项用于增强 wohoox-react 的功能
 
@@ -482,7 +536,7 @@ export const plugin: WohooxPlugin = {
 }
 ```
 
-#### Example of persist
+#### 自定义一个持久化插件
 
 - 创建一个插件
 
@@ -512,6 +566,10 @@ export default persistPlugin
 - 将插件添加到 plugins 选项中
 
 ```jsx
+/**
+ * src/store.ts
+ */
+
 import persistPlugin from './plugin/persist'
 
 const store = createStore({
@@ -539,16 +597,16 @@ const store = createStore({
 
 他用来初始化并创建一个 store
 
-#### 参数说明
+#### createStore 参数说明
 
 - `name:` store 名称，默认为`'default'`. 作为 store 的唯一标识符，在多模块的时候，该字段用于区分模块.
 - `initState:` 初始化数据，并使用该数据的数据结构作为 typescript 类型推断
 - `actions:` 修改数据的方式，并促使相关组件进行重新渲染。如果在严格模式下，是作为唯一合法修改数据的方式
 - `plugins:` 插件选项
 - `options.strictMode:` 严格模式开关。默认 `true`. 严格模式下，actions 是唯一可以修改 state 的方式。非严格模式下，还可以直接修改 state。 `ex: state.age = 23`
-- `options.proxySetDeep:` 严格模式开关。默认 `true`. Set 类型的数据不会对将其子节点进行 proxy 处理。因其没有获取数据的情形，对其子节点进行 proxy 处理没有太大必要。不过如果你确定需要，你可以将其设置为 true
+- `options.proxySetDeep:` 严格模式开关。默认 `false`. Set 类型的数据不会对将其子节点进行 proxy 处理。因其没有获取数据的情形，对其子节点进行 proxy 处理没有太大必要。不过如果你确定需要，你可以将其设置为 true
 
-#### 用法
+#### createStore 使用方式
 
 创建一个名叫【default】的 store
 
@@ -586,7 +644,7 @@ const store = createStore({
 
 ### combineStores
 
-将多个 store 组合成一个独立的 store
+将多个 store 组合成一个新的 store
 
 ```jsx
 import { combineStores } from 'wohoox-react'
@@ -602,12 +660,12 @@ export const { store, actions } = combineStores(
 
 用来获取 state 的 hooks。如果所有参数都不传，将返回名为【default】的 store 的整个 state
 
-#### 参数说明
+#### useStore 参数说明
 
-- `name:` 获取 state 的 store 名称。可选, 默认为 'default'. 如果传入了一个不存在的 store 名称，将会抛出错误.
+- `name:` 获取 state 的 store 名称。可选, 默认为 `default`. 如果传入了一个不存在的 store 名称，将会抛出错误.
 - `callback:` 通过该参数返回具体的状态。
 
-#### 用法
+#### useStore 使用方式
 
 ```jsx
 /**
@@ -633,10 +691,12 @@ function Example () {
 }
 ```
 
-#### Typescript
+#### useStore 的 typescript 定义
 
 为了能够完整使用 typescript 的类型推断, useStore 需要进行重新声明
 **如果你不使用 typescript, 你可以直接使用 wohoox-react 导出的 `useStore`**
+
+单个 store
 
 ```jsx
 /**
@@ -646,7 +706,7 @@ import { createStore, useStore as useWoHoox } from 'wohoox-react'
 
 const store = createStore({...})
 
-type DefaultState = typeof store.state
+type DefaultState = typeof store.state;
 
 export function useStore(name?: string): DefaultState
 export function useStore<T extends (state: DefaultState) => any>(fn?: T): ReturnType<T>
@@ -658,6 +718,8 @@ export function useStore(name?: any, fn?: any) {
 }
 ```
 
+[多个 store](#多模块整合)
+
 ### dispatch
 
 非严格模式下的更新组件方式。可以间接将其理解为与在 action 里定义的 dispatch 差不多。如：
@@ -668,16 +730,24 @@ actions: {
 }
 ```
 
-#### Params
+#### dispatch 参数说明
 
-- `storeName:` 默认为'default'. 告诉 wohoox-react 需要更新哪个 store 的组件状态
+- `storeName:` 默认为 `default`。 告诉 wohoox-react 需要更新哪个 store 的组件状态
 
-#### Usage
+#### dispatch 使用方式
 
 ```typescript
-import { useStore, dispatch } from '../store'
+/**
+ * src/store.ts
+ */
 
-function exampleStrictMode() {
++ export { dispatch } from 'wohoox-react'
+```
+
+```typescript
+import { useStore, dispatch } from 'src/store'
+
+function exampleNonStrictMode() {
   const state = useStore()
 
   const updateVersion = () => {
@@ -687,7 +757,7 @@ function exampleStrictMode() {
 
   return (
     <div>
-      <h2>Default Version</h2>
+      <h2>Non-Strict mode</h2>
       {state.version}
 
       <button onClick={updateVersion}>click to update version</button>
@@ -696,7 +766,7 @@ function exampleStrictMode() {
 }
 ```
 
-#### Typescript
+#### dispatch 多模块 Typescript 支持
 
 为了能够完整使用 typescript 的类型推断, dispatch 需要进行重新声明使用
 **如果你不使用 typescript, 你可以直接使用 wohoox-react 导出的 `dispatch`**
@@ -715,7 +785,7 @@ export function dispatch(storName?: keyof AppStore) {
 /**
  * src/pages/multiExample.tsx
  */
-import { actions } from 'src/multiStore.ts'
+import { actions } from 'src/store'
 import { dispatchAll } from 'wohoox-react'
 
 function example() {
@@ -743,7 +813,7 @@ function example() {
 
           dispatchAll()
           {
-            /* 作用和下面的代码一样 */
+            /* same as below */
           }
           {
             /* dispatch() */
@@ -763,7 +833,7 @@ function example() {
 }
 ```
 
-## Notes
+## 注意事项
 
 - 在组件中，如果你不使用 `useStore` 获取数据，**数据改变后，组件将不会重新渲染**
 - 尽可能使用严格模式（使用 actions 去修改数据）
