@@ -74,15 +74,52 @@ function Example() {
 }
 ```
 
-3. typescript support
-
-wohoox is support typescript completely
-
 ## Advance
+
+### Key-Value by one action
+
+> It's common for an action to update one field. For example, `updateVersion` is used to update the `version`. `Redux` and `Mobx` are often used like this
+> `wohoox` also allows you to update by defining a common action, thus simplifying the definition of the action
+
+```typescript
+/**
+ * src/store.ts
+ */
+
+import { createStore } from 'wohoox'
+
+type RevertObjectToArrayUnion<T extends object, K = keyof T> = K extends keyof T
+  ? [K, T[K]]
+  : unknown
+
+const store = createStore({
+  initState: {
+    version: '1.x',
+    details: {
+      name: 'wohoox',
+      other: 'xxx',
+    },
+  },
+  actions: {
+    // Use the key-value action for unified definition update, and typescript support
+    updateByKeyValue(state, ...args: RevertObjectToArrayUnion<typeof state>) {
+      const [key, value] = args as [keyof typeof state, any]
+      state[key] = value
+    },
+  },
+})
+
+// OK
+store.actions.updateByKeyValue('version', '2.0')
+// OK
+store.actions.updateByKeyValue('details', { name: 'wohoox', other: 'anything' })
+
+export default store
+```
 
 ### Multi Store
 
-> If you want to use multi store by module, look here.
+> If you want to split store by modules, look here.
 
 #### Create multi store
 
@@ -90,10 +127,12 @@ wohoox is support typescript completely
 
 ```typescript
 /**
- * src/multiStore.ts
+ * src/store/user.ts
  */
 
-const userStore = createStore({
+import { createStore } from 'wohoox'
+
+export default createStore({
   name: 'user',
   initState: {
     name: 'wohoox',
@@ -105,52 +144,49 @@ const userStore = createStore({
     },
   },
 })
-
-export const userActions = userStore.actions
 ```
 
 - Create a store named 'department'
 
 ```typescript
 /**
- * src/multiStore.ts
+ * src/store/department.ts
  */
 
-const devInitState = {
-  name: 'developer',
-  address: {
-    province: 'sc',
-    city: 'cd',
-  },
-}
+import { createStore } from 'wohoox'
 
-const devStore = createStore({
+export default createStore({
   name: 'department',
-  initState: devInitState,
+  initState: {
+    name: 'developer',
+    address: {
+      province: 'sc',
+      city: 'cd',
+    },
+  },
   actions: {
-    updateAddress(state, address: typeof devInitState['address']) {
+    updateAddress(state, address: typeof state.address) {
       state.address = address
     },
   },
 })
-
-export const devActions = devStore.actions
 ```
 
 - Combine multi store
 
 ```typescript
 /**
- * src/multiStore.ts
+ * src/store/index.ts
  */
-import defaultStore from './store'
+
 import { combineStores } from 'wohoox'
 
-export const { store, actions } = combineStores(
-  defaultStore,
-  devStore,
-  userStore,
-)
+import defaultStore from './default'
+import userStore from './user'
+
+const { store } = combineStores(defaultStore, userStore)
+
+export default store
 ```
 
 #### usage
@@ -159,50 +195,53 @@ Use multi store is same as single store, just need to point the store name
 
 ```jsx
 /**
- * src/pages/multiExample.tsx
+ * src/App.tsx
  */
-import { store } from 'src/multiStore.ts'
+import store from './store'
+import { useState } from 'react'
 
-function example() {
+function App() {
+  const [, update] = useState(1)
+
   return (
-    <div>
-      <h2>Default Version</h2>
-      {store.default.state.version}
+    <div className="App">
+      <div className="section">
+        <h3>User Store</h3>
+        <div className="version">name: {store.user.state.name}</div>
+        <button
+          className="button"
+          onClick={() => {
+            store.user.actions.updateName(store.user.state.name + '_up')
+            update(Date.now())
+          }}
+        >
+          click to update
+        </button>
+      </div>
+      <div className="section">
+        <h3>Department Store</h3>
+        <div className="version">
+          City: {store.department.state.address.city}
+        </div>
 
-      <h2>User Name</h2>
-      {store.user.state.name}
-
-      <h2>Dev address</h2>
-      {store.department.address.province}
-      {store.department.address.city}
-
-      <button
-        onClick={() => {
-          store.default.actions.updateVersion(version + '_1')
-        }}
-      >
-        click to update version
-      </button>
-      <button
-        onClick={() => {
-          store.user.actions.updateName(userState + '_1')
-        }}
-      >
-        click to update name
-      </button>
-      <button
-        onClick={() => {
-          store.department.actions.updateAddress({
-            ...devState,
-            city: devState.city + '_1',
-          })
-        }}
-      >
-        click to update address
-      </button>
+        <button
+          className="button actions"
+          onClick={() => {
+            store.department.actions.updateAddress({
+              province: 'sc',
+              city: store.department.state.address.city + '_up',
+            })
+            update(Date.now())
+          }}
+        >
+          click to update
+        </button>
+      </div>
     </div>
   )
 }
+
+export default App
 ```
 
 ### StrictMode
@@ -235,8 +274,6 @@ const store = createStore({
 export default store
 ```
 
-Modify data by actions
-
 ```jsx
 import store from 'src/store.ts'
 
@@ -267,7 +304,7 @@ function exampleStrictMode() {
 Valid ways
 
 - Actions
-- state expression + dispatch
+- state expression
 
 ```typescript
 import { createStore } from 'wohoox'

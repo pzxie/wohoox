@@ -13,7 +13,7 @@
 
 ## 兼容性
 
-\*所有支持[native ES2015 support](https://caniuse.com/es6)的浏览器
+\*支持[native ES2015 support](https://caniuse.com/es6)的浏览器
 
 ## 安装
 
@@ -51,7 +51,7 @@ export default store
 
 2. 在代码中使用 state
 
-```jsx
+```tsx
 /**
  * src/pages/example.tsx
  */
@@ -74,11 +74,48 @@ function Example() {
 }
 ```
 
-3. Typescript 支持
-
-wohoox 完整支持 Typescript
-
 ## 进阶使用
+
+### 定义 Key-Value 通用型 Action
+
+> 一个字段用一个 `action` 进行更新是很常见的，比如 `updateVersion` 是用来更新 `version` 的。常见的 `Redux`、`mobx` 也经常这样使用
+> `wohoox` 还允许你定义一个通用型的 `action`，这样就可以简化很多格式化的 `action` 定义
+
+```typescript
+/**
+ * src/store.ts
+ */
+
+import { createStore } from 'wohoox'
+
+type RevertObjectToArrayUnion<T extends object, K = keyof T> = K extends keyof T
+  ? [K, T[K]]
+  : unknown
+
+const store = createStore({
+  initState: {
+    version: '1.x',
+    details: {
+      name: 'wohoox',
+      other: 'xxx',
+    },
+  },
+  actions: {
+    // 定义一个通用的 Key-Value action，简化操作，也支持 typescript
+    updateByKeyValue(state, ...args: RevertObjectToArrayUnion<typeof state>) {
+      const [key, value] = args as [keyof typeof state, any]
+      state[key] = value
+    },
+  },
+})
+
+// OK
+store.actions.updateByKeyValue('version', '2.0')
+// OK
+store.actions.updateByKeyValue('details', { name: 'wohoox', other: 'anything' })
+
+export default store
+```
 
 ### 多模块整合
 
@@ -90,10 +127,12 @@ wohoox 完整支持 Typescript
 
 ```typescript
 /**
- * src/multiStore.ts
+ * src/store/user.ts
  */
 
-const userStore = createStore({
+import { createStore } from 'wohoox'
+
+export default createStore({
   name: 'user',
   initState: {
     name: 'wohoox',
@@ -105,52 +144,49 @@ const userStore = createStore({
     },
   },
 })
-
-export const userActions = userStore.actions
 ```
 
 - 创建一个 'department' 模块
 
 ```typescript
 /**
- * src/multiStore.ts
+ * src/store/department.ts
  */
 
-const devInitState = {
-  name: 'developer',
-  address: {
-    province: 'sc',
-    city: 'cd',
-  },
-}
+import { createStore } from 'wohoox'
 
-const devStore = createStore({
+export default createStore({
   name: 'department',
-  initState: devInitState,
+  initState: {
+    name: 'developer',
+    address: {
+      province: 'sc',
+      city: 'cd',
+    },
+  },
   actions: {
-    updateAddress(state, address: typeof devInitState['address']) {
+    updateAddress(state, address: typeof state.address) {
       state.address = address
     },
   },
 })
-
-export const devActions = devStore.actions
 ```
 
 - 多模块整合
 
 ```typescript
 /**
- * src/multiStore.ts
+ * src/store/index.ts
  */
-import defaultStore from './store'
+
 import { combineStores } from 'wohoox'
 
-export const { store, actions } = combineStores(
-  defaultStore,
-  devStore,
-  userStore,
-)
+import defaultStore from './default'
+import userStore from './user'
+
+const { store } = combineStores(defaultStore, userStore)
+
+export default store
 ```
 
 #### 多模块的使用
@@ -159,50 +195,53 @@ export const { store, actions } = combineStores(
 
 ```jsx
 /**
- * src/pages/multiExample.tsx
+ * src/App.tsx
  */
-import { store } from 'src/multiStore.ts'
+import store from './store'
+import { useState } from 'react'
 
-function example() {
+function App() {
+  const [, update] = useState(1)
+
   return (
-    <div>
-      <h2>Default Version</h2>
-      {store.default.state.version}
+    <div className="App">
+      <div className="section">
+        <h3>User Store</h3>
+        <div className="version">name: {store.user.state.name}</div>
+        <button
+          className="button"
+          onClick={() => {
+            store.user.actions.updateName(store.user.state.name + '_up')
+            update(Date.now())
+          }}
+        >
+          click to update
+        </button>
+      </div>
+      <div className="section">
+        <h3>Department Store</h3>
+        <div className="version">
+          City: {store.department.state.address.city}
+        </div>
 
-      <h2>User Name</h2>
-      {store.user.state.name}
-
-      <h2>Dev address</h2>
-      {store.department.address.province}
-      {store.department.address.city}
-
-      <button
-        onClick={() => {
-          store.default.actions.updateVersion(version + '_1')
-        }}
-      >
-        click to update version
-      </button>
-      <button
-        onClick={() => {
-          store.user.actions.updateName(userState + '_1')
-        }}
-      >
-        click to update name
-      </button>
-      <button
-        onClick={() => {
-          store.department.actions.updateAddress({
-            ...devState,
-            city: devState.city + '_1',
-          })
-        }}
-      >
-        click to update address
-      </button>
+        <button
+          className="button actions"
+          onClick={() => {
+            store.department.actions.updateAddress({
+              province: 'sc',
+              city: store.department.state.address.city + '_up',
+            })
+            update(Date.now())
+          }}
+        >
+          click to update
+        </button>
+      </div>
     </div>
   )
 }
+
+export default App
 ```
 
 ### 严格模式
@@ -350,7 +389,7 @@ import type { WohooxPlugin } from 'wohoox'
 
 export const plugin: WohooxPlugin = {
   beforeInit(initState, actions) {
-    // 在初始化 store 前，对 initState, actions 进行处理，并返回新的 initState 和 actions 用于初始化
+    // 初始化 store 之前，对 initState, actions 进行处理，并返回新的 initState 和 actions 用于初始化
     return {
       initState,
       actions,
@@ -436,7 +475,7 @@ const store = createStore({
 - `actions`: 修改数据的方式，并促使相关组件进行重新渲染。如果在严格模式下，是作为唯一合法修改数据的方式
 - `plugins`: 插件选项
 - `options.strictMode`: 严格模式开关。**默认 true**。严格模式下，actions 是唯一可以修改 state 的方式。非严格模式下，还可以直接修改 state。 ex: state.age = 23
-- `options.proxySetDeep`: 严格模式开关。**默认 true**。 Set 类型的数据不会对将其子节点进行 proxy 处理。因其没有获取数据的情形，对其子节点进行 proxy 处理没有太大必要。不过如果你确定需要，你可以将其设置为 true
+- `options.proxySetDeep`: 严格模式开关。**默认 false**。 Set 类型的数据不会对将其子节点进行 proxy 处理。因其没有获取数据的情形，对其子节点进行 proxy 处理没有太大必要。不过如果你确定需要，你可以将其设置为 true
 
 #### 用法
 
