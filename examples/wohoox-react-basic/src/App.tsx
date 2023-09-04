@@ -29,14 +29,14 @@ function App() {
             target="_blank"
             rel="noreferrer"
           >
-            <img src="/wohoox.png" className="logo" alt="logo" />
+            wohoox-react
           </a>
         </div>
 
         <div>
           <strong className="primary">Easy</strong>,{' '}
           <strong className="primary">lightweight</strong> and{' '}
-          <strong className="primary">reactive</strong> store
+          <strong className="primary">reactive</strong> store by react hooks
         </div>
         <div>
           <a

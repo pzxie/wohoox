@@ -1,9 +1,9 @@
-import { actions, useStore } from './store'
+import store from './store'
 import './App.css'
+import { useState } from 'react'
 
 function App() {
-  const defaultStoreVersion = useStore(s => s.version)
-  const userStoreTime = useStore('user', state => state.time)
+  const [, update] = useState(1)
 
   return (
     <div className="App">
@@ -14,14 +14,14 @@ function App() {
             target="_blank"
             rel="noreferrer"
           >
-            wohoox-react
+            <img src="/wohoox.png" className="logo" alt="logo" />
           </a>
         </div>
 
         <div>
           <strong className="primary">Easy</strong>,{' '}
           <strong className="primary">lightweight</strong> and{' '}
-          <strong className="primary">reactive</strong> store by react hooks
+          <strong className="primary">reactive</strong> store
         </div>
         <div>
           <a
@@ -33,33 +33,37 @@ function App() {
             Get started
           </a>
         </div>
-        <h2>Multi Modules</h2>
 
         <div className="section">
-          <h3>Default Store</h3>
-          <div className="version">Version: {defaultStoreVersion}</div>
+          <h3>User Store</h3>
+          <div className="version">name: {store.user.state.name}</div>
           <button
             className="button"
             onClick={() => {
-              actions.default.updateByKeyValue(
-                'version',
-                `1.${Math.floor(Math.random() * 10)}`,
-              )
+              store.user.actions.updateName(store.user.state.name + '_up')
+              update(Date.now())
             }}
           >
-            update version
+            click to update
           </button>
         </div>
         <div className="section">
-          <h3>User Store</h3>
-          <div className="version">name: {userStoreTime}</div>
+          <h3>Department Store</h3>
+          <div className="version">
+            City: {store.department.state.address.city}
+          </div>
+
           <button
-            className="button"
+            className="button actions"
             onClick={() => {
-              actions.user.updateBirthday(new Date().toLocaleString())
+              store.department.actions.updateAddress({
+                province: 'sc',
+                city: store.department.state.address.city + '_up',
+              })
+              update(Date.now())
             }}
           >
-            update time
+            click to update
           </button>
         </div>
       </div>
