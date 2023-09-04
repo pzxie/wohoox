@@ -33,7 +33,7 @@ import { createStore } from 'wohoox'
 
 const store = createStore({
   initState: {
-    version: '1.x',
+    version: '2.x',
     details: {
       name: 'wohoox',
       other: 'xxx',
@@ -51,26 +51,25 @@ export default store
 
 2. use state
 
-```jsx
+```typescript
 /**
- * src/pages/example.tsx
+ * request.ts
  */
-import store from 'src/store.ts'
 
-function Example() {
-  return (
-    <div>
-      <h2>Version: {store.state.version}</h2>
+import store from 'src/store'
 
-      <button
-        onClick={() => {
-          store.actions.updateVersion(version + '_1')
-        }}
-      >
-        click to update version
-      </button>
-    </div>
-  )
+const { state, actions } = store
+
+function request() {
+  // use state in other js/ts file
+  return fetch(`/api/details?version=${state.version}`)
+}
+
+async function getVersion() {
+  const res = await fetch('/api/version')
+  const { version } = await res.json()
+
+  actions.updateVersion(version)
 }
 ```
 
@@ -94,7 +93,7 @@ type RevertObjectToArrayUnion<T extends object, K = keyof T> = K extends keyof T
 
 const store = createStore({
   initState: {
-    version: '1.x',
+    version: '2.x',
     details: {
       name: 'wohoox',
       other: 'xxx',
@@ -193,55 +192,33 @@ export default store
 
 Use multi store is same as single store, just need to point the store name
 
-```jsx
+```typescript
 /**
- * src/App.tsx
+ * src/App.ts
  */
 import store from './store'
-import { useState } from 'react'
 
-function App() {
-  const [, update] = useState(1)
-
-  return (
-    <div className="App">
-      <div className="section">
-        <h3>User Store</h3>
-        <div className="version">name: {store.user.state.name}</div>
-        <button
-          className="button"
-          onClick={() => {
-            store.user.actions.updateName(store.user.state.name + '_up')
-            update(Date.now())
-          }}
-        >
-          click to update
-        </button>
-      </div>
-      <div className="section">
-        <h3>Department Store</h3>
-        <div className="version">
-          City: {store.department.state.address.city}
-        </div>
-
-        <button
-          className="button actions"
-          onClick={() => {
-            store.department.actions.updateAddress({
-              province: 'sc',
-              city: store.department.state.address.city + '_up',
-            })
-            update(Date.now())
-          }}
-        >
-          click to update
-        </button>
-      </div>
-    </div>
-  )
+function requestUserInfo() {
+  return fetch(`/api/details?version=${store.user.state.name}`)
 }
 
-export default App
+async function updateUserName() {
+  const res = await requestUserInfo()
+  const { name } = await res.json()
+
+  store.user.actions.updateName(name)
+}
+
+function printAddress() {
+  console.log(JSON.stringify(store.department.state.address))
+}
+
+function updateAddress() {
+  store.department.actions.updateAddress({
+    province: 'sc',
+    city: store.department.state.address.city + '_up',
+  })
+}
 ```
 
 ### StrictMode
@@ -258,7 +235,7 @@ import { createStore } from 'wohoox'
 
 const store = createStore({
   initState: {
-    version: '1.X',
+    version: '2.x',
   },
   actions: {
     updateVersion(state, version: string) {
@@ -274,7 +251,7 @@ const store = createStore({
 export default store
 ```
 
-```jsx
+```typescript
 import store from 'src/store.ts'
 
 function exampleStrictMode() {
@@ -287,15 +264,6 @@ function exampleStrictMode() {
     // OK
     actions.updateVersion(state.version + '_1')
   }
-
-  return (
-    <div>
-      <h2>Default Version</h2>
-      {state.version}
-
-      <button onClick={updateVersion}>click to update version</button>
-    </div>
-  )
 }
 ```
 
@@ -311,7 +279,7 @@ import { createStore } from 'wohoox'
 
 const store = createStore({
   initState: {
-    version: '1.X',
+    version: '2.x',
   },
   actions: {
     updateVersion(state, version: string) {
@@ -329,7 +297,7 @@ export default store
 
 Modify data
 
-```jsx
+```typescript
 import store from 'src/store.ts'
 
 function exampleStrictMode() {
@@ -342,39 +310,6 @@ function exampleStrictMode() {
     // OK
     state.version = state.version + '_1'
   }
-
-  return (
-    <div>
-      <h2>Default Version</h2>
-      {state.version}
-
-      <button onClick={updateVersion}>click to update version</button>
-    </div>
-  )
-}
-```
-
-### Used in js/ts code
-
-```typescript
-/**
- * request.ts
- */
-
-import store from 'src/store'
-
-const { state, actions } = store
-
-function request() {
-  // use state in other js/ts file
-  return fetch(`/api/details?version=${state.version}`)
-}
-
-async function getVersion() {
-  const res = await fetch('/api/version')
-  const { version } = await res.json()
-
-  actions.updateVersion(version)
 }
 ```
 
@@ -448,7 +383,7 @@ import persistPlugin from './plugin/persist'
 
 const store = createStore({
   initState: {
-    version: '1.x',
+    version: '2.x',
   },
   actions: {
     updateVersion(state, version: string) {
@@ -493,7 +428,7 @@ const store = createStore({
    */
   name: 'default',
   initState: {
-    version: '1.x',
+    version: '2.x',
     details: {
       name: 'wohoox',
       other: 'xxx',

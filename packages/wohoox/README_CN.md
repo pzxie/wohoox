@@ -13,7 +13,7 @@
 
 ## 兼容性
 
-\*支持[native ES2015 support](https://caniuse.com/es6)的浏览器
+- 支持[native ES2015 support](https://caniuse.com/es6)的浏览器
 
 ## 安装
 
@@ -51,26 +51,25 @@ export default store
 
 2. 在代码中使用 state
 
-```tsx
+```typescript
 /**
- * src/pages/example.tsx
+ * request.ts
  */
-import store from 'src/store.ts'
 
-function Example() {
-  return (
-    <div>
-      <h2>Version: {store.state.version}</h2>
+import store from 'src/store'
 
-      <button
-        onClick={() => {
-          store.actions.updateVersion(version + '_1')
-        }}
-      >
-        click to update version
-      </button>
-    </div>
-  )
+const { state, actions } = store
+
+function request() {
+  // 在其他地方使用 state
+  return fetch(`/api/details?version=${state.version}`)
+}
+
+async function getVersion() {
+  const res = await fetch('/api/version')
+  const { version } = await res.json()
+
+  actions.updateVersion(version)
 }
 ```
 
@@ -94,7 +93,7 @@ type RevertObjectToArrayUnion<T extends object, K = keyof T> = K extends keyof T
 
 const store = createStore({
   initState: {
-    version: '1.x',
+    version: '2.x',
     details: {
       name: 'wohoox',
       other: 'xxx',
@@ -193,55 +192,33 @@ export default store
 
 多模块的使用方式和单模块的一样，只是需要指明获取 state 的 store 名称
 
-```jsx
+```typescript
 /**
- * src/App.tsx
+ * src/App.ts
  */
 import store from './store'
-import { useState } from 'react'
 
-function App() {
-  const [, update] = useState(1)
-
-  return (
-    <div className="App">
-      <div className="section">
-        <h3>User Store</h3>
-        <div className="version">name: {store.user.state.name}</div>
-        <button
-          className="button"
-          onClick={() => {
-            store.user.actions.updateName(store.user.state.name + '_up')
-            update(Date.now())
-          }}
-        >
-          click to update
-        </button>
-      </div>
-      <div className="section">
-        <h3>Department Store</h3>
-        <div className="version">
-          City: {store.department.state.address.city}
-        </div>
-
-        <button
-          className="button actions"
-          onClick={() => {
-            store.department.actions.updateAddress({
-              province: 'sc',
-              city: store.department.state.address.city + '_up',
-            })
-            update(Date.now())
-          }}
-        >
-          click to update
-        </button>
-      </div>
-    </div>
-  )
+function requestUserInfo() {
+  return fetch(`/api/details?version=${store.user.state.name}`)
 }
 
-export default App
+async function updateUserName() {
+  const res = await requestUserInfo()
+  const { name } = await res.json()
+
+  store.user.actions.updateName(name)
+}
+
+function printAddress() {
+  console.log(JSON.stringify(store.department.state.address))
+}
+
+function updateAddress() {
+  store.department.actions.updateAddress({
+    province: 'sc',
+    city: store.department.state.address.city + '_up',
+  })
+}
 ```
 
 ### 严格模式
@@ -258,7 +235,7 @@ import { createStore } from 'wohoox'
 
 const store = createStore({
   initState: {
-    version: '1.X',
+    version: '2.x',
   },
   actions: {
     updateVersion(state, version: string) {
@@ -274,28 +251,19 @@ const store = createStore({
 export default store
 ```
 
-```jsx
+```typescript
 import store from 'src/store.ts'
 
 function exampleStrictMode() {
   const { state, actions } = store
 
   const updateVersion = () => {
-    // 通过表达式直接赋值，将会报错
+    // Error when modify by state
     // state.version = state.version + '_1'
 
     // OK
     actions.updateVersion(state.version + '_1')
   }
-
-  return (
-    <div>
-      <h2>Default Version</h2>
-      {state.version}
-
-      <button onClick={updateVersion}>click to update version</button>
-    </div>
-  )
 }
 ```
 
@@ -311,7 +279,7 @@ import { createStore } from 'wohoox'
 
 const store = createStore({
   initState: {
-    version: '1.X',
+    version: '2.x',
   },
   actions: {
     updateVersion(state, version: string) {
@@ -329,7 +297,7 @@ export default store
 
 修改数据
 
-```jsx
+```typescript
 import store from 'src/store.ts'
 
 function exampleStrictMode() {
@@ -342,39 +310,6 @@ function exampleStrictMode() {
     // OK
     state.version = state.version + '_1'
   }
-
-  return (
-    <div>
-      <h2>Default Version</h2>
-      {state.version}
-
-      <button onClick={updateVersion}>click to update version</button>
-    </div>
-  )
-}
-```
-
-### 在普通 js/ts 文件中使用 wohoox
-
-```typescript
-/**
- * request.ts
- */
-
-import store from 'src/store'
-
-const { state, actions } = store
-
-function request() {
-  // 在其他地方使用 state
-  return fetch(`/api/details?version=${state.version}`)
-}
-
-async function getVersion() {
-  const res = await fetch('/api/version')
-  const { version } = await res.json()
-
-  actions.updateVersion(version)
 }
 ```
 
