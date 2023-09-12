@@ -1,5 +1,13 @@
 # wohoox-react
 
+## 1.0.0-rc.5
+
+### Patch Changes
+
+- change the way to get global variables
+- Updated dependencies
+  - wohoox@2.0.0-rc.5
+
 ## 1.0.0-rc.4
 
 ### Patch Changes

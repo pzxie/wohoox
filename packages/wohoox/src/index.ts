@@ -1,7 +1,13 @@
 export { createStore, combineStores } from './core/store'
 
 export { observer } from './core/observer'
-export { storeMap, defaultStoreName } from './global'
+export {
+  DefaultStoreName,
+  getStores,
+  getStoreNames,
+  getStoreByName,
+  clearStore,
+} from './global'
 
 export { isIgnoreCacheKey } from './core/keyCaches'
 

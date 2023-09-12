@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { defaultStoreName, observer, ignoreToRecordEvent } from 'wohoox'
+import { observer, ignoreToRecordEvent, DefaultStoreName } from 'wohoox'
 import { isObserverObject, guid } from 'wohoox-utils'
 
 import useEvent from './common/useEvent'
@@ -61,7 +61,7 @@ export function useWohoox<T extends (state: any) => any>(
   getState: T,
 ): ReturnType<T>
 export function useWohoox(name?: any, getState?: any): any {
-  const storeName = typeof name === 'string' ? name : defaultStoreName
+  const storeName = typeof name === 'string' ? name : DefaultStoreName
 
   const usedSourceMap = useRef(new Map<any, string>())
   const usedKeys = useRef(new Set<string>())

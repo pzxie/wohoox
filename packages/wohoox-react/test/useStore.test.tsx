@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 
-import { defaultStoreName, storeMap } from 'wohoox'
+import { DefaultStoreName, clearStore } from 'wohoox'
 
 import { createStore } from '../src/index'
 import { useStore } from '../src/hooks/useStore'
@@ -10,7 +10,7 @@ const reactLegency = !!process.env.reactLegency
 
 beforeEach(() => {
   cleanup()
-  storeMap.clear()
+  clearStore()
 })
 
 class ErrorBoundary extends React.Component<
@@ -50,7 +50,7 @@ it('check empty store: throw err', () => {
   const fn = jest.fn()
 
   function Child() {
-    useStore(defaultStoreName)
+    useStore(DefaultStoreName)
 
     fn()
 

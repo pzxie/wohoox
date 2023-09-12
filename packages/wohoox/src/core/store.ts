@@ -1,10 +1,10 @@
 import { isPlainObject } from 'wohoox-utils'
 
 import {
-  storeMap,
+  addStore,
   getIsModifyByAction,
   setIsModifyByAction,
-  defaultStoreName,
+  DefaultStoreName,
 } from '../global'
 import { observer } from './observer'
 import { addPlugins } from './plugin'
@@ -18,10 +18,17 @@ import type {
   ExtractStores,
 } from '../types'
 
+const NOT_SAFE_DISPATCH = '__not_safe__dispatch'
+
 function revertActionsToAutoMode<
   TState,
   TActions extends ActionsDefine<TState>,
->(state: TState, actions: TActions, autoModeTask = () => {}) {
+>(
+  storeName: string,
+  state: TState,
+  actions: TActions,
+  autoModeTask = () => {},
+) {
   const autoModeActions: ActionDispatch<TState, TActions> = Object.assign({})
 
   for (const actionName in actions) {
@@ -35,6 +42,7 @@ function revertActionsToAutoMode<
       }) as any
     } else if (isPlainObject(actions[actionName])) {
       autoModeActions[actionName] = revertActionsToAutoMode(
+        storeName,
         state,
         actions[actionName] as any,
         autoModeTask,
@@ -77,7 +85,7 @@ export class Store<
   dispatch = () => {}
 
   constructor(name: N, state: S, actions?: A, options?: Options) {
-    storeMap.set(name, this)
+    addStore(name, this)
     this.sourceState = state
     Object.assign(this.options, options)
 
@@ -111,8 +119,12 @@ export class Store<
     })
 
     this.actions = revertActionsToAutoMode(
+      name,
       this.state,
-      { ...actions!, __not_safe__dispatch: () => {} },
+      {
+        ...actions!,
+        [NOT_SAFE_DISPATCH]: () => {},
+      },
       () => {
         this.applyRender()
         this.effectList.add.clear()
@@ -121,9 +133,9 @@ export class Store<
       },
     )
 
-    this.dispatch = this.actions.__not_safe__dispatch as () => any
+    this.dispatch = this.actions[NOT_SAFE_DISPATCH] as () => any
 
-    delete this.actions.__not_safe__dispatch
+    delete this.actions[NOT_SAFE_DISPATCH]
   }
 
   private applyRender() {
@@ -156,9 +168,9 @@ export class Store<
 export function createStore<
   S extends object,
   A extends ActionsDefine<S>,
-  N extends string = typeof defaultStoreName,
+  N extends string = typeof DefaultStoreName,
 >({
-  name = defaultStoreName as N,
+  name = DefaultStoreName as N,
   initState,
   actions,
   plugins,

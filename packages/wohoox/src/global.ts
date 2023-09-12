@@ -2,12 +2,35 @@ import type { ActionsDefine } from './types'
 import type { Store } from './core/store'
 
 export const MapSetSizeKey = '__size'
-export const defaultStoreName = 'default'
+export const DefaultStoreName = 'default'
 
-export const storeMap: Map<
+export const StoreMap: Map<
   string,
   Store<string, object, ActionsDefine<object>>
 > = new Map()
+
+export function getStoreByName(name: string) {
+  return StoreMap.get(name)
+}
+
+export function getStores() {
+  return Array.from(StoreMap.values())
+}
+
+export function getStoreNames() {
+  return Array.from(StoreMap.keys())
+}
+
+export function addStore(
+  name: string,
+  store: Store<string, object, ActionsDefine<object>>,
+) {
+  StoreMap.set(name, store)
+}
+
+export function clearStore() {
+  StoreMap.clear()
+}
 
 let isModifyByAction = false
 

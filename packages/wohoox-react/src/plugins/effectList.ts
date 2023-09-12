@@ -1,4 +1,4 @@
-import { storeMap } from 'wohoox'
+import { getStoreByName } from 'wohoox'
 import type { WohooxPlugin } from 'wohoox'
 
 function addKeysToEffect(
@@ -6,7 +6,7 @@ function addKeysToEffect(
   type: 'add' | 'delete' | 'set',
   keys: any[],
 ) {
-  const store = storeMap.get(storeName)
+  const store = getStoreByName(storeName)
 
   if (!store) return
 

@@ -1,6 +1,6 @@
 {
   "name": "wohoox-react",
-  "version": "1.0.0-rc.4",
+  "version": "1.0.0-rc.5",
   "description": "Easy,lightweight and reactive store by react hooks",
   "author": "pzxie <pzxie@outlook.com>",
   "main": "dist/index.js",

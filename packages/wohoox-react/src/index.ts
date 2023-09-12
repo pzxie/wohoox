@@ -1,4 +1,4 @@
-import { storeMap, defaultStoreName } from 'wohoox'
+import { getStores, getStoreByName, DefaultStoreName } from 'wohoox'
 
 export type { WohooxPlugin } from 'wohoox'
 
@@ -7,9 +7,9 @@ export { createStore } from './createStore'
 export { useWohoox as useStore } from './hooks/useWohoox'
 
 export function dispatch(storeName?: string) {
-  storeMap.get(storeName || defaultStoreName)?.dispatch()
+  getStoreByName(storeName || DefaultStoreName)?.dispatch()
 }
 
 export function dispatchAll() {
-  Array.from(storeMap.values()).forEach(store => store.dispatch())
+  getStores().forEach(store => store.dispatch())
 }

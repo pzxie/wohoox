@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 import { isObserverObject, isMap, isSet } from 'wohoox-utils'
 
-import { defaultStoreName, MapSetSizeKey } from '../global'
+import { DefaultStoreName, MapSetSizeKey } from '../global'
 import { isIgnoreCacheKey } from './keyCaches'
 import ProxyMap from './proxyMap'
 import ProxyWeakMap from './proxyWeakMap'
@@ -298,7 +298,7 @@ export function observer(
     keysStack = [],
     proxyMap = new WeakMap(),
     proxySetDeep = true,
-    name = defaultStoreName,
+    name = DefaultStoreName,
     isTopLevel = true,
   } = options || {}
 
