@@ -11,9 +11,9 @@
     "clear:dist": "rimraf packages/*/dist",
     "changeset": "changeset",
     "changeset-version": "changeset version",
-    "before-publish": "pnpm clear:dist && pnpm install && pnpm build",
+    "before-publish": "pnpm clear:dist && pnpm install && pnpm build && pnpm test && git add . && git commit",
     "changeset-publish": "changeset publish",
-    "push": "git add . && git commit && git push --follow-tags"
+    "push": "git push --follow-tags"
   },
   "author": "pzxie",
   "private": true,
