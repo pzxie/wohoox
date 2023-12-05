@@ -1,5 +1,11 @@
 # wohoox
 
+## 2.0.0-rc.6
+
+### Minor Changes
+
+- 2d56aa8: support state reset
+
 ## 2.0.0-rc.5
 
 ### Patch Changes

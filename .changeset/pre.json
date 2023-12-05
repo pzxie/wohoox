@@ -12,6 +12,7 @@
     "ex-wohoox-multi-module": "0.1.0"
   },
   "changesets": [
+    "brave-gifts-clean",
     "hungry-pigs-dream",
     "quick-points-rescue",
     "seven-otters-sip",
