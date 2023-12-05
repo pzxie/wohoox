@@ -180,6 +180,14 @@ export function useWohoox(name?: any, getState?: any): any {
   }, [id, store, updateState])
 
   useEffect(() => {
+    store.addResetListener(updateState)
+
+    return () => {
+      store.removeResetListener(updateState)
+    }
+  }, [store, updateState])
+
+  useEffect(() => {
     if (!id) return
 
     const callback = () => {

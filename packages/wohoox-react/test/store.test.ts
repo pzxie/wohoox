@@ -1,4 +1,7 @@
 import { createStore, combineStores } from '../src/index'
+import { clearStore } from 'wohoox'
+
+beforeEach(clearStore)
 
 it('store: properties', () => {
   const store = createStore({

@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { fireEvent, cleanup, render, screen } from '@testing-library/react'
+import { clearStore } from 'wohoox'
 
 import { createStore, useStore, dispatch } from '../src'
 
@@ -66,7 +67,10 @@ function initStore(
   }
 }
 
-afterEach(cleanup)
+beforeEach(() => {
+  cleanup()
+  clearStore()
+})
 
 describe('map single component', () => {
   describe('size', () => {

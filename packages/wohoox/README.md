@@ -23,7 +23,7 @@ npm install -S wohoox
 
 ## Quick Start
 
-1. create a store
+1. Create store
 
 ```typescript
 /**
@@ -39,17 +39,12 @@ const store = createStore({
       other: 'xxx',
     },
   },
-  actions: {
-    updateVersion(state, version: string) {
-      state.version = version
-    },
-  },
 })
 
 export default store
 ```
 
-2. use state
+2. Use state
 
 ```typescript
 /**
@@ -61,7 +56,7 @@ import store from 'src/store'
 const { state, actions } = store
 
 function request() {
-  // use state in other js/ts file
+  // 使用 state
   return fetch(`/api/details?version=${state.version}`)
 }
 
@@ -69,7 +64,67 @@ async function getVersion() {
   const res = await fetch('/api/version')
   const { version } = await res.json()
 
+  console.log(version)
+}
+```
+
+3. Update state
+
+`wohoox` updates state by `action`. This will make the state changes more controllable and trackable
+
+```typescript
+/**
+ * src/store.ts
+ */
+import { createStore } from 'wohoox'
+
+const store = createStore({
+  initState: {...},
+  // init actions
+  actions: {
+    updateVersion(state, version: string) {
+      state.version = version
+    },
+    updateDetailsName(state, name: string) {
+      state.details.name = name;
+    }
+    updateDetails(state, details: typeof state.details) {
+      state.details = details
+    }
+  },
+})
+
+export default store
+```
+
+```typescript
+/**
+ * request.ts
+ */
+
+import store from 'src/store'
+
+const { state, actions } = store
+
+function request() {
+  return fetch(`/api/details?version=${state.version}`)
+}
+
+async function getVersion() {
+  const res = await fetch('/api/version')
+  const { version, details } = await res.json()
+
+  // update version by action
   actions.updateVersion(version)
+  console.log(state.version)
+
+  // update the object
+  actions.updateDetails(details)
+  console.log(state.details)
+
+  // update the deep field
+  actions.updateDetailsName(details.name)
+  console.log(state.details)
 }
 ```
 
@@ -115,6 +170,68 @@ store.actions.updateByKeyValue('details', { name: 'wohoox', other: 'anything' })
 
 export default store
 ```
+
+### Reset store
+
+There is a built-in action named [reset]. You can use it to reset the state.
+
+#### initState is object
+
+The reset params is required, if the store's initState is an object.
+
+```typescript
+import { createStore } from 'wohoox'
+
+const store = createStore({
+  initState: {
+    name: 'wohoox',
+    version: '1.x',
+  },
+})
+
+/**
+ * reset by new object
+ * reset params is required
+ */
+store.actions.reset({
+  name: 'wohoox',
+  version: '2.x',
+})
+```
+
+#### initState is factory function
+
+The reset params is optional, if the store's initState is an factory function.
+
+- **If set params,** wohoox will use the factory function to reset the state.
+
+- **If no params,** wohoox will use the params to reset the state.
+
+```typescript
+import { createStore } from 'wohoox'
+
+const store = createStore({
+  initState: () => ({
+    name: 'wohoox',
+    version: '1.x',
+  }),
+})
+
+/**
+ * reset by initState of factory function
+ */
+store.actions.reset()
+
+/**
+ * reset by new object
+ */
+store.actions.reset({
+  name: 'wohoox',
+  version: '2.x',
+})
+```
+
+**Note:** `reset` is a built-in action for wohoox. If you declared `reset` in actions, your `reset` will be ignored.
 
 ### Multi Store
 

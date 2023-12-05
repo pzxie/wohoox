@@ -6,6 +6,7 @@ import {
   screen,
   waitFor,
 } from '@testing-library/react'
+import { clearStore } from 'wohoox'
 
 import { createStore, useStore, dispatch, dispatchAll } from '../src'
 
@@ -152,7 +153,10 @@ function initStore(options?: { strictMode?: boolean }) {
   }
 }
 
-afterEach(cleanup)
+afterEach(() => {
+  cleanup()
+  clearStore()
+})
 
 describe('multi component: get store name', () => {
   it('get store name', () => {

@@ -1,4 +1,4 @@
-import { createStore } from '../src'
+import { createStore, clearStore } from '../src'
 
 function initStore(storeName?: string, options?: { strictMode?: boolean }) {
   const initState = {
@@ -26,6 +26,10 @@ function initStore(storeName?: string, options?: { strictMode?: boolean }) {
 
   return { store, initState }
 }
+
+beforeEach(() => {
+  clearStore()
+})
 
 describe('update by expression', () => {
   it('modify value: failed in strict mode', () => {

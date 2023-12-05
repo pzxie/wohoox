@@ -1,10 +1,14 @@
-import { createStore, combineStores } from '../src/index'
+import { createStore, combineStores, clearStore } from '../src/index'
+
+beforeEach(() => {
+  clearStore()
+})
 
 it('store: properties', () => {
   const store = createStore({
-    initState: {
+    initState: () => ({
       name: 'wohoox',
-    },
+    }),
   })
 
   expect(store).toHaveProperty('name')
@@ -238,9 +242,9 @@ describe('options', () => {
 
 it('combineStores define check', () => {
   const defaultStore = createStore({
-    initState: {
+    initState: () => ({
       type: 'default',
-    },
+    }),
     actions: {
       updateType(state, type) {
         state.type = type
@@ -249,9 +253,9 @@ it('combineStores define check', () => {
   })
   const userStore = createStore({
     name: 'user',
-    initState: {
+    initState: () => ({
       name: 'wohoox',
-    },
+    }),
     actions: {
       updateName(state, name) {
         state.name = name
@@ -280,4 +284,25 @@ it('combineStores define check', () => {
   expect(combineResult.actions.default).toHaveProperty('updateType')
   expect(combineResult.actions).toHaveProperty('user')
   expect(combineResult.actions.user).toHaveProperty('updateName')
+})
+
+it('warning to define multi store by same name', () => {
+  const logSpy = jest.spyOn(global.console, 'warn').mockImplementation(() => {})
+  createStore({
+    initState: () => ({
+      type: 'default',
+    }),
+  })
+  createStore({
+    initState: () => ({
+      name: 'wohoox',
+    }),
+  })
+
+  expect(logSpy).toHaveBeenCalled()
+  expect(logSpy.mock.calls[0][0]).toContain(
+    'A store named [default] has been declared',
+  )
+
+  logSpy.mockRestore()
 })
