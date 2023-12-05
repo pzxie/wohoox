@@ -1,4 +1,4 @@
-import { createStore } from '../src'
+import { createStore, clearStore } from '../src'
 import type { WohooxPlugin } from '../src'
 
 const sourceMap = {
@@ -63,6 +63,10 @@ function initStore(
     store,
   }
 }
+
+beforeEach(() => {
+  clearStore()
+})
 
 describe('map', () => {
   describe('size', () => {

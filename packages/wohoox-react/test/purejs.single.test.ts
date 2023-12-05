@@ -1,4 +1,5 @@
 import { createStore } from '../src'
+import { clearStore } from 'wohoox'
 
 function initStore(storeName?: string, options?: { strictMode?: boolean }) {
   const initState = {
@@ -58,6 +59,8 @@ function initStore(storeName?: string, options?: { strictMode?: boolean }) {
 
   return { store, initState }
 }
+
+beforeEach(clearStore)
 
 describe('purejs: store name', () => {
   it('equals "default"', () => {

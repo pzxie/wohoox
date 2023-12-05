@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { clearStore } from 'wohoox'
 
 import { createStore, useStore } from '../src/index'
 
@@ -7,6 +8,7 @@ const reactLegency = !!process.env.reactLegency
 
 beforeEach(() => {
   cleanup()
+  clearStore()
 })
 
 it('plugin: beforeInit', () => {

@@ -1,4 +1,4 @@
-import { createStore } from '../src'
+import { createStore, clearStore } from '../src'
 import type { WohooxPlugin } from '../src'
 
 function initStore(
@@ -31,6 +31,10 @@ function initStore(
     store,
   }
 }
+
+beforeEach(() => {
+  clearStore()
+})
 
 describe('array item', () => {
   it('value modify: original item', () => {

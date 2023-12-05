@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { fireEvent, cleanup, render, act, screen } from '@testing-library/react'
+import { clearStore } from 'wohoox'
 
 import { createStore, useStore, dispatch, dispatchAll } from '../src'
 
@@ -73,7 +74,10 @@ function initStore(storeName?: string, options?: { strictMode?: boolean }) {
   }
 }
 
-afterEach(cleanup)
+afterEach(() => {
+  cleanup()
+  clearStore()
+})
 
 describe('component: getState', () => {
   it('get state before init store, should be error', () => {

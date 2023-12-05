@@ -42,4 +42,5 @@ export type WohooxPlugin = {
     oldValue: any,
   ): void
   onGet?(storeName: string, value: any, keys: any[], target: any): void
+  onReset?(storeName: string, state: any, originState: any): void
 }

@@ -39,17 +39,12 @@ const store = createStore({
       other: 'xxx',
     },
   },
-  actions: {
-    updateVersion(state, version: string) {
-      state.version = version
-    },
-  },
 })
 
 export default store
 ```
 
-2. 在代码中使用 state
+2. 使用 state
 
 ```typescript
 /**
@@ -61,7 +56,7 @@ import store from 'src/store'
 const { state, actions } = store
 
 function request() {
-  // 在其他地方使用 state
+  // 使用 state
   return fetch(`/api/details?version=${state.version}`)
 }
 
@@ -69,7 +64,67 @@ async function getVersion() {
   const res = await fetch('/api/version')
   const { version } = await res.json()
 
+  console.log(version)
+}
+```
+
+3. 更新状态
+
+wohoox 通过 `action` 来更新状态，从而使整个状态的变更更加可控，可追踪。
+
+```typescript
+/**
+ * src/store.ts
+ */
+import { createStore } from 'wohoox'
+
+const store = createStore({
+  initState: {...},
+  // 初始化定义 actions
+  actions: {
+    updateVersion(state, version: string) {
+      state.version = version
+    },
+    updateDetailsName(state, name: string) {
+      state.details.name = name;
+    }
+    updateDetails(state, details: typeof state.details) {
+      state.details = details
+    }
+  },
+})
+
+export default store
+```
+
+```typescript
+/**
+ * request.ts
+ */
+
+import store from 'src/store'
+
+const { state, actions } = store
+
+function request() {
+  return fetch(`/api/details?version=${state.version}`)
+}
+
+async function getVersion() {
+  const res = await fetch('/api/version')
+  const { version, details } = await res.json()
+
+  // 使用 action 更新 version
   actions.updateVersion(version)
+  console.log(state.version)
+
+  // 可以更新整个对象
+  actions.updateDetails(details)
+  console.log(state.details)
+
+  // 也可以更新更深层次某一个字段
+  actions.updateDetailsName(details.name)
+  console.log(state.details)
 }
 ```
 
@@ -115,6 +170,68 @@ store.actions.updateByKeyValue('details', { name: 'wohoox', other: 'anything' })
 
 export default store
 ```
+
+### Reset store
+
+wohoox 内置了 `reset` action。你可以使用 `reset` 去重置 `state`
+
+#### initState 是个对象
+
+当初始化 store 时，`initState`如果是个对象，则 `reset` 必须手动传入新的初始化数据
+
+```typescript
+import { createStore } from 'wohoox'
+
+const store = createStore({
+  initState: {
+    name: 'wohoox',
+    version: '1.x',
+  },
+})
+
+/**
+ * 使用传入的数据重置状态
+ * reset 的参数时必填的
+ */
+store.actions.reset({
+  name: 'wohoox',
+  version: '2.x',
+})
+```
+
+#### initState 是个函数
+
+当初始化 store 时，`initState`如果是个工厂函数，则 `reset` 参数是可选的
+
+- **不传参数时，**则默认调用工厂函数返回新的初始化状态
+
+- **传参数时，**则使用传入的数据作为初始化状态
+
+```typescript
+import { createStore } from 'wohoox'
+
+const store = createStore({
+  initState: () => ({
+    name: 'wohoox',
+    version: '1.x',
+  }),
+})
+
+/**
+ * 调用工厂函数重置状态
+ */
+store.actions.reset()
+
+/**
+ * 使用传入的数据重置状态
+ */
+store.actions.reset({
+  name: 'wohoox',
+  version: '2.x',
+})
+```
+
+**注意:** `reset` 是 `wohoox` 的内置 `action`. 自己定义的名为 `reset` 的 `action` 将会被忽略。
 
 ### 多模块整合
 

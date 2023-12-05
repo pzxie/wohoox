@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { fireEvent, cleanup, render, screen } from '@testing-library/react'
+import { clearStore } from 'wohoox'
 
 import { createStore, useStore, dispatch } from '../src'
 
@@ -31,7 +32,10 @@ function initStore(storeName?: string, options?: { strictMode?: boolean }) {
   }
 }
 
-beforeEach(cleanup)
+beforeEach(() => {
+  cleanup()
+  clearStore()
+})
 
 describe('single component', () => {
   it('value modify: original item', () => {

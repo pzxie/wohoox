@@ -1,4 +1,4 @@
-import { createStore } from '../src'
+import { createStore, clearStore } from '../src'
 
 function initStore(storeName?: string, options?: { strictMode?: boolean }) {
   const initState = {
@@ -35,6 +35,10 @@ function initStore(storeName?: string, options?: { strictMode?: boolean }) {
     store,
   }
 }
+
+beforeEach(() => {
+  clearStore()
+})
 
 describe('original type', () => {
   it('string', () => {

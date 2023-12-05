@@ -21,7 +21,7 @@ npm install -S wohoox-react
 
 ## Quick Start
 
-1. Create a store
+1. Create store
 
 ```typescript
 /**
@@ -29,7 +29,7 @@ npm install -S wohoox-react
  */
 import { createStore } from 'wohoox-react'
 
-const store = createStore({
+createStore({
   initState: {
     version: '2.x',
     details: {
@@ -37,24 +37,18 @@ const store = createStore({
       other: 'xxx',
     },
   },
-  actions: {
-    updateVersion(state, version: string) {
-      state.version = version
-    },
-  },
 })
 
 export { useStore } from 'wohoox-react'
-export const actions = store.actions
 ```
 
-2. Use state in component
+2. Use state
 
 ```jsx
 /**
  * src/pages/example.tsx
  */
-import { actions, useStore } from 'src/store.ts'
+import { useStore } from 'src/store.ts'
 
 function Example() {
   // Default to get 'default' store and return the hole state
@@ -66,6 +60,57 @@ function Example() {
     <div>
       <h2>Version: {version}</h2>
       <h2>Version: {userState.version}</h2>
+    </div>
+  )
+}
+```
+
+3. Update state
+
+`wohoox-react` updates state by `action`. This will make the state changes more controllable and trackable
+
+```typescript
+/**
+ * src/store.ts
+ */
+import { createStore } from 'wohoox-react'
+
+const store = createStore({
+  initState: {...},
+  // init actions
+  actions: {
+    updateVersion(state, version: string) {
+      state.version = version
+    },
+    updateDetailsName(state, name: string) {
+      state.details.name = name;
+    }
+    updateDetails(state, details: typeof state.details) {
+      state.details = details
+    }
+  },
+})
+
+export { useStore } from 'wohoox-react'
+export const actions = store.actions
+```
+
+```jsx
+/**
+ * src/pages/example.tsx
+ */
+import { actions, useStore } from 'src/store.ts'
+
+function Example() {
+  const userState = useStore()
+
+  const version = useStore(state => state.version)
+
+  return (
+    <div>
+      <h2>Version: {version}</h2>
+      <h2>Version: {userState.version}</h2>
+      <h2>Version: {userState.details.name}</h2>
 
       <button
         onClick={() => {
@@ -74,12 +119,33 @@ function Example() {
       >
         click to update version
       </button>
+
+      <button
+        onClick={() => {
+          // update the deep field
+          actions.updateDetailsName('wohoox-react-' + Math.random())
+        }}
+      >
+        update name
+      </button>
+
+      <button
+        onClick={() => {
+          // update the object
+          actions.updateDetails({
+            ...userState.details,
+            name: 'wohoox-react-' + Math.random(),
+          })
+        }}
+      >
+        update details
+      </button>
     </div>
   )
 }
 ```
 
-3. Typescript support
+4. Typescript support
 
 In order to be able to automatically infer the type based on state, useStore needs to be redefine
 **If you do not use typescript, you can use `useStore` directly**

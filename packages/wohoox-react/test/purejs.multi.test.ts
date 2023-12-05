@@ -1,4 +1,5 @@
 import { createStore } from '../src'
+import { clearStore } from 'wohoox'
 
 function initStore(options?: { strictMode?: boolean }) {
   const defaultInitState = {
@@ -126,6 +127,8 @@ function initStore(options?: { strictMode?: boolean }) {
     departmentInitState,
   }
 }
+
+beforeEach(clearStore)
 
 describe('purejs multi: store name', () => {
   it('check multi store names', () => {

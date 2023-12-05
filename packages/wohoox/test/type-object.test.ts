@@ -1,4 +1,4 @@
-import { createStore } from '../src'
+import { createStore, clearStore } from '../src'
 
 const initSymbol = Symbol('symbol')
 
@@ -27,6 +27,10 @@ function initStore(storeName?: string, options?: { strictMode?: boolean }) {
     store,
   }
 }
+
+beforeEach(() => {
+  clearStore()
+})
 
 describe('plain object', () => {
   it('modify value', () => {

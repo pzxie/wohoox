@@ -29,7 +29,7 @@ npm install -S wohoox-react
  */
 import { createStore } from 'wohoox-react'
 
-const store = createStore({
+createStore({
   initState: {
     version: '2.x',
     details: {
@@ -37,18 +37,63 @@ const store = createStore({
       other: 'xxx',
     },
   },
+})
+
+export { useStore } from 'wohoox-react'
+```
+
+2. 使用 state
+
+```jsx
+/**
+ * src/pages/example.tsx
+ */
+import { useStore } from 'src/store.ts'
+
+function Example() {
+  // 默认获取名为【default】的 store 中的整个 state
+  const userState = useStore()
+
+  const version = useStore(state => state.version)
+
+  return (
+    <div>
+      <h2>Version: {version}</h2>
+      <h2>Version: {userState.version}</h2>
+    </div>
+  )
+}
+```
+
+3. 更新状态
+
+wohoox-react 通过 `action` 来更新状态，从而使整个状态的变更更加可控，可追踪。
+
+```typescript
+/**
+ * src/store.ts
+ */
+import { createStore } from 'wohoox-react'
+
+const store = createStore({
+  initState: {...},
+  // 初始化定义 actions
   actions: {
     updateVersion(state, version: string) {
       state.version = version
     },
+    updateDetailsName(state, name: string) {
+      state.details.name = name;
+    }
+    updateDetails(state, details: typeof state.details) {
+      state.details = details
+    }
   },
 })
 
 export { useStore } from 'wohoox-react'
 export const actions = store.actions
 ```
-
-2. 在组件中获取并使用 state
 
 ```jsx
 /**
@@ -66,6 +111,7 @@ function Example() {
     <div>
       <h2>Version: {version}</h2>
       <h2>Version: {userState.version}</h2>
+      <h2>Version: {userState.details.name}</h2>
 
       <button
         onClick={() => {
@@ -74,12 +120,33 @@ function Example() {
       >
         click to update version
       </button>
+
+      <button
+        onClick={() => {
+          // 可以更新深层某一个字段
+          actions.updateDetailsName('wohoox-react-' + Math.random())
+        }}
+      >
+        update name
+      </button>
+
+      <button
+        onClick={() => {
+          // 也可以更新整个对象
+          actions.updateDetails({
+            ...userState.details,
+            name: 'wohoox-react-' + Math.random(),
+          })
+        }}
+      >
+        update details
+      </button>
     </div>
   )
 }
 ```
 
-3. typescript 支持
+4. typescript 支持
 
 为了能够完整使用 typescript 的类型推断, useStore 需要进行重新声明
 **如果你不使用 typescript, 你可以直接使用 wohoox-react 导出的 `useStore`**
@@ -123,6 +190,12 @@ const store = createStore({
     updateVersion(state, version: string) {
       state.version = version
     },
+    updateDetailsName(state, name: string) {
+      state.details.name = name;
+    }
+    updateDetails(state, details: typeof state.details) {
+      state.details = details
+    }
   },
 })
 
