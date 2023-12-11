@@ -12,7 +12,7 @@ beforeEach(() => {
 })
 
 it('plugin: beforeInit', () => {
-  const store = createStore({
+  const { store } = createStore({
     initState: {
       name: 'wohoox',
     },
@@ -73,7 +73,7 @@ it('plugin: onInit', () => {
 it('plugin:js: onAdd', () => {
   let logs: any[] = []
 
-  const store = createStore({
+  const { store } = createStore({
     initState: {
       name: 'wohoox',
     },
@@ -101,7 +101,7 @@ it('plugin:js: onAdd', () => {
 it('plugin:js: onDelete', () => {
   let logs: any[] = []
 
-  const store = createStore({
+  const { store } = createStore({
     initState: {
       name: 'wohoox',
     },
@@ -130,7 +130,7 @@ it('plugin:js: onDelete', () => {
 it('plugin:js: onChange', () => {
   let logs: any[] = []
 
-  const store = createStore({
+  const { store } = createStore({
     initState: {
       name: 'wohoox',
     },
@@ -160,7 +160,7 @@ it('plugin:js: onChange', () => {
 it('plugin:js: onGet', () => {
   let logs: any[] = []
 
-  const store = createStore({
+  const { store } = createStore({
     initState: {
       name: 'wohoox',
     },
@@ -194,7 +194,7 @@ it('plugin:js: onGet', () => {
 it('plugin:hooks: onAdd', () => {
   let logs: any[] = []
 
-  const store = createStore({
+  const { store } = createStore({
     initState: {
       obj: {
         name: 'wohoox',
@@ -263,7 +263,7 @@ it('plugin:hooks: onAdd', () => {
 it('plugin:hooks: onDelete', () => {
   let logs: any[] = []
 
-  const store = createStore({
+  const { store } = createStore({
     initState: {
       obj: {
         name: 'wohoox',
@@ -331,7 +331,7 @@ it('plugin:hooks: onDelete', () => {
 it('plugin:hooks: onChange', () => {
   let logs: any[] = []
 
-  const store = createStore({
+  const { store } = createStore({
     initState: {
       obj: {
         name: 'wohoox',
@@ -403,7 +403,7 @@ it('plugin:hooks: onChange', () => {
 it('plugin:hooks: onGet', () => {
   let logs: any[] = []
 
-  const store = createStore({
+  const { store } = createStore({
     initState: {
       obj: {
         name: 'wohoox',

@@ -2,7 +2,7 @@ import { getStores, getStoreByName, DefaultStoreName } from 'wohoox'
 
 export type { WohooxPlugin } from 'wohoox'
 
-export { combineStores } from 'wohoox'
+export { combineStores } from './combineStore'
 export { createStore } from './createStore'
 export { useWohoox as useStore } from './hooks/useWohoox'
 

@@ -134,9 +134,9 @@ function initStore(options?: { strictMode?: boolean }) {
   })
 
   const store = {
-    default: defaultStore,
-    user: userStore,
-    department: departmentStore,
+    default: defaultStore.store,
+    user: userStore.store,
+    department: departmentStore.store,
   }
 
   const actions = Object.keys(store).reduce((pre, current) => {

@@ -1,16 +1,22 @@
-import { actions, useStore } from './store'
+import { useStore } from './store'
 import './App.css'
 
 function App() {
-  const defaultStoreVersion = useStore(s => s.version)
-  const userStoreTime = useStore('user', state => state.time)
+  const {
+    state: defaultStoreVersion,
+    actions: { updateByKeyValue },
+  } = useStore('default', s => s.version)
+  const {
+    state: userStoreTime,
+    actions: { updateBirthday },
+  } = useStore('user', state => state.time)
 
   return (
     <div className="App">
       <div className="content">
         <div className="logo">
           <a
-            href="https://github.com/pzxie/wohoox"
+            href="https://github.com/pzxie/wohoox/tree/main/packages/wohoox-react"
             target="_blank"
             rel="noreferrer"
           >
@@ -41,10 +47,7 @@ function App() {
           <button
             className="button"
             onClick={() => {
-              actions.default.updateByKeyValue(
-                'version',
-                `1.${Math.floor(Math.random() * 10)}`,
-              )
+              updateByKeyValue('version', `1.${Math.floor(Math.random() * 10)}`)
             }}
           >
             update version
@@ -56,7 +59,7 @@ function App() {
           <button
             className="button"
             onClick={() => {
-              actions.user.updateBirthday(new Date().toLocaleString())
+              updateBirthday(new Date().toLocaleString())
             }}
           >
             update time

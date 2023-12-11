@@ -45,7 +45,7 @@ function initStore(
     set: set || new Set(),
   }
 
-  const store = createStore({
+  const { store } = createStore({
     initState,
     options: options || { strictMode: false },
   })
@@ -1373,7 +1373,9 @@ it('same object key for multi map', () => {
 
 it('JSON.stringify: Set', () => {
   const initState = { set: new Set() }
-  const { state } = createStore({
+  const {
+    store: { state },
+  } = createStore({
     initState,
     options: { strictMode: false },
   })
@@ -1387,7 +1389,9 @@ it('JSON.stringify: Set', () => {
 it('JSON.stringify: WeakSet', () => {
   const objectKey = { type: 'weakSet' }
   const initState = { set: new WeakSet([objectKey]) }
-  const { state } = createStore({
+  const {
+    store: { state },
+  } = createStore({
     initState,
     options: { strictMode: false },
   })
