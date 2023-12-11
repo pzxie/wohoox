@@ -1,5 +1,11 @@
 # wohoox
 
+## 2.0.0-rc.7
+
+### Patch Changes
+
+- 9f0997c: wohoox-react useStore usage refactor
+
 ## 2.0.0-rc.6
 
 ### Minor Changes
