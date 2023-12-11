@@ -11,6 +11,32 @@
 - Typescript 支持
 - 插件 api 支持
 
+## 目录
+
+- [目录](#目录)
+- [兼容性](#兼容性)
+- [安装](#安装)
+- [快速上手](#快速上手)
+- [进阶使用](#进阶使用)
+  - [定义 Key-Value 通用型 Action](#定义-key-value-通用型-action)
+  - [重置状态](#重置状态)
+    - [initState 是个对象](#initstate-是个对象)
+    - [initState 是个函数](#initstate-是个函数)
+  - [多模块整合](#多模块整合)
+    - [创建多模块](#创建多模块)
+    - [多模块的使用](#多模块的使用)
+  - [严格模式](#严格模式)
+    - [开始严格模式](#开始严格模式)
+    - [关闭严格模式](#关闭严格模式)
+  - [插件体系](#插件体系)
+    - [示例：persist plugin](#示例persist-plugin)
+- [API](#api)
+  - [createStore](#createstore)
+    - [参数说明](#参数说明)
+    - [用法](#用法)
+  - [combineStores](#combinestores)
+- [注意事项](#注意事项)
+
 ## 兼容性
 
 - 支持[native ES2015 support](https://caniuse.com/es6)的浏览器
@@ -171,7 +197,7 @@ store.actions.updateByKeyValue('details', { name: 'wohoox', other: 'anything' })
 export default store
 ```
 
-### Reset store
+### 重置状态
 
 wohoox 内置了 `reset` action。你可以使用 `reset` 去重置 `state`
 
@@ -577,7 +603,7 @@ export const { store, actions } = combineStores(
 )
 ```
 
-## Notes
+## 注意事项
 
 - 尽可能使用严格模式（使用 actions 去修改数据）
 - Set 类型的数据，默认不会对子数据做代理。如果改变 set 子数据时也想重新渲染：

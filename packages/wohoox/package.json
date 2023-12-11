@@ -33,7 +33,8 @@
     "type": "git",
     "url": "https://github.com/pzxie/wohoox.git"
   },
-  "homepage": "https://github.com/pzxie/wohoox.git#readme",
+  "readme": "https://github.com/pzxie/wohoox/tree/main/packages/wohoox",
+  "homepage": "https://github.com/pzxie/wohoox/tree/main/packages/wohoox",
   "devDependencies": {
     "@size-limit/preset-small-lib": "^8.1.0",
     "@testing-library/jest-dom": "^5.16.5",
