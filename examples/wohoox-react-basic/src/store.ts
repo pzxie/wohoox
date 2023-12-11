@@ -1,11 +1,11 @@
-import { useStore as useWohoox, createStore } from 'wohoox-react'
+import { createStore } from 'wohoox-react'
 import persistPlugin from './plugin/persist'
 
 type RevertObjectToArrayUnion<T extends object, K = keyof T> = K extends keyof T
   ? [K, T[K]]
   : unknown
 
-const store = createStore({
+const { store, useStore, useWohooxState } = createStore({
   initState: {
     version: '1.x',
     items: [5],
@@ -35,21 +35,6 @@ const store = createStore({
   plugins: [persistPlugin],
 })
 
-type DefaultState = typeof store.state
-
-export function useStore(name?: string): DefaultState
-export function useStore<T extends (state: DefaultState) => any>(
-  fn?: T,
-): ReturnType<T>
-export function useStore<T extends (state: DefaultState) => any>(
-  name?: string,
-  fn?: T,
-): ReturnType<T>
-export function useStore(name?: any, fn?: any) {
-  const state = useWohoox(name, fn)
-
-  return state
-}
-
+export { useStore, useWohooxState }
 export const actions = store.actions
 export default store

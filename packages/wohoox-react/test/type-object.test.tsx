@@ -19,7 +19,7 @@ function initStore(storeName?: string, options?: { strictMode?: boolean }) {
     },
   }
 
-  const store = createStore({
+  const { store } = createStore({
     name: storeName,
     initState,
     actions: {

@@ -1,7 +1,7 @@
 {
   "name": "wohoox-react",
   "version": "1.0.0-rc.6",
-  "description": "Easy,lightweight and reactive store by react hooks",
+  "description": "Easy,lightweight and reactive store by react hooks and wohoox",
   "author": "pzxie <pzxie@outlook.com>",
   "main": "dist/index.js",
   "module": "dist/wohoox-react.esm.js",
@@ -35,7 +35,8 @@
     "type": "git",
     "url": "https://github.com/pzxie/wohoox.git"
   },
-  "homepage": "https://github.com/pzxie/wohoox.git#readme",
+  "readme": "https://github.com/pzxie/wohoox/tree/main/packages/wohoox-react",
+  "homepage": "https://github.com/pzxie/wohoox/tree/main/packages/wohoox-react",
   "dependencies": {
     "wohoox": "workspace:*",
     "wohoox-utils": "workspace:*"

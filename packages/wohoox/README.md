@@ -11,6 +11,32 @@
 - Typescript support
 - Plugins api support
 
+## Table of Contents
+
+- [Table of Contents](#table-of-contents)
+- [Required](#required)
+- [Install](#install)
+- [Quick Start](#quick-start)
+- [Advance](#advance)
+  - [Key-Value by one action](#key-value-by-one-action)
+  - [Reset state](#reset-state)
+    - [initState is object](#initstate-is-object)
+    - [initState is factory function](#initstate-is-factory-function)
+  - [Multi Store](#multi-store)
+    - [Create multi store](#create-multi-store)
+    - [usage](#usage)
+  - [StrictMode](#strictmode)
+    - [Turn on](#turn-on)
+    - [Turn off](#turn-off)
+  - [plugins](#plugins)
+    - [Example of persist](#example-of-persist)
+- [API](#api)
+  - [createStore](#createstore)
+    - [Params](#params)
+    - [Usage](#usage-1)
+  - [combineStores](#combinestores)
+- [Notes](#notes)
+
 ## Required
 
 - browser: only supports browsers with [native ES2015 support](https://caniuse.com/es6)
@@ -171,7 +197,7 @@ store.actions.updateByKeyValue('details', { name: 'wohoox', other: 'anything' })
 export default store
 ```
 
-### Reset store
+### Reset state
 
 There is a built-in action named [reset]. You can use it to reset the state.
 

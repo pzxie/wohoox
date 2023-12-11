@@ -1,9 +1,12 @@
-import { actions, useStore } from './store'
+import { actions, useStore, useWohooxState } from './store'
 import './App.css'
 
 function App() {
-  const items = useStore(s => s.items)
-  const version = useStore(s => s.version)
+  const {
+    state: { items },
+    actions: { reset },
+  } = useStore()
+  const version = useWohooxState(s => s.version)
 
   const addItem = () => {
     const value = Math.floor(Math.random() * 10)
@@ -25,7 +28,7 @@ function App() {
       <div className="content">
         <div className="logo">
           <a
-            href="https://github.com/pzxie/wohoox"
+            href="https://github.com/pzxie/wohoox/tree/main/packages/wohoox-react"
             target="_blank"
             rel="noreferrer"
           >
@@ -104,6 +107,15 @@ function App() {
             }}
           >
             empty
+          </button>
+
+          <button
+            className="button actions"
+            onClick={() => {
+              reset({ version: 'reset', items: [5, 6] })
+            }}
+          >
+            reset
           </button>
         </div>
       </div>

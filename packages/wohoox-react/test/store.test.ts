@@ -4,7 +4,7 @@ import { clearStore } from 'wohoox'
 beforeEach(clearStore)
 
 it('store: properties', () => {
-  const store = createStore({
+  const { store } = createStore({
     initState: {
       name: 'wohoox',
     },
@@ -16,7 +16,7 @@ it('store: properties', () => {
 })
 
 it('name: default as [default]', () => {
-  const store = createStore({
+  const { store } = createStore({
     initState: {},
   })
 
@@ -24,7 +24,7 @@ it('name: default as [default]', () => {
 })
 
 it('name: manual settled', () => {
-  const store = createStore({
+  const { store } = createStore({
     name: 'wohoox',
     initState: {},
   })
@@ -33,7 +33,7 @@ it('name: manual settled', () => {
 })
 
 it('state: init state', () => {
-  const store = createStore({
+  const { store } = createStore({
     initState: {
       name: 'wohoox',
     },
@@ -43,7 +43,7 @@ it('state: init state', () => {
 })
 
 it('actions', () => {
-  const store = createStore({
+  const { store } = createStore({
     initState: {
       name: 'wohoox',
     },
@@ -80,10 +80,12 @@ it('combineStores', () => {
     },
   })
 
-  const combineResult = combineStores(defaultStore, userStore)
+  const combineResult = combineStores(defaultStore.store, userStore.store)
 
   expect(combineResult).toHaveProperty('store')
   expect(combineResult).toHaveProperty('actions')
+  expect(combineResult).toHaveProperty('useStore')
+  expect(combineResult).toHaveProperty('useWohooxState')
   expect(combineResult.store).toHaveProperty('default')
   expect(combineResult.store).toHaveProperty('user')
   expect(combineResult.store.default).toHaveProperty('name')

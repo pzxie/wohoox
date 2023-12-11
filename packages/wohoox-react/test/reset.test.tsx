@@ -12,7 +12,7 @@ afterEach(() => {
 })
 
 it('reset in actions default', () => {
-  const store = createStore({
+  const { store } = createStore({
     initState: {
       name: 'wohoox',
     },
@@ -23,7 +23,7 @@ it('reset in actions default', () => {
 it('ignore custom reset', () => {
   const logSpy = jest.spyOn(global.console, 'warn')
 
-  const store = createStore({
+  const { store } = createStore({
     initState: {
       name: 'wohoox',
     },
@@ -71,7 +71,7 @@ it('ignore custom reset', () => {
 
 describe('init state by object', () => {
   it('reset by object', () => {
-    const store = createStore({
+    const { store } = createStore({
       initState: {
         name: 'wohoox',
       },
@@ -112,7 +112,7 @@ describe('init state by factory method', () => {
   it('reset by no params', () => {
     const defaultName = 'wohoox'
     const updateName = 'updateName'
-    const store = createStore({
+    const { store } = createStore({
       initState: () => ({
         name: defaultName,
       }),
@@ -166,7 +166,7 @@ describe('init state by factory method', () => {
     const updateByResetObject = {
       name: 'updateByResetObject',
     }
-    const store = createStore({
+    const { store } = createStore({
       initState: () => ({
         name: defaultName,
       }),
@@ -242,8 +242,10 @@ it('combineStores', () => {
     },
   })
 
-  const store = combineStores(defaultStore, userStore)
+  const { store, actions } = combineStores(defaultStore.store, userStore.store)
 
-  expect(store.actions.default).toHaveProperty('reset')
-  expect(store.actions.user).toHaveProperty('reset')
+  expect(store.default.actions).toHaveProperty('reset')
+  expect(store.user.actions).toHaveProperty('reset')
+  expect(actions.default).toHaveProperty('reset')
+  expect(actions.user).toHaveProperty('reset')
 })
