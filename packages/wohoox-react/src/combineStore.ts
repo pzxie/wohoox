@@ -34,7 +34,7 @@ export function combineStores<
     }
 
     if (!getStateFn) state = useWohoox(name) as S
-    else state = useWohoox(name as string, getStateFn)
+    else state = useWohoox(name as unknown as string, getStateFn)
 
     return {
       state,
