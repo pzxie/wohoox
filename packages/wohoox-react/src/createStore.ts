@@ -22,7 +22,7 @@ export function createStore<
 }: {
   initState: () => S
   name?: N
-  plugins?: WohooxPlugin[]
+  plugins?: WohooxPlugin<S, A>[]
   actions?: A
   options?: Options
 }): {
@@ -74,7 +74,7 @@ export function createStore<
 }: {
   initState: S
   name?: N
-  plugins?: WohooxPlugin[]
+  plugins?: WohooxPlugin<S, A>[]
   actions?: A
   options?: Options
 }): {
@@ -126,7 +126,7 @@ export function createStore<
 }: {
   initState: (() => S) | S
   name?: N
-  plugins?: WohooxPlugin[]
+  plugins?: WohooxPlugin<S, A>[]
   actions?: A
   options?: Options
 }) {
@@ -134,7 +134,7 @@ export function createStore<
     name,
     initState: initState as S,
     actions,
-    plugins: [effectListPlugin, ...(plugins || [])],
+    plugins: [effectListPlugin as WohooxPlugin<S, A>, ...(plugins || [])],
     options,
   })
 

@@ -1,5 +1,4 @@
 import { createStore, clearStore } from '../src'
-import type { WohooxPlugin } from '../src'
 
 const sourceMap = {
   string: () => Math.floor(Math.random() * 10000) + '',
@@ -43,7 +42,7 @@ function getAllInitialMaps(sourceMap) {
 function initStore(
   map?: Map<any, any> | WeakMap<any, any>,
   options?: { strictMode?: boolean },
-  plugins?: WohooxPlugin[],
+  plugins?: any[],
 ) {
   const initState = {
     map: map || new Map(),
@@ -169,11 +168,11 @@ describe('map', () => {
       const {
         store: { state },
       } = initStore(new Map(), { strictMode: false }, [
-        {
+        () => ({
           onChange(_storeName, value) {
             currentLog = value
           },
-        },
+        }),
       ])
       let key = new Map()
       let value = { type: 'map' }
@@ -195,11 +194,11 @@ describe('map', () => {
       const {
         store: { state },
       } = initStore(new Map(), { strictMode: false }, [
-        {
+        () => ({
           onChange(_storeName, value) {
             currentLog = value
           },
-        },
+        }),
       ])
       let key = new Map()
       let value = new Map([['type', 'map']])
@@ -250,7 +249,7 @@ describe('map', () => {
       const {
         store: { state },
       } = initStore(map, { strictMode: false }, [
-        {
+        () => ({
           onChange(_name, value, keys) {
             if (keys[keys.length - 1] === '__size') return
 
@@ -259,7 +258,7 @@ describe('map', () => {
           onAdd(_name, value) {
             currentLog = value
           },
-        },
+        }),
       ])
 
       ;(state.map as Map<any, any>).forEach((value, key) => {
@@ -414,11 +413,11 @@ describe('weakMap', () => {
       const {
         store: { state },
       } = initStore(new WeakMap(), { strictMode: false }, [
-        {
+        () => ({
           onChange(_storeName, value) {
             currentLog = value
           },
-        },
+        }),
       ])
       let key = new Map()
       let value = { type: 'map' }
@@ -437,11 +436,11 @@ describe('weakMap', () => {
       const {
         store: { state },
       } = initStore(new WeakMap(), { strictMode: false }, [
-        {
+        () => ({
           onChange(_storeName, value) {
             currentLog = value
           },
-        },
+        }),
       ])
       let key = new Map()
       let value = new Map([['type', 'map']])
@@ -466,11 +465,11 @@ describe('weakMap', () => {
         new WeakMap<any, any>([[objectKey, 'value']]),
         { strictMode: false },
         [
-          {
+          () => ({
             onChange(_name, value) {
               currentLog = value
             },
-          },
+          }),
         ],
       )
 
@@ -489,11 +488,11 @@ describe('weakMap', () => {
         new WeakMap<any, any>([[objectKey, { type: 'obj' }]]),
         { strictMode: false },
         [
-          {
+          () => ({
             onChange(_name, value) {
               currentLog = value
             },
-          },
+          }),
         ],
       )
 

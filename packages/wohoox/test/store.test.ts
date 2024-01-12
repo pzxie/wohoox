@@ -166,11 +166,11 @@ describe('options', () => {
           },
         },
         plugins: [
-          {
+          () => ({
             onChange() {
               isChanged = true
             },
-          },
+          }),
         ],
         options: { proxySetDeep: true },
       })
@@ -195,11 +195,11 @@ describe('options', () => {
           },
         },
         plugins: [
-          {
+          () => ({
             onChange() {
               isChanged = true
             },
-          },
+          }),
         ],
         options: { proxySetDeep: false },
       })
@@ -224,11 +224,11 @@ describe('options', () => {
           },
         },
         plugins: [
-          {
+          () => ({
             onChange() {
               isChanged = true
             },
-          },
+          }),
         ],
       })
 

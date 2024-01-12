@@ -17,7 +17,7 @@ it('plugin: beforeInit', () => {
       name: 'wohoox',
     },
     plugins: [
-      {
+      () => ({
         beforeInit(initState, actions) {
           return {
             initState: {
@@ -32,8 +32,8 @@ it('plugin: beforeInit', () => {
             },
           }
         },
-      },
-      {},
+      }),
+      () => ({}),
     ],
     options: { strictMode: false },
   })
@@ -54,12 +54,12 @@ it('plugin: onInit', () => {
       name: 'wohoox',
     },
     plugins: [
-      {
+      () => ({
         onInit(store) {
           s = store
         },
-      },
-      {},
+      }),
+      () => ({}),
     ],
     options: { strictMode: false },
   })
@@ -78,12 +78,12 @@ it('plugin:js: onAdd', () => {
       name: 'wohoox',
     },
     plugins: [
-      {
+      () => ({
         onAdd(name, value, keys) {
           logs.push([name, value, keys])
         },
-      },
-      {},
+      }),
+      () => ({}),
     ],
     options: { strictMode: false },
   })
@@ -106,12 +106,12 @@ it('plugin:js: onDelete', () => {
       name: 'wohoox',
     },
     plugins: [
-      {
+      () => ({
         onDelete(name, keys) {
           logs.push([name, keys])
         },
-      },
-      {},
+      }),
+      () => ({}),
     ],
     options: { strictMode: false },
   })
@@ -135,12 +135,12 @@ it('plugin:js: onChange', () => {
       name: 'wohoox',
     },
     plugins: [
-      {
+      () => ({
         onChange(name, value, keys, _target, oldValue) {
           logs.push([name, value, keys, oldValue])
         },
-      },
-      {},
+      }),
+      () => ({}),
     ],
     options: { strictMode: false },
   })
@@ -165,12 +165,12 @@ it('plugin:js: onGet', () => {
       name: 'wohoox',
     },
     plugins: [
-      {
+      () => ({
         onGet(name, value, keys) {
           logs.push([name, value, keys])
         },
-      },
-      {},
+      }),
+      () => ({}),
     ],
     options: { strictMode: false },
   })
@@ -206,12 +206,12 @@ it('plugin:hooks: onAdd', () => {
       },
     },
     plugins: [
-      {
+      () => ({
         onAdd(name, value, keys) {
           logs.push([name, value, keys])
         },
-      },
-      {},
+      }),
+      () => ({}),
     ],
     options: { strictMode: false },
   })
@@ -276,12 +276,12 @@ it('plugin:hooks: onDelete', () => {
       },
     },
     plugins: [
-      {
+      () => ({
         onDelete(name, keys) {
           logs.push([name, keys])
         },
-      },
-      {},
+      }),
+      () => ({}),
     ],
     options: { strictMode: false },
   })
@@ -344,12 +344,12 @@ it('plugin:hooks: onChange', () => {
       },
     },
     plugins: [
-      {
+      () => ({
         onChange(name, value, keys, _target, oldValue) {
           logs.push([name, value, keys, oldValue])
         },
-      },
-      {},
+      }),
+      () => ({}),
     ],
     options: { strictMode: false },
   })
@@ -415,12 +415,12 @@ it('plugin:hooks: onGet', () => {
       },
     },
     plugins: [
-      {
+      () => ({
         onGet(name, value, keys) {
           logs.push([name, value, keys])
         },
-      },
-      {},
+      }),
+      () => ({}),
     ],
     options: { strictMode: false },
   })

@@ -1,12 +1,11 @@
 import { createStore, clearStore } from '../src'
-import type { WohooxPlugin } from '../src'
 
 function initStore(
   storeName?: string,
   options?: { strictMode?: boolean },
-  plugins?: WohooxPlugin[],
+  plugins?: any[],
 ) {
-  const initState = {
+  const initState = () => ({
     type: {
       arrayOriginal: ['1', true, 3],
       arrayReference: [{ name: 'arrayObject' }, [11, 22, 33]] as [
@@ -14,7 +13,7 @@ function initStore(
         Array<number>,
       ],
     },
-  }
+  })
 
   const store = createStore({
     name: storeName,
@@ -27,7 +26,7 @@ function initStore(
   })
 
   return {
-    initState,
+    initState: initState(),
     store,
   }
 }
@@ -252,12 +251,12 @@ describe('array length', () => {
     const {
       store: { state },
     } = initStore('default', undefined, [
-      {
+      () => ({
         onChange(_storeName, _value, keys, target) {
           if (keys[keys.length - 1] === 'length' && Array.isArray(target))
             lengthCallbackTriggerTimes++
         },
-      },
+      }),
     ])
 
     originalLength = state.type.arrayOriginal.length
@@ -341,12 +340,12 @@ describe('array length', () => {
     const {
       store: { state },
     } = initStore('default', undefined, [
-      {
+      () => ({
         onChange(_storeName, _value, keys, target) {
           if (keys[keys.length - 1] === 'length' && Array.isArray(target))
             lengthCallbackTriggerTimes++
         },
-      },
+      }),
     ])
 
     originalLength = state.type.arrayOriginal.length

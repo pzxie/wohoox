@@ -1,5 +1,6 @@
 import type { ActionsDefine } from './types'
 import type { Store } from './core/store'
+import { clearPlugins } from './core/plugin'
 
 export const MapSetSizeKey = '__size'
 export const DefaultStoreName = 'default'
@@ -30,6 +31,7 @@ export function addStore(
 
 export function clearStore() {
   StoreMap.clear()
+  clearPlugins()
 }
 
 let isModifyByAction = false

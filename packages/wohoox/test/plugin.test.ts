@@ -11,7 +11,7 @@ it('plugin: init', () => {
     initState: {
       name: 'wohoox',
     },
-    plugins: [{}, {}],
+    plugins: [() => ({}), () => ({})],
     options: { strictMode: false },
   })
 
@@ -25,33 +25,22 @@ describe('plugin: event', () => {
         name: 'wohoox',
       },
       plugins: [
-        {
-          beforeInit(initState, actions) {
+        () => ({
+          beforeInit(initState) {
             return {
               initState: {
                 ...initState,
-                type: 'beforeInit',
-              },
-              actions: {
-                ...actions,
-                updateType(state, type) {
-                  state.type = type
-                },
+                name: 'beforeInit',
               },
             }
           },
-        },
-        {},
+        }),
+        () => ({}),
       ],
       options: { strictMode: false },
     })
 
-    expect(store.state).toHaveProperty('type')
-    expect((store.state as any).type).toBe('beforeInit')
-    expect(store.actions).toHaveProperty('updateType')
-    ;(store.actions as any).updateType('updated')
-
-    expect((store.state as any).type).toBe('updated')
+    expect((store.state as any).name).toBe('beforeInit')
   })
 
   it('onInit', () => {
@@ -62,12 +51,12 @@ describe('plugin: event', () => {
         name: 'wohoox',
       },
       plugins: [
-        {
+        () => ({
           onInit(store) {
             s = store
           },
-        },
-        {},
+        }),
+        () => ({}),
       ],
       options: { strictMode: false },
     })
@@ -86,12 +75,12 @@ describe('plugin: event', () => {
         name: 'wohoox',
       },
       plugins: [
-        {
+        () => ({
           onAdd(name, value, keys) {
             logs.push([name, value, keys])
           },
-        },
-        {},
+        }),
+        () => ({}),
       ],
       options: { strictMode: false },
     })
@@ -114,12 +103,12 @@ describe('plugin: event', () => {
         name: 'wohoox',
       },
       plugins: [
-        {
+        () => ({
           onDelete(name, keys) {
             logs.push([name, keys])
           },
-        },
-        {},
+        }),
+        () => ({}),
       ],
       options: { strictMode: false },
     })
@@ -143,12 +132,12 @@ describe('plugin: event', () => {
         name: 'wohoox',
       },
       plugins: [
-        {
+        () => ({
           onChange(name, value, keys, _target, oldValue) {
             logs.push([name, value, keys, oldValue])
           },
-        },
-        {},
+        }),
+        () => ({}),
       ],
       options: { strictMode: false },
     })
@@ -173,12 +162,12 @@ describe('plugin: event', () => {
         name: 'wohoox',
       },
       plugins: [
-        {
+        () => ({
           onGet(name, value, keys) {
             logs.push([name, value, keys])
           },
-        },
-        {},
+        }),
+        () => ({}),
       ],
       options: { strictMode: false },
     })
@@ -209,12 +198,12 @@ describe('plugin: ignore to record event', () => {
         name: 'wohoox',
       },
       plugins: [
-        {
+        () => ({
           onAdd(name, value, keys) {
             logs.push([name, value, keys])
           },
-        },
-        {},
+        }),
+        () => ({}),
       ],
       options: { strictMode: false },
     })
@@ -243,12 +232,12 @@ describe('plugin: ignore to record event', () => {
         other: 'anything',
       },
       plugins: [
-        {
+        () => ({
           onDelete(name, keys) {
             logs.push([name, keys])
           },
-        },
-        {},
+        }),
+        () => ({}),
       ],
       options: { strictMode: false },
     })
@@ -285,12 +274,12 @@ describe('plugin: ignore to record event', () => {
         name: 'wohoox',
       },
       plugins: [
-        {
+        () => ({
           onChange(name, value, keys, _target, oldValue) {
             logs.push([name, value, keys, oldValue])
           },
-        },
-        {},
+        }),
+        () => ({}),
       ],
       options: { strictMode: false },
     })
@@ -327,12 +316,12 @@ describe('plugin: ignore to record event', () => {
         name: 'wohoox',
       },
       plugins: [
-        {
+        () => ({
           onGet(name, value, keys) {
             logs.push([name, value, keys])
           },
-        },
-        {},
+        }),
+        () => ({}),
       ],
       options: { strictMode: false },
     })

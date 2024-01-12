@@ -8,7 +8,7 @@ import {
   DefaultStoreName,
 } from '../global'
 import { observer } from './observer'
-import { addPlugins } from './plugin'
+import { addPlugins, getPlugins } from './plugin'
 
 import type {
   Options,
@@ -21,26 +21,36 @@ import type {
 
 const NOT_SAFE_DISPATCH = '__not_safe__dispatch'
 
+function isActionFunction(fn: any): fn is (state: any, ...args: any) => any {
+  return fn instanceof Function
+}
+
 function revertActionsToAutoMode<
-  TState,
+  TState extends object,
   TActions extends ActionsDefine<TState>,
 >(storeName: string, actions: TActions, autoModeTask = () => {}) {
   const autoModeActions: ActionDispatch<TState, TActions> = Object.assign({})
 
   for (const actionName in actions) {
-    if (typeof actions[actionName] === 'function') {
-      autoModeActions[actionName] = ((...args: any) => {
+    const action = actions[actionName]
+    if (isActionFunction(action)) {
+      autoModeActions[actionName] = ((...args: unknown[]) => {
         const store = getStoreByName(storeName)
+
+        if (!store) {
+          console.warn(`There is not exist a store named ${storeName}.`)
+          return
+        }
+
         setIsModifyByAction(true)
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-        ;(actions[actionName] as any)(store!.state, ...args)
+        action(store.state, ...args)
         setIsModifyByAction(false)
         autoModeTask()
       }) as any
-    } else if (isPlainObject(actions[actionName])) {
+    } else if (isPlainObject(action)) {
       autoModeActions[actionName] = revertActionsToAutoMode(
         storeName,
-        actions[actionName] as any,
+        action as any,
         autoModeTask,
       ) as any
     }
@@ -68,7 +78,7 @@ export class Store<
   // Save source state to generate new proxy for every useStore.
   sourceState!: S
 
-  public actions = {} as ActionDispatch<S, A>
+  public actions: ActionDispatch<S, A> = Object.assign({})
 
   // Properties stack to record current visited properties，effectList source
   currentProxyGetKeys: any[] = []
@@ -191,17 +201,11 @@ export function createStore<
   S extends object,
   A extends ActionsDefine<S>,
   N extends string = typeof DefaultStoreName,
->({
-  name,
-  initState,
-  actions,
-  plugins,
-  options,
-}: {
+>(config: {
   initState: () => S
   name?: N
-  plugins?: WohooxPlugin[]
   actions?: A
+  plugins?: WohooxPlugin<S, A>[]
   options?: Options
 }): {
   name: N
@@ -225,17 +229,11 @@ export function createStore<
   S extends object,
   A extends ActionsDefine<S>,
   N extends string = typeof DefaultStoreName,
->({
-  name,
-  initState,
-  actions,
-  plugins,
-  options,
-}: {
+>(config: {
   initState: S
   name?: N
-  plugins?: WohooxPlugin[]
   actions?: A
+  plugins?: WohooxPlugin<S, A>[]
   options?: Options
 }): {
   name: N
@@ -262,52 +260,52 @@ export function createStore<
 >({
   name = DefaultStoreName as N,
   initState,
-  actions,
+  actions = Object.assign({}),
   plugins,
   options,
 }: {
   initState: (() => S) | S
   name?: N
-  plugins?: WohooxPlugin[]
   actions?: A
+  plugins?: WohooxPlugin<S, A>[]
   options?: Options
 }) {
-  const initStateFn: () => S =
+  const initStateFn =
     initState instanceof Function ? initState : () => initState
   addPlugins(name, ...(plugins || []))
 
-  const baseIsFn = { initState: initStateFn(), actions } as {
-    initState: S
-    actions: A & {
-      reset(originState: S, state?: S): void
-    }
-  }
-
-  const baseIsObject = { initState: initStateFn(), actions } as {
-    initState: S
-    actions: A & {
-      reset(originState: S, state: S): void
-    }
-  }
-
-  const beforeInitResult =
-    plugins?.reduce(
-      (pre, plugin) =>
-        plugin.beforeInit?.(pre.initState, pre.actions) || {
-          initState: pre.initState,
-          actions: pre.actions,
-        },
-      typeof initState === 'function' ? baseIsFn : baseIsObject,
-    ) || (typeof initState === 'function' ? baseIsFn : baseIsObject)
-
-  if (!beforeInitResult.actions)
-    beforeInitResult.actions = {} as typeof beforeInitResult.actions
-
-  if (typeof beforeInitResult.actions.reset === 'function') {
+  if (typeof actions.reset === 'function') {
     console.warn(
       'The action named [reset] is a built-in action of wohoox. If you declared [reset], it will be ignored.',
     )
   }
+
+  const initObj = {
+    initState: initStateFn(),
+    actions: {
+      ...actions,
+      reset(_originState: S, _state?: S) {},
+    },
+  }
+
+  const pluginsObjArr = getPlugins(name) || []
+
+  const beforeInitResult =
+    pluginsObjArr.reduce((pre, plugin) => {
+      if (plugin.beforeInit) {
+        const beforeInitData = plugin.beforeInit?.(pre.initState, pre.actions)
+
+        return {
+          initState: { ...pre.initState, ...beforeInitData?.initState },
+          actions: {
+            ...pre.actions,
+            ...beforeInitData?.actions,
+          },
+        }
+      }
+
+      return pre
+    }, initObj) || initObj
 
   beforeInitResult.actions.reset = (_originState, state) => {
     const store = getStoreByName(name)
@@ -315,7 +313,9 @@ export function createStore<
 
     store?.initStateAndActions(name, newState)
 
-    plugins?.forEach(plugin => plugin.onReset?.(name, newState, _originState))
+    pluginsObjArr?.forEach(plugin =>
+      plugin.onReset?.(name, newState, _originState),
+    )
   }
 
   const store = new Store(
@@ -325,8 +325,12 @@ export function createStore<
     options,
   )
 
-  plugins?.forEach(plugin =>
-    plugin.onInit?.({ name, state: store.state, actions: store.actions }),
+  pluginsObjArr?.forEach(plugin =>
+    plugin.onInit?.({
+      name,
+      state: store.state,
+      actions: store.actions,
+    }),
   )
 
   // Dynamic to get current store
@@ -344,13 +348,16 @@ export function createStore<
 export function combineStores<
   S extends { name: string; state: object; actions: object }[],
 >(...stores: S) {
-  const allStore = {} as { [K in ExtractStoresName<S>]: ExtractStores<S, K> }
+  const allStore: { [K in ExtractStoresName<S>]: ExtractStores<S, K> } =
+    Object.assign({})
 
   stores.forEach(store => (allStore[store.name] = store))
 
   const actions = Object.keys(allStore).reduce((pre, current) => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    pre[current] = allStore[current]['actions']
+    const store: S = allStore[current]
+
+    pre[current] = store['actions']
+
     return pre
   }, {} as { [K in ExtractStoresName<S>]: typeof allStore[K]['actions'] })
 
