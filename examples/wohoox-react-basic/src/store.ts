@@ -32,7 +32,7 @@ const { store, useStore, useWohooxState } = createStore({
       state.items.length = 0
     },
   },
-  plugins: [persistPlugin],
+  plugins: [persistPlugin as any],
 })
 
 export { useStore, useWohooxState }
