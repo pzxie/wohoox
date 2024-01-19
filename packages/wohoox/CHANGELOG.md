@@ -1,5 +1,11 @@
 # wohoox
 
+## 2.0.0-rc.8
+
+### Major Changes
+
+- 40dd932: plugin api refactor
+
 ## 2.0.0-rc.7
 
 ### Patch Changes

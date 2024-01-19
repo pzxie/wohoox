@@ -1,5 +1,16 @@
 # wohoox-react
 
+## 1.0.0-rc.8
+
+### Major Changes
+
+- 40dd932: plugin api refactor
+
+### Patch Changes
+
+- Updated dependencies [40dd932]
+  - wohoox@2.0.0-rc.8
+
 ## 1.0.0-rc.7
 
 ### Major Changes
