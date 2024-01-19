@@ -10,7 +10,7 @@ const store = createStore({
       state.version = version
     },
   },
-  plugins: [persistPlugin],
+  plugins: [persistPlugin as any],
 })
 
 export const actions = store.actions

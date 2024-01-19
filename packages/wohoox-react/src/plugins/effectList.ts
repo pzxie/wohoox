@@ -13,7 +13,7 @@ function addKeysToEffect(
   store.addKeyToEffectList(type, keys)
 }
 
-const effectListPlugin: WohooxPlugin = {
+const effectListPlugin: WohooxPlugin<any, any> = () => ({
   onAdd(storeName, _value, keys) {
     addKeysToEffect(storeName, 'add', keys)
   },
@@ -23,6 +23,6 @@ const effectListPlugin: WohooxPlugin = {
   onChange(storeName, _value, keys) {
     addKeysToEffect(storeName, 'set', keys)
   },
-}
+})
 
 export default effectListPlugin

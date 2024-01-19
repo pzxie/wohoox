@@ -1,6 +1,6 @@
 import type { WohooxPlugin } from 'wohoox-react'
 
-const persistPlugin: WohooxPlugin = {
+const persistPlugin: WohooxPlugin<any, any> = () => ({
   beforeInit(initState, actions) {
     return {
       initState: {
@@ -14,6 +14,6 @@ const persistPlugin: WohooxPlugin = {
     if (keys.toString() === 'version')
       localStorage.setItem('wohoox_version', JSON.stringify(value))
   },
-}
+})
 
 export default persistPlugin

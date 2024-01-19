@@ -1,5 +1,4 @@
 import { createStore, clearStore } from '../src'
-import type { WohooxPlugin } from '../src'
 
 const sourceMap = {
   string: () => Math.floor(Math.random() * 10000) + '',
@@ -35,7 +34,7 @@ function getAllInitialMaps(sourceMap) {
 function initStore(
   set?: Set<any> | WeakSet<any>,
   options?: { strictMode?: boolean; proxySetDeep?: boolean },
-  plugins?: WohooxPlugin[],
+  plugins?: any[],
 ) {
   const initState = {
     set: set || new Set(),
@@ -172,11 +171,11 @@ describe('set', () => {
         new Set<any>([obj]),
         { proxySetDeep: true, strictMode: false },
         [
-          {
+          () => ({
             onChange(_storeName, value) {
               logValue = value
             },
-          },
+          }),
         ],
       )
 
@@ -196,11 +195,11 @@ describe('set', () => {
       const {
         store: { state },
       } = initStore(new Set<any>([obj]), { proxySetDeep: false }, [
-        {
+        () => ({
           onChange(_storeName, value) {
             logValue = value
           },
-        },
+        }),
       ])
 
       const [tempObj] = [...(state.set as Set<any>)]
@@ -346,11 +345,11 @@ describe('proxySetDeep', () => {
         proxySetDeep: true,
       },
       [
-        {
+        () => ({
           onAdd(_storeName, value, keys) {
             currentLog = [value, keys]
           },
-        },
+        }),
       ],
     )
 
@@ -440,11 +439,11 @@ describe('proxySetDeep', () => {
         proxySetDeep: false,
       },
       [
-        {
+        () => ({
           onAdd(_storeName, value, keys) {
             currentLog = [value, keys]
           },
-        },
+        }),
       ],
     )
 
