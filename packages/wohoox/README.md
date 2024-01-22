@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  English | <a href="./README_CN.md">中文</a>
+  English | <a href="https://github.com/pzxie/wohoox/blob/main/packages/wohoox/README_CN.md">中文</a>
 </p>
 
 - Lightweight and reactive state management
@@ -22,11 +22,11 @@
   - [Reset state](#reset-state)
     - [initState is object](#initstate-is-object)
     - [initState is factory function](#initstate-is-factory-function)
-  - [Multi Store](#multi-store)
-    - [Create multi store](#create-multi-store)
+  - [Multiple Stores](#multiple-stores)
+    - [Create multi stores](#create-multi-stores)
     - [usage](#usage)
   - [StrictMode](#strictmode)
-    - [Turn on](#turn-on)
+    - [Turn on (default)](#turn-on-default)
     - [Turn off](#turn-off)
   - [plugins](#plugins)
     - [Example of persist](#example-of-persist)
@@ -35,11 +35,11 @@
     - [Params](#params)
     - [Usage](#usage-1)
   - [combineStores](#combinestores)
-- [Notes](#notes)
+- [Notice](#notice)
 
 ## Required
 
-- browser: only supports browsers with [native ES2015 support](https://caniuse.com/es6)
+browsers with [native ES2015 support](https://caniuse.com/es6)
 
 ## Install
 
@@ -49,7 +49,7 @@ npm install -S wohoox
 
 ## Quick Start
 
-1. Create store
+**Create store**
 
 ```typescript
 /**
@@ -70,7 +70,7 @@ const store = createStore({
 export default store
 ```
 
-2. Use state
+**Get state**
 
 ```typescript
 /**
@@ -94,7 +94,7 @@ async function getVersion() {
 }
 ```
 
-3. Update state
+**Update state**
 
 `wohoox` updates state by `action`. This will make the state changes more controllable and trackable
 
@@ -158,8 +158,9 @@ async function getVersion() {
 
 ### Key-Value by one action
 
-> It's common for an action to update one field. For example, `updateVersion` is used to update the `version`. `Redux` and `Mobx` are often used like this
-> `wohoox` also allows you to update by defining a common action, thus simplifying the definition of the action
+> It's common for an action to update one field. For example, `updateVersion` is used to update the `version`
+
+`wohoox` allows you to update by defining a common action, thus simplifying the definition of the action
 
 ```typescript
 /**
@@ -199,11 +200,11 @@ export default store
 
 ### Reset state
 
-There is a built-in action named [reset]. You can use it to reset the state.
+There is a built-in action named [reset]. You can use it to reset the state
 
 #### initState is object
 
-The reset params is required, if the store's initState is an object.
+The reset params is required, if the store's initState is an object
 
 ```typescript
 import { createStore } from 'wohoox'
@@ -227,11 +228,11 @@ store.actions.reset({
 
 #### initState is factory function
 
-The reset params is optional, if the store's initState is an factory function.
+The reset params is optional, if the store's initState is an factory function
 
-- **If set params,** wohoox will use the factory function to reset the state.
+- **If set params,** wohoox will use the params to reset the state
 
-- **If no params,** wohoox will use the params to reset the state.
+- **If no params,** wohoox will use the factory function to reset the state
 
 ```typescript
 import { createStore } from 'wohoox'
@@ -257,15 +258,15 @@ store.actions.reset({
 })
 ```
 
-**Note:** `reset` is a built-in action for wohoox. If you declared `reset` in actions, your `reset` will be ignored.
+**Note:** `reset` is a built-in action for wohoox. If you declared `reset` in actions, your `reset` will be ignored
 
-### Multi Store
+### Multiple Stores
 
-> If you want to split store by modules, look here.
+`wohoox` supports status division by module
 
-#### Create multi store
+#### Create multi stores
 
-- Create a store named 'user'
+**Create a store named `user`**
 
 ```typescript
 /**
@@ -288,7 +289,7 @@ export default createStore({
 })
 ```
 
-- Create a store named 'department'
+**Create a store named `department`**
 
 ```typescript
 /**
@@ -314,7 +315,7 @@ export default createStore({
 })
 ```
 
-- Combine multi store
+**Combine multiple stores to one**
 
 ```typescript
 /**
@@ -333,7 +334,7 @@ export default store
 
 #### usage
 
-Use multi store is same as single store, just need to point the store name
+It is same as single store, just need to point the store name
 
 ```typescript
 /**
@@ -366,10 +367,10 @@ function updateAddress() {
 
 ### StrictMode
 
-In order to make the code style more standardized.
-**Strict mode is on by default. Which means actions is the only way to modify state**.
+In order to make the code style more standardized
+**`StrictMode` is turn on by default.** Which means actions is the only way to modify state
 
-#### Turn on
+#### Turn on (default)
 
 Actions are the only valid way to modify data
 
@@ -412,10 +413,10 @@ function exampleStrictMode() {
 
 #### Turn off
 
-Valid ways
+**Valid ways**
 
 - Actions
-- state expression
+- State expression
 
 ```typescript
 import { createStore } from 'wohoox'
@@ -438,7 +439,7 @@ const store = createStore({
 export default store
 ```
 
-Modify data
+**Modify data**
 
 ```typescript
 import store from 'src/store.ts'
@@ -460,12 +461,10 @@ function exampleStrictMode() {
 
 Plug-in options are provided to enhance the functionality of wohoox
 
-wohoox plugin is a object who contains below methods
-
 ```jsx
 import type { WohooxPlugin } from 'wohoox'
 
-export const plugin: WohooxPlugin = {
+export const plugin: WohooxPlugin<any, any> = () => ({
   beforeInit(initState, actions) {
     // do something before store init, return new initState and actions
     return {
@@ -487,39 +486,44 @@ export const plugin: WohooxPlugin = {
     // do something when state changed
   },
   onGet(storeName, value, keys) {
-    // do something when state has been gettled
+    // do something when state gettled
   },
-}
+  onReset?(storeName, state, originState) {
+    // do something when the reset action is triggered
+  }
+})
 ```
 
 #### Example of persist
 
-- create a plugin
+**create a plugin**
 
 ```jsx
 // src/plugin/persist.ts
 import type { WohooxPlugin } from 'wohoox'
 
-const persistPlugin: WohooxPlugin = {
-  beforeInit(initState, actions) {
+const persistPlugin: WohooxPlugin<{ version: string }, any> = () => ({
+  beforeInit(initState) {
     return {
       initState: {
         ...initState,
         version: JSON.parse(localStorage.getItem('wohoox_version') || '""'),
       },
-      actions,
     }
   },
   onChange(_name, value, keys) {
     if (keys.toString() === 'version')
       localStorage.setItem('wohoox_version', JSON.stringify(value))
   },
-}
+  onReset(_name, state) {
+    localStorage.setItem('wohoox_version', JSON.stringify(state.version))
+  },
+})
 
 export default persistPlugin
 ```
 
-- add to plugin option
+**add to the option of plugin**
 
 ```jsx
 import persistPlugin from './plugin/persist'
@@ -544,16 +548,25 @@ const store = createStore({
 
 ### createStore
 
-It is used to create a store.
+It is used to create a store
+
+> If a store with the same name is registered, the store registered later will overwrite the store with the same name registered first. And the console will issue a warning
 
 #### Params
 
-- `name:` default as `'default'`. name of store. it is used as an identifier to get store data.
-- `initState:` Initial the data and use it as the data structure of the state.
-- `actions:` Dispatch to change data. As the only valid way to modify data in strict mode, then it will caused by page rerender
+- `name:` Default as `'default'`. Store name, as a unique identifier of the store, this field is used to distinguish modules when there are multiple modules.
+
+- `initState:` The initial data of store
+
+- `actions:` Dispatch to change data. As the only valid way to modify data in strict mode
+
 - `plugins:` plugin list for store
-- `options.strictMode:` default as `true`. Strict mode switch for store. Once the switch turn on, actions will be the only valid way to modify data, otherwise you can directly modify the data by state. `ex: state.age = 23`
-- `options.proxySetDeep:` default as `false`. Type data of set will not be proxy for its child item. Cause there is no method to get item, child proxy is is not necessary to proxy. But if you want to proxy anyway, you can set it to true.
+
+- `options.strictMode:` Default as `true`
+  Strict mode switch for store. Once the switch turn on, actions will be the only valid way to modify data, otherwise you can directly modify the data by state. `ex: state.age = 23`
+
+- `options.proxySetDeep:` Default as `false`
+  Type data of set will not be proxy for its child item. Cause there is no method to get item, child proxy is is not necessary to proxy. But if you want to proxy anyway, you can set it to true
 
 #### Usage
 
@@ -605,9 +618,9 @@ export const { store, actions } = combineStores(
 )
 ```
 
-## Notes
+## Notice
 
-- Use strict mode if possible(use actions to modify state).
-- Type data of Set will not be proxy for its child item。If you want to rerender when changed the child items properties, you can：
+- Use strict mode if possible(use actions to modify state)
+- Type data of Set will not be proxy for its child item. If you want to rerender when changed the child items properties, you can：
   - Delete the last item of Set and add it into Set again
   - Or set options `proxySetDeep: true`
