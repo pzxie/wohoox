@@ -1,6 +1,6 @@
 # wohoox-react
 
-English | [中文](./README_CN.md)
+English | [中文](https://github.com/pzxie/wohoox/blob/main/packages/wohoox-react/README_CN.md)
 
 - Implementation based on [wohoox](../wohoox/README.md)
 - Lightweight and reactive state management for react
@@ -21,7 +21,7 @@ English | [中文](./README_CN.md)
     - [Reset state](#reset-state)
       - [initState is an object](#initstate-is-an-object)
       - [initState is a function](#initstate-is-a-function)
-    - [Multiple Store](#multiple-store)
+    - [Multiple Stores](#multiple-stores)
       - [Create multiple stores](#create-multiple-stores)
       - [How to use multiple modules](#how-to-use-multiple-modules)
     - [Strict mode](#strict-mode)
@@ -59,9 +59,7 @@ npm install -S wohoox-react
 
 ## Quick Start
 
-1. Create store
-
-[api reference](#createstore)
+**Create store**
 
 ```typescript
 /**
@@ -82,9 +80,7 @@ const { useStore, useWohooxState } = createStore({
 export { useStore, useWohooxState }
 ```
 
-2. Use state
-
-[Reference](#how-to-use-createstore)
+**Get state**
 
 ```jsx
 /**
@@ -107,9 +103,9 @@ function Example() {
 }
 ```
 
-3. Update state
+**Update state**
 
-wohoox-react uses `action` to update the state, making the changes to the entire state more controllable and trackable.
+wohoox-react uses `action` to update the state, making the changes to the state more controllable and trackable
 
 ```typescript
 /**
@@ -221,9 +217,9 @@ function Example() {
 
 ### Key-Value by one action
 
-It is common for a field to be updated with an `action`, for example `updateVersion` is used to update `version`. The common `Redux` and `mobx` are also often used in this way
+> It's common for an action to update one field. For example, `updateVersion` is used to update the `version`
 
-> Using `wohoox-react`, you can define a generic `action`, which can simplify many templated `action` definitions
+`wohoox-react` allows you to update by defining a common action, thus simplifying the definition of the action
 
 ```typescript
 /**
@@ -264,13 +260,13 @@ store.actions.updateByKeyValue('details', {
 
 ### Reset state
 
-wohoox-react has built-in `reset` action. You can use `reset` to reset `state`
+wohoox-react has a built-in `reset` action. You can use `reset` to reset `state`
 
-> **Note:** `reset` is a built-in `action` of `wohoox-react`. Custom `reset` action will be ignored when creating the store. and the console will issue a warning
+> Custom `reset` action will be ignored when creating the store. And the console will issue a warning
 
 #### initState is an object
 
-When initializing the store, if `initState` is an object, `reset` must pass in new initialization data
+When initializing the store, if `initState` is an object, **`reset` params is required**
 
 ```typescript
 import { createStore } from 'wohoox-react'
@@ -296,9 +292,9 @@ store.actions.reset({
 
 When initializing the store, if `initState` is a factory function, the `reset` parameter is optional
 
-- **When no parameters are passed**, the factory function will be called by default to return to the new initialization state.
+- **no parameters are passed**, the factory function will be called by default to return to the new initialization state
 
-- **When passing parameters**, use the incoming data as the new initialization state
+- **passing parameters**, use the incoming data as the new initialization state
 
 ```typescript
 import { createStore } from 'wohoox-react'
@@ -324,13 +320,14 @@ store.actions.reset({
 })
 ```
 
-### Multiple Store
+### Multiple Stores
 
-> wohoox-react supports the creation of multiple stores. These stores can be used independently, or multiple stores can be integrated through `combineStores`.
+`wohoox-react` supports the creation of multiple stores.
+These stores can be used independently, or multiple stores can be integrated through `combineStores`
 
 #### Create multiple stores
 
-- Create a store named `user`
+**Create a store named `user`**
 
 ```typescript
 /**
@@ -352,7 +349,7 @@ export default createStore({
 })
 ```
 
-- Create a default store (name is not specified explicitly, default as 'default')
+**Create a default store**
 
 ```typescript
 /**
@@ -382,7 +379,7 @@ export default createStore({
 })
 ```
 
-- Combine multiple stores
+**Combine multiple stores**
 
 ```typescript
 /**
@@ -404,7 +401,7 @@ export { store, actions, useStore, useWohooxState }
 
 #### How to use multiple modules
 
-Multi-modules are used in the same way as single modules, except that you need to specify the store name to obtain the state.
+Multi-modules are used in the same way as single modules, except that you need to specify the store name to obtain the state
 
 ```jsx
 /**
@@ -457,7 +454,7 @@ export default MultiExample
 
 ### Strict mode
 
-In order to make the code style more unified and standardized, **strict mode is enabled by default**, which means that state can only be modified through `actions`.
+In order to make the code style more unified and standardized, **strict mode is enabled by default**, which means that state can only be modified through `actions`
 
 #### Turn on strict mode
 
@@ -573,7 +570,7 @@ function exampleStrictMode () {
 
 ### Using in non-components
 
-`useStore` can only be used in functional components. It can be used in non-components through `store`
+It can be used in non-components through `store`. `useStore` can only be used in functional components
 
 ```typescript
 /**
@@ -600,12 +597,10 @@ async function getVersion() {
 
 Plugin options are provided to enhance wohoox-react
 
-The plugin of wohoox-react consists of the following methods
-
 ```jsx
 import type { WohooxPlugin } from 'wohoox-react'
 
-export const plugin: WohooxPlugin = {
+export const plugin: WohooxPlugin<any, any> = () => ({
   beforeInit(initState, actions) {
     // Before initializing the store, process initState and actions and return new initState and actions for initialization
     return {
@@ -632,25 +627,24 @@ export const plugin: WohooxPlugin = {
   onReset(storeName, state, originState) {
     //Reset state callback
   },
-}
+})
 ```
 
 #### Customize a persistence plug-in
 
-- Create a plugin
+**Create a plugin**
 
 ```jsx
 // src/plugin/persist.ts
 import type { WohooxPlugin } from 'wohoox-react'
 
-const persistPlugin: WohooxPlugin = {
-  beforeInit(initState, actions) {
+const persistPlugin: WohooxPlugin<{ version: string }, any> = () => ({
+  beforeInit(initState) {
     return {
       initState: {
         ...initState,
         version: JSON.parse(localStorage.getItem('wohoox_version') || '""'),
       },
-      actions,
     }
   },
   onChange(_name, value, keys) {
@@ -660,12 +654,12 @@ const persistPlugin: WohooxPlugin = {
   onReset(_name, state) {
     localStorage.setItem('wohoox_version', JSON.stringify(state.version))
   },
-}
+})
 
 export default persistPlugin
 ```
 
-- Add plugins to plugins option
+**Add plugins to plugins option**
 
 ```jsx
 /**
@@ -696,38 +690,50 @@ const { store } = createStore({
 
 ### createStore
 
-Used to initialize and create a store and react hooks `useStore`, `useWohooxState`
+Used to initialize and return a `store`, `useStore`, `useWohooxState`
 
-> Note: If a store with the same name is registered, the store registered later will overwrite the store with the same name registered first. and the console will issue a warning
+> If a store with the same name is registered, the store registered later will overwrite the store with the same name registered first. And the console will issue a warning
 
 #### Parameter description of createStore
 
-- `name`, store name, defaults to `'default'`. As a unique identifier of the store, this field is used to distinguish modules when there are multiple modules.
-- `initState`, initializes data and uses the data structure of that data as typescript type inference
-- `actions`, a way to modify data and prompt related components to re-render. In strict mode, it is the only way to legally modify data.
-- `plugins`, plugin options
+- `name`, store name, default as `'default'`. As a unique identifier of the store, this field is used to distinguish modules when there are multiple modules
+
+- `initState`, the initial data of store
+
+- `actions`, a way to modify data and prompt related components to re-render. In strict mode, it is the only way to legally modify data
+
+- `plugins`, plugin list
+
 - `options`, configuration items
-  - `options.strictMode`, strict mode switch. Defaults to `true`. In strict mode, actions are the only way to modify state. In non-strict mode, state can be modified directly. `ex: state.age = 23; dispatch()`
-  - `options.proxySetDeep`, Type of set data depth proxy switch. Default `false`. By default, Set type data will not proxy its sub-data. Since there is no data acquisition, there is no need to proxy its sub-data. If you are sure you need a deep proxy, you can set it to true
+
+  - `options.strictMode`, defaults as `true`
+    In strict mode, actions are the only way to modify state. In non-strict mode, state can be modified directly. `ex: state.age = 23; dispatch()`
+
+  - `options.proxySetDeep`, default as `false`. Type of set data depth proxy switch.
+    By default, Set type data will not proxy its sub-data. Since there is no data acquisition, there is no need to proxy its sub-data. If you are sure you need a deep proxy, you can set it to true
 
 #### Return value of createStore
 
 - `store` can be used anywhere
+
   - `store.name`
   - `store.state`,
   - `store.actions`, actions including `reset`
-- `useStore` is a hook used to obtain `state` and `actions` in functional components. **Using `useStore`, functional components can re-render components when the state changes**
+
+- `useStore` is a hook used to obtain `state` and `actions` in functional components. **Functional components can re-render**
+
   - **Parameters:** Optional, `(s) => any`
   - **Returns:** Object containing `state` and `actions`
-    - `state`, the value is determined according to the parameters. If no parameters are passed, it is the entire state of the store. If a function is passed, it is the value returned by the function.
+    - `state`, the value is determined according to the parameters. If no parameters are passed, it is the entire state of the store. If a function is passed, it is the value returned by the function
     - `actions`, same as store actions
+
 - `useWohooxState` is a hook used to obtain `state` in functional components. **Using `useWohooxState`, functional components can re-render components when the state changes**
   - **Parameters:** Optional, `(s) => any`
-  - **Return:** If no parameters are passed, it is the entire state of `store`. If a function is passed, it is the value returned by the function.
+  - **Return:** If no parameters are passed, it is the entire state of `store`. If a function is passed, it is the value returned by the function
 
 #### How to use createStore
 
-Create a store named [default]
+**Create a store named `default`**
 
 ```typescript
 /**
@@ -757,7 +763,7 @@ const { store, useStore, useWohooxState } = createStore({
 export { store, useStore, useWohooxState }
 ```
 
-`store` is a simple object that can be used anywhere. **The state in the store is just an object, and the component cannot be re-rendered**
+`store` is a simple object that can be used anywhere. **It cannot make the component re-render**
 
 ```jsx
 import { store } from 'src/store'
@@ -776,7 +782,7 @@ function Layout() {
 }
 ```
 
-`useStore` is a hook used to obtain `state` and `actions`. The object returned contains two properties: `state` and `actions`.
+`useStore` is a hook used to obtain `state` and `actions`. The object returned contains two properties: `state` and `actions`. **It can make the component re-render**
 
 ```jsx
 /**
@@ -793,9 +799,9 @@ function Example () {
 }
 ```
 
-`useWohooxState` is a simplified version of `useStore`, which directly returns the corresponding state value
+`useWohooxState` is a simplified version of `useStore`, which directly returns the corresponding state value. **It can make the component re-render**
 
-> For components that only need to read state, it is more convenient to use `useWohooxState`. No need to rename state
+> For components that only need to read state, it is more convenient to use `useWohooxState`. Do not need to rename state
 
 ```jsx
 /**
@@ -831,20 +837,25 @@ combineStores(AStore, BStore, CStore)
 
 #### Return value of combineStores
 
-- `store`, a collection of multiple `store` objects, such as { AStoreName: AStore, BStoreName: BStore, CStoreName: CStore }
-- `actions`, a collection of `action` objects of multiple `store`, such as { AStoreName: AStore.actions, BStoreName: BStore.actions, CStoreName: CStore.actions }
-- `useStore` is a hook used to obtain `state` and `action` in functional components. **Using `useStore`, functional components can re-render the component based on state changes**
+- `store`, a collection of multiple store objects, such as `{ AStoreName: AStore, BStoreName: BStore, CStoreName: CStore }`
+  It can be used anywhere, but **it cannot make the component re-render**
+
+- `actions`, a collection of action objects of multiple `store`, such as `{ AStoreName: AStore.actions, BStoreName: BStore.actions, CStoreName: CStore.actions }`
+
+- `useStore` is a hook used to obtain `state` and `action` in functional components. **It can make the component re-render**
+
   - **Parameters**
     - storeName, required
     - getStateFn, optional, `(s) => any`
   - **Return:** The state and actions of the store whose name is `storeName`
-    - `state`, the value is determined according to the parameters. If `getStateFn` is not passed, it is the entire state of the selected store. If a function is passed, it is the value returned by the function.
+    - `state`, the value is determined according to the parameters. If `getStateFn` is not passed, it is the entire state of the selected store. If a function is passed, it is the value returned by the function
     - `actions`, the actions of the selected store
-- `useWohooxState` is a hook used to obtain `state` in functional components. **Using `useWohooxState`, functional components can re-render the component based on state changes**
+
+- `useWohooxState` is a hook used to obtain `state` in functional components. **It can make the component re-render**
   - **Parameters**
     - storeName, required
     - getStateFn, optional, `(s) => any`
-  - **Returns:** The value is determined based on the parameters. If `getStateFn` is not passed, it is the entire state of the selected store. If a function is passed, it is the value returned by the function.
+  - **Returns:** The value is determined based on the parameters. If `getStateFn` is not passed, it is the entire state of the selected store. If a function is passed, it is the value returned by the function
 
 #### How to use combineStores
 
@@ -877,15 +888,12 @@ const { store: userStore } = createStore({
   },
 })
 
+// Same as the store returned by `createStore`. Only it’s combines multiple independent stores through objects
 const { store, actions, useStore, useWohooxState } = combineStores(
   defaultStore,
   userStore,
 )
 ```
-
-Same as the store returned by `createStore`. It’s just that the store here combines multiple independent stores through objects
-
-`store` is a collection of multiple stores and can be used anywhere. **The state in the store is just an object, and the component cannot be re-rendered**
 
 ```jsx
 import { store } from 'src/store'
@@ -906,7 +914,7 @@ function Layout() {
 }
 ```
 
-`useStore` is a hook used to obtain `state` and `actions`. The object returned contains two properties: `state` and `actions`.
+`useStore` is a hook used to obtain `state` and `actions`. The object returned contains two properties: `state` and `actions`
 
 `combineStores` is similar to `useStore` returned by `createStore`, the only difference is that `useStore` of `combineStores` needs to specify the store name
 
@@ -966,7 +974,7 @@ actions: {
 }
 ```
 
-> Although wohoox-react supports `dispatch` to make state modifications take effect and allow components to re-render, it is best to use actions for data updates.
+> Although wohoox-react supports `dispatch` to make state modifications take effect and allow components to re-render, it is best to use actions for data updates
 
 #### dispatch parameter description
 
@@ -1021,7 +1029,7 @@ export function dispatch(storName?: keyof typeof store) {
 
 ### dispatchAll
 
-Update the component status of all store modules at once. If there is only one store, use dispatch.
+Update the component status of all store modules at once. If there is only one store, use dispatch
 
 ```jsx
 /**
@@ -1078,5 +1086,5 @@ function example() {
 - In the component, if you do not use `useStore`, `useWohooxState` to obtain data, **the component will not re-render after the data changes**
 - Use strict mode possible (use actions to modify data)
 - Set type data will not proxy sub-data by default. If you also want to re-render when you change the set sub-data:
-  - After making changes, you can delete a sub-data first and then add the deleted one.
+  - After making changes, you can delete a sub-data first and then add the deleted one
   - Or set `proxySetDeep: true`

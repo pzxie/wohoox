@@ -1,6 +1,6 @@
 # wohoox-react
 
-[English](./README.md) | 中文
+[English](https://github.com/pzxie/wohoox/blob/main/packages/wohoox-react/README.md) | 中文
 
 - 基于 [wohoox](../wohoox/README_CN.md) 的 react 实现
 - 轻量的响应式 React 状态管理
@@ -59,9 +59,7 @@ npm install -S wohoox-react
 
 ## 快速上手
 
-1. 创建 store
-
-[api 参考](#createstore)
+**创建 store**
 
 ```typescript
 /**
@@ -82,9 +80,7 @@ const { useStore, useWohooxState } = createStore({
 export { useStore, useWohooxState }
 ```
 
-2. 使用 state
-
-[参考](#如何使用-createstore)
+**使用 state**
 
 ```jsx
 /**
@@ -107,9 +103,9 @@ function Example() {
 }
 ```
 
-3. 更新状态
+**更新状态**
 
-wohoox-react 通过 `action` 来更新状态，从而使整个状态的变更更加可控，可追踪。
+wohoox-react 通过 `action` 来更新状态，从而使整个状态的变更更加可控，可追踪
 
 ```typescript
 /**
@@ -221,8 +217,9 @@ function Example() {
 
 ### Key-Value by one action
 
-> 一个字段用一个 `action` 进行更新是很常见的，比如 `updateVersion` 是用来更新 `version` 的。常见的 `Redux`、`mobx` 也经常这样使用
-> 使用 `wohoox-react`，你可以定义一个通用型的 `action`，这样可以简少很多模板化的 `action` 定义
+> 常见用一个 `action` 更新固定的字段，比如用 `updateVersion` 来更新 `version`
+
+`wohoox-react` 允许你定义一个通用型的 `action`，可以简化很多格式化的 `action` 定义
 
 ```typescript
 /**
@@ -265,11 +262,11 @@ store.actions.updateByKeyValue('details', {
 
 wohoox-react 内置了 `reset` action。你可以使用 `reset` 去重置 `state`
 
-> **注意:** `reset` 是 `wohoox-react` 的内置 `action`. 在创建 store 时自定义的 `reset` action 将会被忽略。并且控制台会发出警告
+> `reset` 是 `wohoox-react` 的内置 `action`。 在创建 store 时自定义的 `reset` action 将会被忽略。并且控制台会发出警告
 
 #### initState 是个对象
 
-当初始化 store 时，`initState`如果是个对象，则 `reset` 必须传入新的初始化数据
+初始化 store 时，如果 `initState`是个对象，则 **`reset` 参数必填**
 
 ```typescript
 import { createStore } from 'wohoox-react'
@@ -295,9 +292,9 @@ store.actions.reset({
 
 当初始化 store 时，`initState` 如果是个工厂函数，则 `reset` 参数是可选的
 
-- **不传参数时，**则默认调用工厂函数返回新的初始化状态
+**不传参数时**，默认调用工厂函数返回新的初始化状态
 
-- **传参数时，**则使用传入的数据作为新的初始化状态
+**传参数时**，使用传入的数据作为新的初始化状态
 
 ```typescript
 import { createStore } from 'wohoox-react'
@@ -325,11 +322,11 @@ store.actions.reset({
 
 ### 多模块整合
 
-> wohoox-react 支持创建多个 store，这些 store 可以独立使用，也可以通过 `combineStores` 将多个 store 整合使用。
+> wohoox-react 支持创建多个 store，这些 store 可以独立使用，也可以通过 `combineStores` 将多个 store 整合使用
 
 #### 创建多个 store
 
-- 创建一个名为 `user` 的 store
+**创建一个名为 `user` 的 store**
 
 ```typescript
 /**
@@ -351,7 +348,7 @@ export default createStore({
 })
 ```
 
-- 创建一个默认 store（未明确指明 name, 默认为 default）
+**创建一个默认 store**
 
 ```typescript
 /**
@@ -381,7 +378,7 @@ export default createStore({
 })
 ```
 
-- 将多个 store 组合起来
+**将多个 store 组合起来**
 
 ```typescript
 /**
@@ -456,11 +453,11 @@ export default MultiExample
 
 ### 严格模式
 
-为了使代码风格更加统一、更加规范，**默认是开启了严格模式的，这意味着只能通过 `actions` 才能对 state 进行修改**.
+为了使代码风格更加统一、更加规范，**默认开启严格模式**，这意味着只能通过 `actions` 才能对 state 进行修改
 
 #### 开启严格模式
 
-只能通过 actions 才能对 state 进行修改
+只能通过 actions 对 state 进行修改
 
 ```typescript
 /**
@@ -572,7 +569,7 @@ function exampleStrictMode () {
 
 ### 在非组件中使用 wohoox-react
 
-`useStore` 只能用在函数式组件中. 在非组件中可以通过 `store` 进行使用
+`useStore` 只能用在函数式组件中. 在非组件中可以使用 `store`
 
 ```typescript
 /**
@@ -599,12 +596,10 @@ async function getVersion() {
 
 提供了插件选项用于增强 wohoox-react
 
-wohoox-react 的插件由以下一些方法构成
-
 ```jsx
 import type { WohooxPlugin } from 'wohoox-react'
 
-export const plugin: WohooxPlugin = {
+export const plugin: WohooxPlugin<any, any> = () => ({
   beforeInit(initState, actions) {
     // 在初始化 store 前，对 initState, actions 进行处理，并返回新的 initState 和 actions 用于初始化
     return {
@@ -631,25 +626,24 @@ export const plugin: WohooxPlugin = {
   onReset(storeName, state, originState) {
     // 重置 state 的回调
   },
-}
+})
 ```
 
 #### 自定义一个持久化插件
 
-- 创建一个插件
+**创建一个插件**
 
 ```jsx
 // src/plugin/persist.ts
 import type { WohooxPlugin } from 'wohoox-react'
 
-const persistPlugin: WohooxPlugin = {
-  beforeInit(initState, actions) {
+const persistPlugin: WohooxPlugin<{ version: string }, any> = () => ({
+  beforeInit(initState) {
     return {
       initState: {
         ...initState,
         version: JSON.parse(localStorage.getItem('wohoox_version') || '""'),
       },
-      actions,
     }
   },
   onChange(_name, value, keys) {
@@ -659,12 +653,12 @@ const persistPlugin: WohooxPlugin = {
   onReset(_name, state) {
     localStorage.setItem('wohoox_version', JSON.stringify(state.version))
   },
-}
+})
 
 export default persistPlugin
 ```
 
-- 将插件添加到 plugins 选项中
+**将插件添加到 plugins 选项中**
 
 ```jsx
 /**
@@ -695,38 +689,48 @@ const { store } = createStore({
 
 ### createStore
 
-用来初始化并创建一个 store 和 react hooks `useStore`、`useWohooxState`
+用来初始化并返回 store 、`useStore`、`useWohooxState`
 
-> 注意：如果注册了同名的 store, 则后注册的 store 会把先注册的同名 store 给覆盖掉。并且控制台会发出警告
+> 如果注册了同名的 store, 则后注册的 store 会把先注册的同名 store 给覆盖掉。并且控制台会发出警告
 
 #### createStore 参数说明
 
-- `name`，store 名称，默认为`'default'`. 作为 store 的唯一标识符，在多模块的时候，该字段用于区分模块.
-- `initState`，初始化数据，并使用该数据的数据结构作为 typescript 类型推断
-- `actions`，修改数据的方式，并促使相关组件进行重新渲染。在严格模式下，是唯一合法修改数据的方式
-- `plugins`，插件选项
+- `name`，store 名称，默认为`default`。作为 store 的唯一标识符，在多模块的时候，该字段用于区分模块
+
+- `initState`，初始化数据
+
+- `actions`，修改数据的方式，并使相关组件进行重新渲染。严格模式下，是唯一合法修改数据的方式
+
+- `plugins`，插件列表
+
 - `options`，配置项
+
   - `options.strictMode`，严格模式开关。默认 `true`. 严格模式下，actions 是唯一可以修改 state 的方式。非严格模式下，可以直接修改 state。 `ex: state.age = 23; dispatch()`
+
   - `options.proxySetDeep`，Set 数据深度代理开关。默认 `false`。默认 Set 类型的数据不会对其子数据进行 proxy 处理。因其没有获取数据的情形，对其子数据进行 proxy 处理没有太大必要。如果你确定需要深度代理，你可以将其设置为 true
 
 #### createStore 返回
 
 - `store` 任何地方都可以使用
+
   - `store.name`
   - `store.state`，
   - `store.actions`，包含 `reset` 在内的 actions
-- `useStore` 用于函数式组件内获取 `state` 和 `actions` 的 hook。**使用 `useStore`，函数式组件能在状态改变时，重新渲染组件**
+
+- `useStore` 用于函数式组件内获取 `state` 和 `actions` 的 hook。**能使组件重新渲染**
+
   - **参数：** 可选，`(s) => any`
   - **返回：** 包含 state 和 actions 的对象
-    - `state`，值根据参数确定。如果不传参，则为 store 的整个 state, 如果传函数，则为函数返回的值
+    - `state`，值根据参数确定。如果不传参，返回整个 state, 如果传函数，则为函数返回的值
     - `actions`，同 store 的 actions
-- `useWohooxState` 用于函数式组件内获取 `state` 的 hook。**使用 `useWohooxState`，函数式组件能在状态改变时，重新渲染组件**
+
+- `useWohooxState` 用于函数式组件内获取 `state` 的 hook。**能使组件重新渲染**
   - **参数：** 可选，`(s) => any`
   - **返回：** 如果未传参，就是 `store` 的整个 state, 如果传函数，则为函数返回的值
 
 #### 如何使用 createStore
 
-创建一个名叫【default】的 store
+**创建一个名叫【default】的 store**
 
 ```typescript
 /**
@@ -756,7 +760,7 @@ const { store, useStore, useWohooxState } = createStore({
 export { store, useStore, useWohooxState }
 ```
 
-`store` 就是一个简单的对象，可以用在任何地方。**store 里面的 state 只是一个对象，无法让组件重新渲染**
+`store` 就是一个简单的对象，可以用在任何地方。**无法让组件重新渲染**
 
 ```jsx
 import { store } from 'src/store'
@@ -775,7 +779,7 @@ function Layout() {
 }
 ```
 
-`useStore` 是用来获取 `state`、`actions` 的 hooks。其返回的对象包含 `state`、`actions` 两个属性。
+`useStore` 是用来获取 `state`、`actions` 的 hooks。返回的对象包含 `state`、`actions` 两个属性。**可以使组件重新渲染**
 
 ```jsx
 /**
@@ -792,7 +796,7 @@ function Example () {
 }
 ```
 
-`useWohooxState` 是 `useStore` 的简化版，直接返回对应的 state 值
+`useWohooxState` 是 `useStore` 的简化版，直接返回对应的 state 值。**可以使组件重新渲染**
 
 > 对于仅需要读取 state 的组件，用 `useWohooxState` 更为方便。不需要重命名 state
 
@@ -830,16 +834,18 @@ combineStores(AStore, BStore, CStore)
 
 #### combineStores 返回
 
-- `store`，多个 `store` 的对象集合，如 { AStoreName: AStore, BStoreName: BStore, CStoreName: CStore }
-- `actions`，多个 `store` 的 `action` 对象集合，如 { AStoreName: AStore.actions, BStoreName: BStore.actions, CStoreName: CStore.actions }
-- `useStore` 用于函数式组件内获取 `state` 和 `action` 的 hook。**使用 `useStore`，函数式组件能根据状态改变使组件重新渲染**
+- `store`，多个 `store` 的对象集合，如 `{ AStoreName: AStore, BStoreName: BStore, CStoreName: CStore }`。可以用在任何地方，**不能使组件重新渲染**
+
+- `actions`，多个 `store` 的 `action` 对象集合，如 `{ AStoreName: AStore.actions, BStoreName: BStore.actions, CStoreName: CStore.actions }`
+
+- `useStore` 用于函数式组件内获取 `state` 和 `action` 的 hook。**能使组件重新渲染**
   - **参数**
     - storeName, 必填
     - getStateFn, 可选，`(s) => any`
   - **返回：** storeName 所在 store 的 state 和 actions
     - `state`, 值根据参数确定。如果不传 `getStateFn`，则为所选 store 的整个 state, 如果传函数，则为函数返回的值
     - `actions`, 所选 store 的 actions
-- `useWohooxState` 用于函数式组件内获取 `state` 的 hook。**使用 `useWohooxState`，函数式组件能根据状态改变使组件重新渲染**
+- `useWohooxState` 用于函数式组件内获取 `state` 的 hook。**能使组件重新渲染**
   - **参数**
     - storeName, 必填
     - getStateFn, 可选，`(s) => any`
@@ -876,13 +882,12 @@ const { store: userStore } = createStore({
   },
 })
 
+// 同 `createStore` 返回的 store 一样。只是这里的 store 将多个独立 store 通过对象组合起来
 const { store, actions, useStore, useWohooxState } = combineStores(
   defaultStore,
   userStore,
 )
 ```
-
-同 `createStore` 返回的 store 一样。只是这里的 store 将多个独立 store 通过对象组合起来
 
 `store` 是多个 store 的集合，可以用在任何地方。**store 里面的 state 只是一个对象，无法让组件重新渲染**
 
@@ -905,7 +910,7 @@ function Layout() {
 }
 ```
 
-`useStore` 是用来获取 `state`、`actions` 的 hooks。其返回的对象包含 `state`、`actions` 两个属性。
+`useStore` 是用来获取 `state`、`actions` 的 hooks。其返回的对象包含 `state`、`actions` 两个属性
 
 `combineStores` 同 `createStore` 返回的 `useStore` 类似，唯一不同的是 `combineStores` 的 `useStore` 需要指明 store 名称
 
@@ -969,7 +974,7 @@ actions: {
 
 #### dispatch 参数说明
 
-- `storeName:` 默认为 `default`。 告诉 wohoox-react 需要更新哪个 store 的组件状态
+- `storeName:` 默认为 `default`。告诉 wohoox-react 需要更新哪个 store 的组件状态
 
 #### dispatch 使用方式
 
