@@ -1,5 +1,6 @@
 import { actions, useStore, useWohooxState } from './store'
 import './App.css'
+import { useEffect } from 'react'
 
 function App() {
   const {
@@ -22,6 +23,12 @@ function App() {
   const modifySecondItem = () => {
     actions.modifySecondItem(new Date().toLocaleTimeString())
   }
+
+  useEffect(() => {
+    console.log(version)
+    console.log(items)
+    // actions.reset({ version: 'reset', items: [5, 6] })
+  }, [version, items])
 
   return (
     <div className="App">
@@ -61,7 +68,7 @@ function App() {
           <button
             className="button"
             onClick={() => {
-              actions.updateVersion(`1.${Math.floor(Math.random() * 10)}`)
+              actions.update({ version: `1.${Math.floor(Math.random() * 10)}` })
             }}
           >
             click to update
@@ -112,7 +119,7 @@ function App() {
           <button
             className="button actions"
             onClick={() => {
-              reset({ version: 'reset', items: [5, 6] })
+              actions.reset()
             }}
           >
             reset

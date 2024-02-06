@@ -1,7 +1,12 @@
 export type Options = { strictMode?: boolean; proxySetDeep?: boolean }
 
-export interface ActionsDefine<S extends object> extends Record<string, any> {
-  [key: string]: ((state: S, ...args: any) => any) | ActionsDefine<S>
+export interface ActionsDefine<S extends object, A> {
+  [key: string]:
+    | ((
+        store: { state: S; actions: ActionDispatch<S, A> },
+        ...args: any
+      ) => any)
+    | ActionsDefine<S, A>
 }
 
 export type ActionDispatch<State extends object, Actions> = {
@@ -13,9 +18,12 @@ export type ExtractDispatcherFromActions<
   TAction,
 > = TAction extends () => any
   ? TAction
-  : TAction extends (state: TState, ...args: infer TRest) => any
+  : TAction extends (
+      store: { state: TState; actions: any },
+      ...args: infer TRest
+    ) => any
   ? (...args: TRest) => ReturnType<TAction>
-  : TAction extends ActionsDefine<TState>
+  : TAction extends ActionsDefine<TState, TAction>
   ? ActionDispatch<TState, TAction>
   : never
 
@@ -33,18 +41,18 @@ export type ExtractStores<Stores, Name> = Stores extends (infer S)[]
 
 export type WohooxPluginActionsTypeAutoComplete<
   S extends object,
-  A extends ActionsDefine<S>,
+  A extends ActionsDefine<S, A>,
 > = {
-  [K in keyof A]: A[K] extends ActionsDefine<S>
-    ? WohooxPluginActionsTypeAutoComplete<S, A[K]>
-    : A[K] extends (p, ...pn: infer PN) => infer R
-    ? (p: S, ...pn: PN) => R
+  [K in keyof A]: A[K] extends ActionsDefine<S, A[K]>
+    ? WohooxPluginActionsTypeAutoComplete<S, A>
+    : A[K] extends (store, ...pn: infer PN) => infer R
+    ? (store: { state: S; actions: ActionDispatch<S, A> }, ...pn: PN) => R
     : unknown
 }
 
 export type WohooxPlugin<
   S extends object,
-  A extends ActionsDefine<S>,
+  A extends ActionsDefine<S, A>,
   ALast extends WohooxPluginActionsTypeAutoComplete<
     S,
     A
@@ -52,7 +60,7 @@ export type WohooxPlugin<
 > = () => {
   beforeInit?(
     initState: S,
-    actions: ALast,
+    actions: A,
   ): { initState?: Partial<S>; actions?: Partial<ALast> }
   onInit?(store: { name: string; state: S; actions: ALast }): void
   onAdd?(storeName: string, value: any, keys: any[], target: any): void

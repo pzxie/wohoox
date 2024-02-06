@@ -1,9 +1,6 @@
-import type { WohooxPlugin, ActionsDefine } from '../types'
+import type { WohooxPlugin } from '../types'
 
-type ReturnWohooxPlugin<
-  S extends object = object,
-  A extends ActionsDefine<S> = ActionsDefine<S>,
-> = ReturnType<WohooxPlugin<S, A>>
+type ReturnWohooxPlugin = ReturnType<WohooxPlugin<object, any>>
 
 const eventDisabled: {
   [event in keyof Omit<ReturnWohooxPlugin, 'beforeInit' | 'onInit'>]: boolean
@@ -35,7 +32,7 @@ export const pluginsMap: Map<string, ReturnWohooxPlugin[]> = new Map()
 
 export function addPlugins(
   storeName: string,
-  ...plugins: WohooxPlugin<object, ActionsDefine<object>>[]
+  ...plugins: WohooxPlugin<object, any>[]
 ) {
   if (!plugins || !plugins.length) return
 

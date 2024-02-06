@@ -27,7 +27,7 @@ function isActionFunction(fn: any): fn is (state: any, ...args: any) => any {
 
 function revertActionsToAutoMode<
   TState extends object,
-  TActions extends ActionsDefine<TState>,
+  TActions extends ActionsDefine<TState, TActions>,
 >(storeName: string, actions: TActions, autoModeTask = () => {}) {
   const autoModeActions: ActionDispatch<TState, TActions> = Object.assign({})
 
@@ -43,7 +43,7 @@ function revertActionsToAutoMode<
         }
 
         setIsModifyByAction(true)
-        action(store.state, ...args)
+        action({ state: store.state, actions: store.actions }, ...args)
         setIsModifyByAction(false)
         autoModeTask()
       }) as any
@@ -62,11 +62,9 @@ function revertActionsToAutoMode<
 export class Store<
   N extends string,
   S extends object,
-  A extends ActionsDefine<S>,
+  A extends ActionsDefine<S, A>,
 > {
   private listeners: Array<() => void> = []
-
-  private resetListeners: Array<() => void> = []
 
   private options = {
     strictMode: true,
@@ -111,7 +109,7 @@ export class Store<
       {
         ...actions!,
         [NOT_SAFE_DISPATCH]: () => {},
-      },
+      } as A,
       () => {
         this.applyRender()
         this.effectList.add.clear()
@@ -156,8 +154,6 @@ export class Store<
       proxySetDeep: this.options.proxySetDeep,
       name,
     })
-
-    this.resetListeners.forEach(fn => fn())
   }
 
   private applyRender() {
@@ -174,22 +170,16 @@ export class Store<
     if (index > -1) this.listeners.splice(index, 1)
   }
 
+  clearListener() {
+    this.listeners = []
+  }
+
   addKeyToEffectList(type: 'add' | 'delete' | 'set', keys: any[]) {
     this.effectList[type].add(keys)
 
     const parentKeys = keys.slice(0, -1)
 
     if (parentKeys.length && type === 'add') this.effectList.add.add(parentKeys)
-  }
-
-  addResetListener(listener: () => void) {
-    this.resetListeners.push(listener)
-  }
-
-  removeResetListener(listener: () => void) {
-    const index = this.resetListeners.indexOf(listener)
-
-    if (index > -1) this.resetListeners.splice(index, 1)
   }
 
   getOptions() {
@@ -199,7 +189,7 @@ export class Store<
 
 export function createStore<
   S extends object,
-  A extends ActionsDefine<S>,
+  A extends ActionsDefine<S, A>,
   N extends string = typeof DefaultStoreName,
 >(config: {
   initState: () => S
@@ -213,21 +203,21 @@ export function createStore<
     N,
     S,
     A & {
-      reset(originState: S, state?: S): void
+      reset(store: { state: S; actions: ActionDispatch<S, A> }, state?: S): void
     }
   >['state']
   actions: Store<
     N,
     S,
     A & {
-      reset(originState: S, state?: S): void
+      reset(store: { state: S; actions: ActionDispatch<S, A> }, state?: S): void
     }
   >['actions']
 }
 
 export function createStore<
   S extends object,
-  A extends ActionsDefine<S>,
+  A extends ActionsDefine<S, A>,
   N extends string = typeof DefaultStoreName,
 >(config: {
   initState: S
@@ -241,21 +231,21 @@ export function createStore<
     N,
     S,
     A & {
-      reset(originState: S, state: S): void
+      reset(store: { state: S; actions: ActionDispatch<S, A> }, state: S): void
     }
   >['state']
   actions: Store<
     N,
     S,
     A & {
-      reset(originState: S, state: S): void
+      reset(store: { state: S; actions: ActionDispatch<S, A> }, state: S): void
     }
   >['actions']
 }
 
 export function createStore<
   S extends object,
-  A extends ActionsDefine<S>,
+  A extends ActionsDefine<S, A>,
   N extends string = typeof DefaultStoreName,
 >({
   name = DefaultStoreName as N,
@@ -284,7 +274,7 @@ export function createStore<
     initState: initStateFn(),
     actions: {
       ...actions,
-      reset(_originState: S, _state?: S) {},
+      reset(_store: { state: S; actions: ActionDispatch<S, A> }, _state?: S) {},
     },
   }
 
@@ -307,7 +297,7 @@ export function createStore<
       return pre
     }, initObj) || initObj
 
-  beforeInitResult.actions.reset = (_originState, state) => {
+  beforeInitResult.actions.reset = ({ state: _originState }, state) => {
     const store = getStoreByName(name)
     const newState = state || initStateFn()
 
@@ -366,3 +356,84 @@ export function combineStores<
     actions,
   }
 }
+
+const plu: WohooxPlugin<
+  { version: string },
+  { addItem(s, p): void; deep: { add(s, item): void } }
+> = () => {
+  return {
+    beforeInit(state, actions) {
+      return {
+        initState: {
+          version: state.version,
+        },
+        actions: {
+          addItem({ state, actions: a }, p) {
+            actions.deep.add({ state, actions: a }, p)
+            actions.addItem({ state, actions: a }, p)
+            a.addItem(p)
+            a.deep.add(p)
+          },
+        },
+      }
+    },
+  }
+}
+
+const store = createStore({
+  initState: {
+    version: '1.x',
+    items: [5],
+  },
+  actions: {
+    updateVersion({ state, actions }, version) {
+      state.version = version
+      actions.addItem
+    },
+    addItem({ state }, item: number) {
+      state.items.push(item)
+    },
+    deleteItem({ state }) {
+      state.items.pop()
+    },
+    modifySecondItem({ state }, item) {
+      state.items[1] = item
+    },
+    empty({ state }) {
+      state.items.length = 0
+    },
+    test: {
+      set({ state, actions }, i) {
+        state.items = i
+      },
+    },
+  },
+  plugins: [
+    () => {
+      return {
+        beforeInit(state, actions) {
+          return {
+            initState: {
+              version: state.version,
+            },
+            actions: {
+              addItem({ state, actions: a }, p) {
+                actions.test.set({ state, actions: a }, p)
+                actions.test.set({ state, actions: a }, p)
+                actions.addItem({ state, actions: a }, p)
+                actions.addItem({ state, actions: a }, p)
+                a.addItem(p)
+                a.test.set(p)
+              },
+            },
+          }
+        },
+      }
+    },
+  ],
+})
+
+store.actions.reset({
+  version: '1.3',
+  items: [43],
+})

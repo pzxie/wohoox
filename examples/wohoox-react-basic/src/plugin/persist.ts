@@ -11,6 +11,7 @@ const persistPlugin: WohooxPlugin<any, any> = () => ({
     }
   },
   onChange(_name, value, keys) {
+    console.log('changed, ', keys)
     if (keys.toString() === 'version')
       localStorage.setItem('wohoox_version', JSON.stringify(value))
   },

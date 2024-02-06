@@ -6,10 +6,10 @@ type RevertObjectToArrayUnion<T extends object, K = keyof T> = K extends keyof T
   : unknown
 
 const { store, useStore, useWohooxState } = createStore({
-  initState: {
+  initState: () => ({
     version: '1.x',
     items: [5],
-  },
+  }),
   actions: {
     updateVersion(state, version: string) {
       state.version = version
@@ -22,6 +22,9 @@ const { store, useStore, useWohooxState } = createStore({
     },
     modifySecondItem(state, item) {
       state.items[1] = item
+    },
+    update(state, newState: Partial<typeof state>) {
+      Object.assign(state, newState)
     },
     // You can use the key-value method for unified definition update, and support typescript
     updateByKeyValue(state, ...args: RevertObjectToArrayUnion<typeof state>) {

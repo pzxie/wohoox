@@ -135,22 +135,26 @@ export function useWohoox(name?: any, getState?: any): any {
   const [state, setState] = useState(getObserverState)
   const updateState = useCallback(
     (isForce?: boolean) => {
-      const state = ignoreToRecordEvent('onGet', () => getStateFn(store.state))
+      const currentState = ignoreToRecordEvent('onGet', () =>
+        getStateFn(store.state),
+      )
 
-      if (!isForce && state === preState.current) {
+      if (!isForce && currentState === preState.current) {
         return false
       }
 
       // State changed, should be set to a new state
-      preState.current = state
+      preState.current = currentState
       usedKeys.current.clear()
       usedSourceMap.current.clear()
 
-      setState(isObserverObject(state) ? getObserverState() : state)
+      setState(
+        isObserverObject(currentState) ? getObserverState() : currentState,
+      )
 
       return true
     },
-    [store, state, getObserverState],
+    [store, getObserverState],
   )
 
   const onEveryRender = () => {
@@ -178,14 +182,6 @@ export function useWohoox(name?: any, getState?: any): any {
   useEffect(() => {
     updateState()
   }, [id, store, updateState])
-
-  useEffect(() => {
-    store.addResetListener(updateState)
-
-    return () => {
-      store.removeResetListener(updateState)
-    }
-  }, [store, updateState])
 
   useEffect(() => {
     if (!id) return

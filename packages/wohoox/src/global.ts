@@ -7,7 +7,7 @@ export const DefaultStoreName = 'default'
 
 export const StoreMap: Map<
   string,
-  Store<string, object, ActionsDefine<object>>
+  Store<string, object, ActionsDefine<object, object>>
 > = new Map()
 
 export function getStoreByName(name: string) {
@@ -24,7 +24,7 @@ export function getStoreNames() {
 
 export function addStore(
   name: string,
-  store: Store<string, object, ActionsDefine<object>>,
+  store: Store<string, object, ActionsDefine<object, object>>,
 ) {
   StoreMap.set(name, store)
 }
